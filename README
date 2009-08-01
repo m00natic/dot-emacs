@@ -1,0 +1,43 @@
+This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
+windows with GNU/Emacs 23.0.96 onwards.  It's supposed to be tolerant
+to missing extensions and not complain.  Here's a list of extensions
+that this .emacs is somewhat aware of (sometimes tuned to specific
+directory structure) in some order and links:
+
+anything related:
+anything (http://www.emacswiki.org/emacs/Anything)
+anything-etags (http://www.emacswiki.org/emacs/anything-etags.el)
+anything-match (http://www.emacswiki.org/emacs/AnythingPlugins)
+fuzzy-match (http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion)
+proel (http://www.stifflog.com/2008/12/14/proel-project-support-for-emacs)
+
+auto-install related: (http://www.emacswiki.org/emacs/AutoInstall)
+anything-auto-install
+auto-install
+
+programming languages related:
+haskell-mode (http://www.haskell.org/haskell-mode)
+tuareg-mode (http://www-rocq.inria.fr/~acohen/tuareg)
+csharp-mode (http://www.emacswiki.org/emacs/CSharpMode)
+visual-basic-mode (http://www.emacswiki.org/emacs/VisualBasicMode)
+prolog (http://bruda.ca/emacs-prolog)
+clips-mode (http://www.cs.us.es/software/clips)
+clojure-mode (http://github.com/jochu/clojure-mode/tree)
+swank-cloure (http://github.com/jochu/swank-clojure/tree)
+slime (http://common-lisp.net/project/slime)
+
+lisp goodies:
+highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses/)
+hl-sexp (http://edward.oconnor.cx/elisp/hl-sexp.el)
+paredit (http://www.emacswiki.org/emacs/ParEdit)
+redshank (http://www.foldr.org/~michaelw/emacs/redshank)
+
+misc:
+completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
+color-theme (http://www.emacswiki.org/emacs/ColorTheme)
+cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
+gtags (http://www.gnu.org/software/global)
+traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
+tabbar (http://www.emacswiki.org/emacs/TabBarMode)
+w3m (http://emacs-w3m.namazu.org)
+Wanderlust (http://www.gohome.org/wl)
