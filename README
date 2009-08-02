@@ -12,8 +12,8 @@ fuzzy-match (http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion)
 proel (http://www.stifflog.com/2008/12/14/proel-project-support-for-emacs)
 
 auto-install related: (http://www.emacswiki.org/emacs/AutoInstall)
-anything-auto-install
 auto-install
+anything-auto-install
 
 programming languages related:
 haskell-mode (http://www.haskell.org/haskell-mode)
@@ -23,11 +23,11 @@ visual-basic-mode (http://www.emacswiki.org/emacs/VisualBasicMode)
 prolog (http://bruda.ca/emacs-prolog)
 clips-mode (http://www.cs.us.es/software/clips)
 clojure-mode (http://github.com/jochu/clojure-mode/tree)
-swank-cloure (http://github.com/jochu/swank-clojure/tree)
+swank-clojure (http://github.com/jochu/swank-clojure/tree)
 slime (http://common-lisp.net/project/slime)
 
 lisp goodies:
-highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses/)
+highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
 hl-sexp (http://edward.oconnor.cx/elisp/hl-sexp.el)
 paredit (http://www.emacswiki.org/emacs/ParEdit)
 redshank (http://www.foldr.org/~michaelw/emacs/redshank)

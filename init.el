@@ -79,6 +79,7 @@ NIX forms are executed on all other platforms."
  '(transient-mark-mode t)
  '(delete-selection-mode t)
  '(global-font-lock-mode t)   ; Use colors to highlight commands, etc.
+ '(font-lock-maximum-decoration t)
  '(inhibit-startup-message t) ; Disable the welcome message
  '(frame-title-format "emacs - %b (%f)") ; Format the title-bar
  '(mouse-wheel-mode t)		   ; Make the mouse wheel scroll Emacs
@@ -704,12 +705,12 @@ otherwise increase it in 5%-steps"
 				auto-mode-alist)))
 
 ;;; Python
-(when (require-maybe 'py-complete)
-  (autoload 'py-complete-init "py-complete")
-  (add-hook 'python-mode-hook 'py-complete-init)
-  (setq py-python-command-args '("-colors" "Linux"))
-  ;;(require-maybe 'ipython)
-  (add-hook 'python-mode-hook (lambda () (eldoc-mode 1)) t))
+(when (require-maybe 'python-mode)
+  (setq auto-mode-alist (cons '("\\.py$" . python-mode)
+			      auto-mode-alist)
+	interpreter-mode-alist) (cons '("python" . python-mode)
+				     interpreter-mode-alist)
+  (autoload 'python-mode "python-mode" "Python editing mode." t))
 
 ;;; VB
 (when (require-maybe 'visual-basic-mode)
@@ -720,9 +721,10 @@ otherwise increase it in 5%-steps"
 			    visual-basic-mode)) auto-mode-alist)))
 
 ;;; C#
-(if (require-maybe 'csharp-mode)
-    (setq auto-mode-alist (append '(("\\.\\(cs\\)$" .
-				     csharp-mode)) auto-mode-alist)))
+(when (require-maybe 'csharp-mode)
+  (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+  (setq auto-mode-alist
+	(append '(("\\.cs$" . csharp-mode)) auto-mode-alist)))
 
 ;;; cc-mode - hide functions
 (add-hook 'c-mode-common-hook
