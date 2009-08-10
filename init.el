@@ -6,7 +6,7 @@
 		     (eq system-type 'ms-dos)) "Windows detection.")
 
 (defmacro win-or-nix (win &rest nix)
-  "OS conditional.  WIN must be a list and is executed on windows systems.
+  "OS conditional.  WIN may be a list and is executed on windows systems.
 NIX forms are executed on all other platforms."
   (if *winp*
       (if (listp win)
@@ -146,7 +146,7 @@ NIX forms are executed on all other platforms."
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (defun nuke-all-buffers ()
-  "Kill all buffers, leaving *scratch* only."
+  "Kill all buffers, leaving `*scratch*' only."
   (interactive)
   (dolist (x (buffer-list))
     (kill-buffer x))
@@ -223,7 +223,7 @@ otherwise increase it in 5%-steps"
 (global-set-key (kbd "C-8") (lambda () (interactive) (opacity-modify t)))
 (global-set-key (kbd "C-0") (lambda () (interactive)
 			      (modify-frame-parameters
-			       nil `((alpha . 99)))))
+			       nil '((alpha . 99)))))
 
 ;;; TabBar
 (when (require-maybe 'tabbar)
@@ -430,7 +430,7 @@ otherwise increase it in 5%-steps"
 				      nil))))))
 
 (defmacro active-lisp-modes ()
-  "Build function for activating existing convenient minor modes for s-exp."
+  "Build a function for activating existing convenient minor modes for s-exp."
   `(defun activate-lisp-minor-modes ()
      "Activate some convenient minor modes for editing s-exp"
      (pretty-lambdas)
@@ -474,7 +474,9 @@ otherwise increase it in 5%-steps"
 		   (concat *extras-path*
 			   "lisp-modes/redshank/redshank-loader"))
     (eval-after-load "redshank-loader"
-      `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook) t)))
+      `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+					inferior-lisp-mode-hook)
+		       t)))
 
 ;;; ElDoc for Emacs Lisp
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
@@ -637,7 +639,9 @@ otherwise increase it in 5%-steps"
 				      'slime-browse-local-javadoc)
 				    (define-key slime-repl-mode-map
 				      (kbd "C-c b")
-				      'slime-browse-local-javadoc)))
+				      'slime-browse-local-javadoc))
+	    t)
+
 ;;; (or CLisp SBCL)
   (add-to-list 'slime-lisp-implementations
 	       (win-or-nix
@@ -848,7 +852,8 @@ otherwise increase it in 5%-steps"
 	    (lambda ()
 	      (gtags-mode t)
 	      ;;(gtags-create-or-update)
-	      )))
+	      )
+	    t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -861,6 +866,7 @@ otherwise increase it in 5%-steps"
 	      (require-maybe 'cygwin-mount))
      (cygwin-mount-activate)
      (setq w32shell-cygwin-bin cygwin-dir)))
+
 ;;; w3m
  (when (require-maybe 'w3m-load)
    (defun w3m-browse-url-other-window (url &optional newwin)
