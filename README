@@ -25,6 +25,7 @@ clips-mode (http://www.cs.us.es/software/clips)
 clojure-mode (http://github.com/jochu/clojure-mode/tree)
 swank-clojure (http://github.com/jochu/swank-clojure/tree)
 slime (http://common-lisp.net/project/slime)
+quack (http://www.neilvandyke.org/quack/)
 
 lisp goodies:
 highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
@@ -40,4 +41,4 @@ gtags (http://www.gnu.org/software/global)
 traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
 tabbar (http://www.emacswiki.org/emacs/TabBarMode)
 w3m (http://emacs-w3m.namazu.org)
-Wanderlust (http://www.gohome.org/wl)
+wanderlust (http://www.gohome.org/wl)

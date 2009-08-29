@@ -9,9 +9,9 @@
   "OS conditional.  WIN may be a list and is executed on windows systems.
 NIX forms are executed on all other platforms."
   (if *winp*
-      (if (listp win)
+      (if (consp win)
 	  (let ((form (car win)))
-	    (if (listp form)
+	    (if (consp form)
 		(if (cadr win)
 		    `(progn ,@win)
 		  form)
@@ -465,7 +465,8 @@ otherwise increase it in 5%-steps"
 		   emacs-lisp-mode-hook slime-repl-mode-hook
 		   clips-mode-hook inferior-clips-mode-hook
 		   clojure-mode-hook ielm-mode-hook
-		   lisp-interaction-mode-hook))
+		   lisp-interaction-mode-hook
+		   inferior-scheme-mode-hook scheme-mode-hook))
 
 (hook-lisp-modes)
 
@@ -655,6 +656,12 @@ otherwise increase it in 5%-steps"
       (win-or-nix
        (concat *home-path* "bin/clisp/clisp.exe -K full")
        "/usr/local/bin/sbcl"))
+
+;;; Scheme
+(when (file-exists-p (concat *extras-path*
+			     "lisp-modes/quack.el"))
+  (setq quack-global-menu-p nil)
+  (require-maybe 'quack))
 
 ;;; CLIPS
 (when (require-maybe 'inf-clips)
