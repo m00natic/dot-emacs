@@ -1,7 +1,44 @@
-;;; .emacs --- Andrey Kotlarski's .emacs
+;;; init.el --- Andrey Kotlarski's .emacs
+
+;;; Commentary:
+;; Utilized extensions:
+;;  Anything related:
+;;   Anything (http://www.emacswiki.org/emacs/Anything)
+;;   anything-etags (http://www.emacswiki.org/emacs/anything-etags.el)
+;;   anything-match (http://www.emacswiki.org/emacs/AnythingPlugins)
+;;   fuzzy-match (http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion)
+;;   Proel (http://www.stifflog.com/2008/12/14/proel-project-support-for-emacs)
+;;  AutoInstall related: (http://www.emacswiki.org/emacs/AutoInstall)
+;;   auto-install
+;;   anything-auto-install
+;;  Programming languages related:
+;;   SLIME (http://common-lisp.net/project/slime)
+;;   Quack (http://www.neilvandyke.org/quack/)
+;;   clojure-mode (http://github.com/jochu/clojure-mode/tree)
+;;   swank-clojure (http://github.com/jochu/swank-clojure/tree)
+;;   clips-mode (http://www.cs.us.es/software/clips)
+;;   Prolog (http://bruda.ca/emacs-prolog)
+;;   haskell-mode (http://www.haskell.org/haskell-mode)
+;;   tuareg-mode (http://www-rocq.inria.fr/~acohen/tuareg)
+;;   csharp-mode (http://www.emacswiki.org/emacs/CSharpMode)
+;;   visual-basic-mode (http://www.emacswiki.org/emacs/VisualBasicMode)
+;;  Lisp goodies:
+;;   highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
+;;   hl-sexp (http://edward.oconnor.cx/elisp/hl-sexp.el)
+;;   ParEdit (http://www.emacswiki.org/emacs/ParEdit)
+;;   Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
+;;  misc:
+;;   completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
+;;   color-theme (http://www.emacswiki.org/emacs/ColorTheme)
+;;   cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
+;;   gtags (http://www.gnu.org/software/global)
+;;   traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
+;;   tabbar (http://www.emacswiki.org/emacs/TabBarMode)
+;;   W3m (http://emacs-w3m.namazu.org)
+;;   Wanderlust (http://www.gohome.org/wl)
 
 ;;; Code:
-;;;; do some OS recognition
+;; do some OS recognition
 (defconst *winp* (or (eq system-type 'windows-nt)
 		     (eq system-type 'ms-dos)) "Windows detection.")
 
@@ -21,39 +58,35 @@ NIX forms are executed on all other platforms."
 	`(progn ,@nix)
       (car nix))))
 
-(defun set-paths ()
-  "Set some path constants."
+;; Set some path constants.
+(win-or-nix (defconst *win-path* "C:/" "Windows root path."))
+(defconst *home-path*
   (win-or-nix
-   (defconst *win-path* "C:/" "Windows root path."))
-  (defconst *home-path*
-    (win-or-nix
-     (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
-	 (match-string-no-properties 0 exec-directory)
-       (concat (getenv "HOME") "/"))
-     (if (file-exists-p "/home/andrey/")
-	 "/home/andrey/"
-       "~/"))
-    "Home path.")
-  (defconst *extras-path* (concat *home-path* ".emacs.d/extras/")
-    "Elisp extensions' path")
+   (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
+       (match-string-no-properties 0 exec-directory)
+     (concat (getenv "HOME") "/"))
+   (if (file-exists-p "/home/andrey/")
+       "/home/andrey/"
+     "~/"))
+  "Home path.")
+(defconst *extras-path* (concat *home-path* ".emacs.d/extras/")
+  "Elisp extensions' path.")
 
-  ;; add `*extras-path*' and subdirs  to `load-path'
-  (if (and (file-exists-p *extras-path*)
-	   (fboundp 'normal-top-level-add-subdirs-to-load-path))
-      (let ((default-directory *extras-path*))
-	(setq load-path (cons *extras-path* load-path))
-	(normal-top-level-add-subdirs-to-load-path)))
+;; add `*extras-path*' and subdirs to `load-path'
+(and (file-exists-p *extras-path*)
+     (fboundp 'normal-top-level-add-subdirs-to-load-path)
+     (let ((default-directory *extras-path*))
+       (setq load-path (cons *extras-path* load-path))
+       (normal-top-level-add-subdirs-to-load-path)))
 
-  ;; set default directory for `*scratch*'
-  (setq default-directory (concat (getenv "HOME") "/")))
+;; set default directory for `*scratch*'
+(setq default-directory (concat (getenv "HOME") "/"))
 
-(set-paths)
-
-;;; `require-maybe'  (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
-;; this is useful when this .emacs is used in an env where not all of the
-;; other stuff is available
+;;; `require-maybe' (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
+;; this is useful when this .emacs is used in an env where not all of
+;; the other stuff is available
 (defmacro require-maybe (feature &optional file)
-  "Try to require FEATURE in FILE but don't signal an error if `require' fails."
+  "Try to require FEATURE in FILE but don't signal an error on fail."
   `(require ,feature ,file 'noerror))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -118,7 +151,7 @@ NIX forms are executed on all other platforms."
 
 ;;; highlight changes in documents
 (global-highlight-changes-mode t)
-(setq highlight-changes-visibility-initial-state nil) ; initially, hide
+(setq highlight-changes-visibility-initial-state nil) ; hide initially
 
 ;; toggle changes visibility
 (global-set-key (kbd "<f7>") 'highlight-changes-visible-mode)
@@ -127,8 +160,8 @@ NIX forms are executed on all other platforms."
 (global-set-key (kbd "S-<f7>") 'highlight-changes-remove-highlight)
 
 ;; alt-pgup/pgdown jump to the previous/next change
-(global-set-key (kbd "<M-prior>") 'highlight-changes-next-change)
-(global-set-key (kbd "<M-next>") 'highlight-changes-previous-change)
+(global-set-key (kbd "<M-prior>") 'highlight-changes-previous-change)
+(global-set-key (kbd "<M-next>") 'highlight-changes-next-change)
 
 ;;; jump through errors/results
 (global-set-key (kbd "<C-M-prior>") 'previous-error)
@@ -145,11 +178,18 @@ NIX forms are executed on all other platforms."
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(defun nuke-all-buffers ()
-  "Kill all buffers, leaving `*scratch*' only."
-  (interactive)
-  (dolist (x (buffer-list))
-    (kill-buffer x))
+(defun nuke-all-buffers (currentp)
+  "Kill all buffers.  Leave current buffer if CURRENTP.
+Otherwise leave `*scratch*' only."
+  (interactive
+   (list (y-or-n-p "Keep current buffer?")))
+  (if currentp
+      (let ((curr (current-buffer)))
+	(dolist (x (buffer-list))
+	  (or (eq x curr)
+	      (kill-buffer x))))
+    (dolist (x (buffer-list))
+      (kill-buffer x)))
   (delete-other-windows))
 
 ;;; recentf
@@ -166,8 +206,8 @@ NIX forms are executed on all other platforms."
       backup-directory-alist `(("." . ,(concat *home-path* ; ... here
 					       ".emacs.d/backup/")))
       version-control t
-      kept-new-versions 2
-      kept-old-versions 5
+      kept-new-versions 5
+      kept-old-versions 2
       delete-old-versions t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -212,12 +252,12 @@ otherwise increase it in 5%-steps"
 	 (newalpha (if dec
 		       (- oldalpha 5)
 		     (if (>= oldalpha 95) 100 (+ oldalpha 5)))))
-    (if (and (>= newalpha frame-alpha-lower-limit)
-	     (<= newalpha 100))
-	(modify-frame-parameters nil (list (cons 'alpha newalpha))))))
+    (and (>= newalpha frame-alpha-lower-limit)
+	 (<= newalpha 100)
+	 (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
 
 ;; C-9 will increase opacity (== decrease transparency)
-;; C-8 will decrease opacity (== increase transparency
+;; C-8 will decrease opacity (== increase transparency)
 ;; C-0 will returns the state to normal
 (global-set-key (kbd "C-9") (lambda () (interactive) (opacity-modify)))
 (global-set-key (kbd "C-8") (lambda () (interactive) (opacity-modify t)))
@@ -290,9 +330,8 @@ otherwise increase it in 5%-steps"
   (set-face-background 'highlight "SeaGreen") ; Highlight face.
   (set-face-background 'region "DarkSlateGray")
   (set-face-background list-matching-lines-face "SeaGreen") ; Defined in `replace.el'
-  (set-face-background 'secondary-selection "White") ; Secondary sel.
-  (set-face-foreground 'secondary-selection "Black") ; (Netscape/X: 000000).
-  )
+  (set-face-background 'secondary-selection "White")
+  (set-face-foreground 'secondary-selection "Black"))
 
 (defun faces-x ()
   "Set some faces when in window system."
@@ -326,7 +365,7 @@ otherwise increase it in 5%-steps"
   (set-face-foreground 'default "wheat")
   (set-face-background 'hl-line "#252525")
   (set-face-background 'show-paren-match-face "DarkRed")
-  (set-face-foreground 'modeline "Black") ; Mode-line (Netscape/X: 000000).
+  (set-face-foreground 'modeline "Black")
   (set-face-background 'modeline "DarkSlateGray")
   (set-face-foreground 'modeline-inactive "white")
   (set-face-background 'modeline-inactive "DimGray")
@@ -369,7 +408,7 @@ otherwise increase it in 5%-steps"
   (set-foreground-color "white")
   (set-face-foreground 'default "white")
   (set-face-background 'show-paren-match-face "red")
-  (set-face-foreground 'modeline "Black") ; Mode-line (Netscape/X: 000000).
+  (set-face-foreground 'modeline "Black")
   (set-face-background 'modeline "green")
   (set-face-foreground 'modeline-inactive "white")
   (set-face-background 'modeline-inactive "black")
@@ -409,12 +448,12 @@ otherwise increase it in 5%-steps"
  (add-hook 'after-make-frame-functions 'test-win-sys))
 
 ;;; Colour theme
-(if (require-maybe 'color-theme)
-    (eval-after-load "color-theme"
-      '(progn
-	 (color-theme-initialize)
-	 ;;(color-theme-euphoria)
-	 )))
+(when (require-maybe 'color-theme)
+  (eval-after-load "color-theme"
+    '(progn
+       (color-theme-initialize)
+       ;;(color-theme-euphoria)
+       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -425,8 +464,10 @@ otherwise increase it in 5%-steps"
   (font-lock-add-keywords nil `(("(\\(lambda\\>\\)"
 				 (0 (progn
 				      (compose-region
-				       (match-beginning 1) (match-end 1)
-				       ,(make-char 'greek-iso8859-7 107))
+				       (match-beginning 1)
+				       (match-end 1)
+				       ,(make-char 'greek-iso8859-7
+						   107))
 				      nil))))))
 
 (defmacro active-lisp-modes ()
@@ -435,13 +476,16 @@ otherwise increase it in 5%-steps"
      "Activate some convenient minor modes for editing s-exp"
      (pretty-lambdas)
 ;;; Highlight sexps and parens
-     ,(if (require-maybe 'hl-sexp)
-	  '(hl-sexp-mode +1))
-     ,(if (require-maybe 'highlight-parentheses)
-	  '(highlight-parentheses-mode +1))
+     ,(when (require-maybe 'hl-sexp)
+	'(hl-sexp-mode +1))
+     ,(when (require-maybe 'highlight-parentheses)
+	'(highlight-parentheses-mode +1))
 ;;; Paredit
-     ,(if (require-maybe 'paredit)
-	  '(paredit-mode +1))))
+     ,(when (require-maybe 'paredit)
+	'(paredit-mode +1))))
+
+;; build appropriate `activate-lisp-minor-modes'
+(eval (macroexpand '(active-lisp-modes)))
 
 (defmacro hook-sexp-modes (&rest modes)
   "Hook sexps minor MODES to some major modes."
@@ -450,34 +494,30 @@ otherwise increase it in 5%-steps"
 		  `(add-hook ',mode
 			     (lambda ()
 			       (activate-lisp-minor-modes)
-			       ,(if (memq mode
-					  '(emacs-lisp-mode-hook
-					    ielm-mode-hook))
-				    `(setq lisp-indent-function
-					   'lisp-indent-function)))
+			       ,(when (memq mode
+					    '(emacs-lisp-mode-hook
+					      ielm-mode-hook))
+				  `(setq lisp-indent-function
+					 'lisp-indent-function)))
 			     t))
 		modes)))
 
-(defun hook-lisp-modes ()
-  "Hook convenient minor modes to some major modes."
-  (eval (macroexpand '(active-lisp-modes)))
-  (hook-sexp-modes lisp-mode-hook inferior-lisp-mode-hook
-		   emacs-lisp-mode-hook slime-repl-mode-hook
-		   clips-mode-hook inferior-clips-mode-hook
-		   clojure-mode-hook ielm-mode-hook
-		   lisp-interaction-mode-hook
-		   inferior-scheme-mode-hook scheme-mode-hook))
-
-(hook-lisp-modes)
+;; Hook convenient minor modes to some major modes.
+(hook-sexp-modes lisp-mode-hook inferior-lisp-mode-hook
+		 emacs-lisp-mode-hook slime-repl-mode-hook
+		 clips-mode-hook inferior-clips-mode-hook
+		 clojure-mode-hook ielm-mode-hook
+		 lisp-interaction-mode-hook
+		 inferior-scheme-mode-hook scheme-mode-hook)
 
 ;;; Redshank
-(if (require-maybe 'redshank-loader
-		   (concat *extras-path*
-			   "lisp-modes/redshank/redshank-loader"))
-    (eval-after-load "redshank-loader"
-      `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-					inferior-lisp-mode-hook)
-		       t)))
+(when (require-maybe 'redshank-loader
+		     (concat *extras-path*
+			     "lisp-modes/redshank/redshank-loader"))
+  (eval-after-load "redshank-loader"
+    `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				      inferior-lisp-mode-hook)
+		     t)))
 
 ;;; ElDoc for Emacs Lisp
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
@@ -499,37 +539,34 @@ otherwise increase it in 5%-steps"
 ;;;; Programming extensions
 
 ;;; Clojure
-(defun setup-clojure ()
-  (when (require-maybe 'clojure-mode)
-    (defconst *clojure-dir* (concat *home-path*
-				    (win-or-nix "bin/" ".")
-				    "clojure")
-      "Clojure directory.")
-    (if (and (file-exists-p *clojure-dir*)
-	     (require-maybe 'swank-clojure-autoload))
-	(swank-clojure-config
-	 (setq
-	  swank-clojure-jar-path (concat *clojure-dir*
-					 "/clojure.jar")
-	  swank-clojure-extra-classpaths
-	  (mapcar (lambda (jar)
-		    (concat *clojure-dir* jar))
-		  '("/clojure-contrib.jar" "/user.clj"))
-	  swank-clojure-extra-vm-args '("-server" "-Xdebug"
-					"-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
-	  swank-clojure-library-paths (directory-files *clojure-dir*
-						       t ".jar$"))))))
-
-(setup-clojure)
+(when (require-maybe 'clojure-mode)
+  (defconst *clojure-dir* (concat *home-path*
+				  (win-or-nix "bin/" ".")
+				  "clojure")
+    "Clojure directory.")
+  (and (file-exists-p *clojure-dir*)
+       (require-maybe 'swank-clojure-autoload)
+       (swank-clojure-config
+	(setq
+	 swank-clojure-jar-path (concat *clojure-dir*
+					"/clojure.jar")
+	 swank-clojure-extra-classpaths
+	 (mapcar (lambda (jar)
+		   (concat *clojure-dir* jar))
+		 '("/clojure-contrib.jar" "/user.clj"))
+	 swank-clojure-extra-vm-args
+	 '("-server" "-Xdebug"
+	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
+	 swank-clojure-library-paths (directory-files *clojure-dir*
+						      t ".jar$")))))
 
 ;;; Set up the Slime
 (when (require-maybe 'slime)
   (eval-after-load "slime"
     '(progn
        (slime-setup (win-or-nix
-		     '(slime-repl slime-fancy slime-banner
-				  slime-c-p-c slime-references
-				  slime-autodoc)
+		     '(slime-repl slime-fancy slime-banner slime-c-p-c
+				  slime-references slime-autodoc)
 		     '(slime-repl slime-fancy slime-banner slime-c-p-c
 				  slime-references slime-autodoc
 				  slime-asdf)))
@@ -560,8 +597,8 @@ otherwise increase it in 5%-steps"
 	(error "No symbol given"))
     (save-excursion
       (set-buffer (slime-output-buffer))
-      (unless (eq (current-buffer) (window-buffer))
-	(pop-to-buffer (current-buffer) t))
+      (or (eq (current-buffer) (window-buffer))
+	  (pop-to-buffer (current-buffer) t))
       (goto-char (point-max))
       (insert (concat "(show " symbol-name ")"))
       (when symbol-name
@@ -574,8 +611,8 @@ otherwise increase it in 5%-steps"
     (or symbol-name
 	(error "No symbol given"))
     (set-buffer (slime-output-buffer))
-    (unless (eq (current-buffer) (window-buffer))
-      (pop-to-buffer (current-buffer) t))
+    (or (eq (current-buffer) (window-buffer))
+	(pop-to-buffer (current-buffer) t))
     (goto-char (point-max))
     (insert (concat "(javadoc " symbol-name ")"))
     (when symbol-name
@@ -695,10 +732,12 @@ otherwise increase it in 5%-steps"
   ;; fixes the repeating input and ^J issues that have been occurring
   (defun inferior-haskell-fix-repeated-input (output)
     (let ((start (string-match "\\^J" output)))
-      (if (null start) output
+      (if (null start)
+	  output
 	(substring output (+ 2 start)))))
   
-  (defadvice inferior-haskell-mode (before inferior-haskell-mode-input-fix)
+  (defadvice inferior-haskell-mode (before
+				    inferior-haskell-mode-input-fix)
     (add-hook 'comint-preoutput-filter-functions
 	      'inferior-haskell-fix-repeated-input nil t)
     (set (make-local-variable 'comint-process-echoes) nil)))
@@ -710,7 +749,7 @@ otherwise increase it in 5%-steps"
     "prolog" "Major mode for editing Prolog programs." t)
   (autoload 'mercury-mode "prolog"
     "Major mode for editing Mercury programs." t)
-  (setq prolog-system 'swi)	 ; optional, the system you are using;
+  (setq prolog-system 'swi)	 ; optional, the system you are using
   (setq auto-mode-alist (append '(("\\.pl$" . prolog-mode)
 				  ("\\.m$" . mercury-mode))
 				auto-mode-alist)))
@@ -719,8 +758,8 @@ otherwise increase it in 5%-steps"
 (when (require-maybe 'python-mode)
   (setq auto-mode-alist (cons '("\\.py$" . python-mode)
 			      auto-mode-alist)
-	interpreter-mode-alist) (cons '("python" . python-mode)
-				     interpreter-mode-alist)
+	interpreter-mode-alist (cons '("python" . python-mode)
+				     interpreter-mode-alist))
   (autoload 'python-mode "python-mode" "Python editing mode." t))
 
 ;;; VB
@@ -733,7 +772,8 @@ otherwise increase it in 5%-steps"
 
 ;;; C#
 (when (require-maybe 'csharp-mode)
-  (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+  (autoload 'csharp-mode "csharp-mode"
+    "Major mode for editing C# code." t)
   (setq auto-mode-alist
 	(append '(("\\.cs$" . csharp-mode)) auto-mode-alist)))
 
@@ -784,7 +824,7 @@ otherwise increase it in 5%-steps"
 	  (message "Elisp-info removed from anything sources."))
       (setq anything-sources
 	    (nconc anything-sources
-		   (list 'anything-c-source-info-elisp)))
+		   '(anything-c-source-info-elisp)))
       (message "Elisp-info added to anything sources.")))
 
 ;;; Proel
@@ -809,26 +849,26 @@ otherwise increase it in 5%-steps"
 (when (require-maybe 'auto-install)
   (setq auto-install-directory (concat *extras-path*
 				       "auto-install-dir/"))
-  (if (require-maybe 'anything-auto-install)
-      (defun anything-toggle-auto-install ()
-	"Toggle anything-c-source-auto-installs in anything sources."
-	(interactive)
-	(if (memq 'anything-c-source-auto-install-from-emacswiki
-		  anything-sources)
-	    (progn
-	      (delete 'anything-c-source-auto-install-from-emacswiki
-		      anything-sources)
-	      (delete 'anything-c-source-auto-install-from-library
-		      anything-sources)
-	      (ignore-errors
-		(auto-install-update-emacswiki-package-name nil))
-	      (message "Auto-install removed from anything sources."))
-	  (setq anything-sources
-		(nconc anything-sources
-		       (list 'anything-c-source-auto-install-from-emacswiki
-			     'anything-c-source-auto-install-from-library)))
-	  (ignore-errors (auto-install-update-emacswiki-package-name t))
-	  (message "Auto-install added to anything sources.")))))
+  (when (require-maybe 'anything-auto-install)
+    (defun anything-toggle-auto-install ()
+      "Toggle anything-c-source-auto-installs in anything sources."
+      (interactive)
+      (if (memq 'anything-c-source-auto-install-from-emacswiki
+		anything-sources)
+	  (progn
+	    (delete 'anything-c-source-auto-install-from-emacswiki
+		    anything-sources)
+	    (delete 'anything-c-source-auto-install-from-library
+		    anything-sources)
+	    (ignore-errors
+	      (auto-install-update-emacswiki-package-name nil))
+	    (message "Auto-install removed from anything sources."))
+	(setq anything-sources
+	      (nconc anything-sources
+		     '(anything-c-source-auto-install-from-emacswiki
+		       anything-c-source-auto-install-from-library)))
+	(ignore-errors (auto-install-update-emacswiki-package-name t))
+	(message "Auto-install added to anything sources.")))))
 
 ;;; Git
 (require-maybe 'vc-git)
@@ -925,18 +965,18 @@ otherwise increase it in 5%-steps"
    (setq elmo-imap4-use-modified-utf7 t)
 
    (autoload 'wl-user-agent-compose "wl-draft" nil t)
-   (if (boundp 'mail-user-agent)
-       (setq mail-user-agent 'wl-user-agent))
-   (if (fboundp 'define-mail-user-agent)
-       (define-mail-user-agent
-	 'wl-user-agent
-	 'wl-user-agent-compose
-	 'wl-draft-send
-	 'wl-draft-kill
-	 'mail-send-hook))))
+   (when (boundp 'mail-user-agent)
+     (setq mail-user-agent 'wl-user-agent))
+   (when (fboundp 'define-mail-user-agent)
+     (define-mail-user-agent
+       'wl-user-agent
+       'wl-user-agent-compose
+       'wl-draft-send
+       'wl-draft-kill
+       'mail-send-hook))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;(server-start)
 
-;;; .emacs ends here
+;;; init.el ends here
