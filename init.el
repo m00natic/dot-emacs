@@ -28,6 +28,7 @@
 ;;   ParEdit (http://www.emacswiki.org/emacs/ParEdit)
 ;;   Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
 ;;  misc:
+;;   AUCTeX (http://www.gnu.org/software/auctex)
 ;;   completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
 ;;   color-theme (http://www.emacswiki.org/emacs/ColorTheme)
 ;;   cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
@@ -179,17 +180,18 @@ NIX forms are executed on all other platforms."
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (defun nuke-all-buffers (currentp)
-  "Kill all buffers.  Leave current buffer if CURRENTP.
-Otherwise leave `*scratch*' only."
+  "Kill all buffers keeping only current if CURRENTP.
+Otherwise keep `*scratch*' only."
   (interactive
-   (list (y-or-n-p "Keep current buffer?")))
+   (list (y-or-n-p "Keep current buffer? ")))
   (if currentp
       (let ((curr (current-buffer)))
 	(dolist (x (buffer-list))
 	  (or (eq x curr)
 	      (kill-buffer x))))
     (dolist (x (buffer-list))
-      (kill-buffer x)))
+      (or (equal (buffer-name x) "*scratch*")
+	  (kill-buffer x))))
   (delete-other-windows))
 
 ;;; recentf
@@ -788,6 +790,11 @@ otherwise increase it in 5%-steps"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Auxiliary extensions
+
+;;; AUCTeX
+(when (file-exists-p (concat *extras-path* "tex"))
+  (load "auctex" nil t)
+  (load "preview-latex" nil t))
 
 ;;; Completion-ui
 (when (require-maybe 'completion-ui)

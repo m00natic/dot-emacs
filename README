@@ -35,6 +35,7 @@ ParEdit (http://www.emacswiki.org/emacs/ParEdit)
 Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
 
 misc:
+AUCTeX (http://www.gnu.org/software/auctex)
 completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
 color-theme (http://www.emacswiki.org/emacs/ColorTheme)
 cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
