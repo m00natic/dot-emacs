@@ -114,13 +114,19 @@ NIX forms are executed on all other platforms."
  '(delete-selection-mode t)
  '(global-font-lock-mode t)   ; Use colors to highlight commands, etc.
  '(font-lock-maximum-decoration t)
- '(inhibit-startup-message t) ; Disable the welcome message
+ '(inhibit-startup-message t)		 ; Disable the welcome message
+ '(inhibit-startup-echo-area-message t)
  '(frame-title-format "emacs - %b (%f)") ; Format the title-bar
  '(mouse-wheel-mode t)		   ; Make the mouse wheel scroll Emacs
  '(next-line-add-newlines nil)
- '(global-hl-line-mode 1)		; highlight current line
  '(global-linum-mode 1)			; show line numbers
  ;;'(visible-bell t)		 ; Flash instead of that annoying bell
+ '(icomplete-prospects-height 2)	; don't spam my minibuffer
+ '(completion-ignore-case t)	      ; ignore case when completing...
+ '(read-file-name-completion-ignore-case t) ; ...filenames too
+ '(search-highlight t)			; highlight when searching...
+ '(query-replace-highlight t)		; ...and replacing
+ '(require-final-newline t)		; end files with a newline
  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -149,6 +155,10 @@ NIX forms are executed on all other platforms."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; usefull stuff
+
+;; highlight the current line
+(when (fboundp 'global-hl-line-mode)
+  (global-hl-line-mode t))	 ; turn it on for all modes by default
 
 ;;; highlight changes in documents
 (global-highlight-changes-mode t)
@@ -211,6 +221,16 @@ Otherwise keep `*scratch*' only."
       kept-new-versions 5
       kept-old-versions 2
       delete-old-versions t)
+
+(mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
+(icomplete-mode t)		  ; completion in minibuffer
+(partial-completion-mode t)	  ; be smart with completion
+
+(when (fboundp 'set-fringe-mode)	; emacs22+
+  (set-fringe-mode 1))			; space left of col1 in pixels
+
+(when (fboundp file-name-shadow-mode)	; emacs22+
+  (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -363,9 +383,9 @@ otherwise increase it in 5%-steps"
    '(highlight-changes-delete ((t (:foreground nil :background "#916868")))))
   ;;(menu-bar-mode t)
   (set-cursor-color "DeepSkyBlue")
-  (set-foreground-color "wheat")
+  (set-foreground-color "Wheat")
   (set-face-foreground 'default "wheat")
-  (set-face-background 'hl-line "#252525")
+  (set-face-background 'hl-line "#112233")
   (set-face-background 'show-paren-match-face "DarkRed")
   (set-face-foreground 'modeline "Black")
   (set-face-background 'modeline "DarkSlateGray")
@@ -439,23 +459,58 @@ otherwise increase it in 5%-steps"
     (make-frame-invisible nil t))
   (global-set-key (kbd "C-x C-c") 'my-done))
 
+;;; Colour theme
+ (when (require-maybe 'color-theme)
+   (eval-after-load "color-theme"
+     '(progn
+	(defun color-theme-djcb-dark ()
+	  "Dark color theme created by djcb, Jan. 2009."
+	  (interactive)
+	  (color-theme-install
+	   '(color-theme-djcb-dark
+	     ((foreground-color . "#a9eadf")
+	      (background-color . "black")
+	      (background-mode . dark))
+	     (bold ((t (:bold t))))
+	     (bold-italic ((t (:italic t :bold t))))
+	     (default ((t (nil))))
+
+	     (font-lock-builtin-face ((t (:italic t :foreground "#a96da0"))))
+	     (font-lock-comment-face ((t (:italic t :foreground "#bbbbbb"))))
+	     (font-lock-comment-delimiter-face ((t (:foreground "#666666"))))
+	     (font-lock-constant-face ((t (:bold t :foreground "#197b6e"))))
+	     (font-lock-doc-string-face ((t (:foreground "#3041c4"))))
+	     (font-lock-doc-face ((t (:foreground "gray"))))
+	     (font-lock-reference-face ((t (:foreground "white"))))
+	     (font-lock-function-name-face ((t (:foreground "#356da0"))))
+	     (font-lock-keyword-face ((t (:bold t :foreground "#bcf0f1"))))
+	     (font-lock-preprocessor-face ((t (:foreground "#e3ea94"))))
+	     (font-lock-string-face ((t (:foreground "#ffffff"))))
+	     (font-lock-type-face ((t (:bold t :foreground "#364498"))))
+	     (font-lock-variable-name-face ((t (:foreground "#7685de"))))
+	     (font-lock-warning-face ((t (:bold t :italic nil :underline nil
+						:foreground "yellow"))))
+	     (hl-line ((t (:background "#112233"))))
+	     (mode-line ((t (:foreground "#ffffff" :background "#333333"))))
+	     (region ((t (:foreground nil :background "#555555"))))
+	     (show-paren-match-face ((t (:bold t :foreground "#ffffff"
+					       :background "#050505")))))))
+
+	;;(color-theme-initialize)
+	;;(color-theme-djcb-dark)
+	;;(color-theme-euphoria)
+	)))
+
 ;;; restore faces when switching terminal and X frames
  (defun test-win-sys(frame)
    "Reset some faces on every new FRAME."
    (select-frame frame)
    (if (window-system frame)
        (faces-x)
+     ;;(color-theme-djcb-dark)
      (faces-nox)))
  ;; hook on after-make-frame-functions
  (add-hook 'after-make-frame-functions 'test-win-sys))
-
-;;; Colour theme
-(when (require-maybe 'color-theme)
-  (eval-after-load "color-theme"
-    '(progn
-       (color-theme-initialize)
-       ;;(color-theme-euphoria)
-       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -584,7 +639,7 @@ otherwise increase it in 5%-steps"
 	     (find-if 'slime-find-coding-system
 		      '(utf-8-unix iso-latin-1-unix
 				   iso-8859-1-unix binary)))))
-  
+
   (define-key slime-mode-map (win-or-nix
 			      (kbd "S-<tab>")
 			      (kbd "<S-iso-lefttab>"))
@@ -595,8 +650,7 @@ otherwise increase it in 5%-steps"
     "Get details on Java class/instance at point SYMBOL-NAME."
     (interactive (list (slime-read-symbol-name
 			"Java Class/instance: ")))
-    (or symbol-name
-	(error "No symbol given"))
+    (or symbol-name (error "No symbol given"))
     (save-excursion
       (set-buffer (slime-output-buffer))
       (or (eq (current-buffer) (window-buffer))
@@ -610,8 +664,7 @@ otherwise increase it in 5%-steps"
   (defun slime-javadoc (symbol-name)
     "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
     (interactive (list (slime-read-symbol-name "JavaDoc info for: ")))
-    (or symbol-name
-	(error "No symbol given"))
+    (or symbol-name (error "No symbol given"))
     (set-buffer (slime-output-buffer))
     (or (eq (current-buffer) (window-buffer))
 	(pop-to-buffer (current-buffer) t))
@@ -637,8 +690,7 @@ otherwise increase it in 5%-steps"
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
 	(concat *home-path*
-		(win-or-nix "docs"
-			    "Documents")
+		(win-or-nix "docs" "Documents")
 		"/JDK-Doc"))
 
   (defun slime-browse-local-javadoc (ci-name)
@@ -724,8 +776,8 @@ otherwise increase it in 5%-steps"
 			      auto-mode-alist)))
 
 ;;; Haskell
-(when (file-exists-p (concat *extras-path* ;(require-maybe 'haskell-site-file)
-			     "haskell"))
+(when (file-exists-p (concat *extras-path* "haskell"))
+  ;;(require-maybe 'haskell-site-file)
   (load "haskell-site-file")
   (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
   (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
@@ -737,7 +789,7 @@ otherwise increase it in 5%-steps"
       (if (null start)
 	  output
 	(substring output (+ 2 start)))))
-  
+
   (defadvice inferior-haskell-mode (before
 				    inferior-haskell-mode-input-fix)
     (add-hook 'comint-preoutput-filter-functions
@@ -829,9 +881,8 @@ otherwise increase it in 5%-steps"
 	(progn
 	  (delete 'anything-c-source-info-elisp anything-sources)
 	  (message "Elisp-info removed from anything sources."))
-      (setq anything-sources
-	    (nconc anything-sources
-		   '(anything-c-source-info-elisp)))
+      (setq anything-sources (nconc anything-sources
+				    '(anything-c-source-info-elisp)))
       (message "Elisp-info added to anything sources.")))
 
 ;;; Proel
@@ -947,29 +998,30 @@ otherwise increase it in 5%-steps"
    (autoload 'wl "wl" "Wanderlust" t)
    (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
    (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
+   ;;(setq wl-init-file (concat *home-path* ".emacs.d/wl.el"))
 
    ;; IMAP
-   (setq elmo-imap4-default-server "imap.gmail.com")
-   (setq elmo-imap4-default-user "m00naticus@gmail.com")
-   (setq elmo-imap4-default-authenticate-type 'clear)
-   (setq elmo-imap4-default-port '993)
-   (setq elmo-imap4-default-stream-type 'ssl)
-   (setq elmo-imap4-use-modified-utf7 t)
-   ;; SMTP
-   (setq wl-smtp-connection-type 'starttls)
-   (setq wl-smtp-posting-port 587)
-   (setq wl-smtp-authenticate-type "plain")
-   (setq wl-smtp-posting-user "m00natic")
-   (setq wl-smtp-posting-server "smtp.gmail.com")
-   (setq wl-local-domain "gmail.com")
+   (setq elmo-imap4-default-server "imap.gmail.com"
+	 elmo-imap4-default-user "m00naticus@gmail.com"
+	 elmo-imap4-default-authenticate-type 'clear
+	 elmo-imap4-default-port '993
+	 elmo-imap4-default-stream-type 'ssl
+	 elmo-imap4-use-modified-utf7 t
+	 ;; SMTP
+	 wl-smtp-connection-type 'starttls
+	 wl-smtp-posting-port 587
+	 wl-smtp-authenticate-type "plain"
+	 wl-smtp-posting-user "m00natic"
+	 wl-smtp-posting-server "smtp.gmail.com"
+	 wl-local-domain "gmail.com"
 
-   (setq wl-default-folder "%Inbox")
-   (setq wl-default-spec "%")
-   (setq wl-draft-folder "%[Gmail]/Drafts") ; Gmail IMAP
-   (setq wl-trash-folder "%[Gmail]/Trash")
+	 wl-default-folder "%Inbox"
+	 wl-default-spec "%"
+	 wl-draft-folder "%[Gmail]/Drafts" ; Gmail IMAP
+	 wl-trash-folder "%[Gmail]/Trash"
 
-   (setq wl-folder-check-async t)
-   (setq elmo-imap4-use-modified-utf7 t)
+	 wl-folder-check-async t
+	 elmo-imap4-use-modified-utf7 t)
 
    (autoload 'wl-user-agent-compose "wl-draft" nil t)
    (when (boundp 'mail-user-agent)
@@ -980,7 +1032,66 @@ otherwise increase it in 5%-steps"
        'wl-user-agent-compose
        'wl-draft-send
        'wl-draft-kill
-       'mail-send-hook))))
+       'mail-send-hook))
+
+   (setq
+    wl-forward-subject-prefix "Fwd: "	; use "Fwd: " not "Forward: "
+
+    ;;; from a WL-mailinglist post by David Bremner
+    ;; Invert behaviour of with and without argument replies.
+    ;; just the author
+    wl-draft-reply-without-argument-list
+    '(("Reply-To" ("Reply-To") nil nil)
+      ("Mail-Reply-To" ("Mail-Reply-To") nil nil)
+      ("From" ("From") nil nil))
+
+    ;; bombard the world
+    wl-draft-reply-with-argument-list
+    '(("Followup-To" nil nil ("Followup-To"))
+      ("Mail-Followup-To" ("Mail-Followup-To") nil ("Newsgroups"))
+      ("Reply-To" ("Reply-To") ("To" "Cc" "From") ("Newsgroups"))
+      ("From" ("From") ("To" "Cc") ("Newsgroups"))))
+
+   ;; (when (require-maybe 'wl-spam)
+   ;;   (wl-spam-setup)
+   ;;   (setq elmo-spam-scheme 'sa
+   ;; 	   wl-spam-folder ".spam"))	; maildir to store spam
+
+   (defun wl-summary-refile (&optional folder)
+     "Refile the current message to FOLDER.
+If FOLDER is nil, use the default."
+     (interactive)
+     (wl-summary-refile (wl-summary-message-number) folder)
+     (wl-summary-next)
+     (message (concat "refiled to " folder)))
+
+   ;; (define-key wl-summary-mode-map (kbd "b x") ; => Project X
+   ;;   (lambda ()
+   ;;     (interactive)
+   ;;     (wl-summary-refile ".project-x")))
+
+   ;; suggested by Masaru Nomiya on the WL mailing list
+   (defun wl-draft-subject-check ()
+     "Check whether the message has a subject before sending."
+     (and (< (length (std11-field-body "Subject")) 1)
+	  (null (y-or-n-p "No subject! Send current draft? "))
+	  (error "Abort")))
+
+   ;; note, this check could cause some false positives; anyway, better
+   ;; safe than sorry...
+   (defun wl-draft-attachment-check ()
+     "If attachment is mention but none included, warn the the user."
+     (save-excursion
+       (goto-char 0)
+       (or ;; don't we have an attachment?
+	(re-search-forward "^Content-Disposition: attachment" nil t)
+	(when ;; no attachment; did we mention an attachment?
+	    (re-search-forward "attach" nil t)
+	  (or (y-or-n-p "Possibly missing an attachment.  Send current draft? ")
+	      (error "Abort"))))))
+
+   (add-hook 'wl-mail-send-pre-hook 'wl-draft-subject-check)
+   (add-hook 'wl-mail-send-pre-hook 'wl-draft-attachment-check)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
