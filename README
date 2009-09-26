@@ -1,9 +1,9 @@
 This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
-windows with GNU/Emacs 23.0.96 onwards.  Most things are adopted from
-other people.  It is compilable and is supposed to be tolerant to
-missing extensions and not complain.  Here's a list of extensions that
-this .emacs is somewhat aware of (sometimes tuned to specific
-directory structure) in some order and links:
+windows with GNU/Emacs 23.0.96 onwards.  Most things are shamelessly
+adopted from other people.  It is compilable and is supposed to be
+tolerant to missing extensions and not complain.  Here's a list of
+extensions that this .emacs is somewhat aware of (sometimes tuned to
+specific directory structure) in some order and links:
 
 Anything related:
 Anything (http://www.emacswiki.org/emacs/Anything)
@@ -25,8 +25,8 @@ clips-mode (http://www.cs.us.es/software/clips)
 Prolog (http://bruda.ca/emacs-prolog)
 haskell-mode (http://www.haskell.org/haskell-mode)
 tuareg-mode (http://www-rocq.inria.fr/~acohen/tuareg)
-csharp-mode (http://www.emacswiki.org/emacs/CSharpMode)
-visual-basic-mode (http://www.emacswiki.org/emacs/VisualBasicMode)
+CSharpMode (http://www.emacswiki.org/emacs/CSharpMode)
+VisualBasicMode (http://www.emacswiki.org/emacs/VisualBasicMode)
 
 Lisp goodies:
 highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
@@ -36,11 +36,11 @@ Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
 
 misc:
 AUCTeX (http://www.gnu.org/software/auctex)
-completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
-color-theme (http://www.emacswiki.org/emacs/ColorTheme)
+CompletionUI (http://www.emacswiki.org/emacs/CompletionUI)
+ColorTheme (http://www.emacswiki.org/emacs/ColorTheme)
 cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
 gtags (http://www.gnu.org/software/global)
 traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
-tabbar (http://www.emacswiki.org/emacs/TabBarMode)
-W3m (http://emacs-w3m.namazu.org)
+TabBar (http://www.emacswiki.org/emacs/TabBarMode)
+w3m (http://emacs-w3m.namazu.org)
 Wanderlust (http://www.gohome.org/wl)

@@ -20,8 +20,8 @@
 ;;   Prolog (http://bruda.ca/emacs-prolog)
 ;;   haskell-mode (http://www.haskell.org/haskell-mode)
 ;;   tuareg-mode (http://www-rocq.inria.fr/~acohen/tuareg)
-;;   csharp-mode (http://www.emacswiki.org/emacs/CSharpMode)
-;;   visual-basic-mode (http://www.emacswiki.org/emacs/VisualBasicMode)
+;;   CSharpMode (http://www.emacswiki.org/emacs/CSharpMode)
+;;   VisualBasicMode (http://www.emacswiki.org/emacs/VisualBasicMode)
 ;;  Lisp goodies:
 ;;   highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
 ;;   hl-sexp (http://edward.oconnor.cx/elisp/hl-sexp.el)
@@ -29,16 +29,20 @@
 ;;   Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
 ;;  misc:
 ;;   AUCTeX (http://www.gnu.org/software/auctex)
-;;   completition-ui (http://www.emacswiki.org/emacs/CompletionUI)
-;;   color-theme (http://www.emacswiki.org/emacs/ColorTheme)
+;;   CompletionUI (http://www.emacswiki.org/emacs/CompletionUI)
+;;   ColorTheme (http://www.emacswiki.org/emacs/ColorTheme)
 ;;   cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
 ;;   gtags (http://www.gnu.org/software/global)
 ;;   traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
-;;   tabbar (http://www.emacswiki.org/emacs/TabBarMode)
-;;   W3m (http://emacs-w3m.namazu.org)
+;;   TabBar (http://www.emacswiki.org/emacs/TabBarMode)
+;;   w3m (http://emacs-w3m.namazu.org)
 ;;   Wanderlust (http://www.gohome.org/wl)
 
 ;;; Code:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;; extension independent macros
+
 ;; do some OS recognition
 (defconst *winp* (or (eq system-type 'windows-nt)
 		     (eq system-type 'ms-dos)) "Windows detection.")
@@ -58,6 +62,259 @@ NIX forms are executed on all other platforms."
     (if (cadr nix)
 	`(progn ,@nix)
       (car nix))))
+
+;;; `require-maybe' (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
+;; this is useful when this .emacs is used in an env where not all of
+;; the other stuff is available
+(defmacro require-maybe (feature &optional file)
+  "Try to require FEATURE in FILE but don't signal an error on fail."
+  `(require ,feature ,file 'noerror))
+
+(defmacro hook-modes (functions &rest modes)
+  "Hook a list of FUNCTIONS \(or atom\) to MODES.
+Each function may be an atom or a list with parameters."
+  (cons 'progn
+	(if (consp functions)
+	    (if (cdr functions)
+		(let ((fns (mapcar (lambda (fn) (if (consp fn)
+					       fn
+					     (list fn)))
+				   functions)))
+		  (mapcar (lambda (mode)
+			    `(add-hook ',mode (lambda () ,@fns) t))
+			  modes))
+	      (let ((fst (car functions)))
+		(if (consp fst)
+		    (mapcar (lambda (mode)
+			      `(add-hook (lambda () ,fst) t))
+			    modes)
+		  (mapcar (lambda (mode)
+			    `(add-hook ',mode ',fst t))
+			  modes))))
+	  (mapcar (lambda (mode)
+		    `(add-hook ',mode ',functions t))
+		  modes))))
+
+(defmacro delete-many (elts sequence)
+  "Delete ELTS from SEQUENCE."
+  (if (null elts)
+      sequence
+    `(delete ,(car elts) (delete-many ,(cdr elts) ,sequence))))
+
+(defmacro active-lisp-modes ()
+  "Build a function for activating existing convenient minor modes for s-exp."
+  `(defun activate-lisp-minor-modes ()
+     "Activate some convenient minor modes for editing s-exp"
+     (pretty-lambdas)
+;;; Highlight sexps and parens
+     ,(when (require-maybe 'hl-sexp)
+	'(hl-sexp-mode +1))
+     ,(when (require-maybe 'highlight-parentheses)
+	'(highlight-parentheses-mode +1))
+;;; Paredit
+     ,(when (require-maybe 'paredit)
+	'(paredit-mode +1))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;; extension independent functions
+
+(defun nuke-buffers (reg-ex currentp)
+  "Kill all buffers whose name is matched by REG-EX.
+Leave current if CURRENTP."
+  (interactive
+   (let ((reg-str (read-regexp "Buffer names to kill?" ".*")))
+     (list reg-str (if (string-equal reg-str ".*")
+		       (y-or-n-p "Keep current buffer? ")
+		     nil))))
+  (macrolet ((check-kill (reg-ex x)
+			 `(when (string-match-p ,reg-ex
+						(or (buffer-name ,x)
+						    ""))
+			    (kill-buffer x))))
+    (if currentp
+	(let ((curr (current-buffer)))
+	  (dolist (x (buffer-list))
+	    (or (eq x curr)
+		(check-kill reg-ex x))))
+      (dolist (x (buffer-list))
+	(check-kill reg-ex x))))
+  (delete-other-windows))
+
+(defun nuke-modes (reg-ex)
+  "Kill all buffers whose major mode name is matched by REG-EX."
+  (interactive (list (read-regexp "Major modes to kill?" ".*")))
+  (dolist (x (buffer-list))
+    (set-buffer x)
+    (when (string-match-p reg-ex (symbol-name major-mode))
+      (kill-buffer x))))
+
+;;; fullscreen stuff
+(defvar my-fullscreen-p t "Check if fullscreen is on or off.")
+
+(defun my-non-fullscreen ()
+  "Exit fullscreen."
+  (if (fboundp 'w32-send-sys-command)
+      ;; WM_SYSCOMMAND restore #xf120
+      (w32-send-sys-command 61728)
+    (set-frame-parameter nil 'width 110)
+    (set-frame-parameter nil 'fullscreen 'fullheight)))
+
+(defun my-fullscreen ()
+  "Fullscreen."
+  (if (fboundp 'w32-send-sys-command)
+      ;; WM_SYSCOMMAND maximize #xf030
+      (w32-send-sys-command 61488)
+    (set-frame-parameter nil 'fullscreen 'fullboth)))
+
+(defun my-toggle-fullscreen ()
+  "Toggle fullscreen."
+  (interactive)
+  (setq my-fullscreen-p (not my-fullscreen-p))
+  (if my-fullscreen-p
+      (my-non-fullscreen)
+    (my-fullscreen)))
+
+(defun opacity-modify (&optional dec)
+  "Modify the transparency of the Emacs frame.
+If DEC is t, decrease the transparency;
+otherwise increase it in 5%-steps"
+  (let* ((alpha-or-nil (frame-parameter nil 'alpha)) ; nil before setting
+	 (oldalpha (or alpha-or-nil 99))
+	 (newalpha (if dec
+		       (- oldalpha 5)
+		     (if (>= oldalpha 95) 100 (+ oldalpha 5)))))
+    (and (>= newalpha frame-alpha-lower-limit)
+	 (<= newalpha 100)
+	 (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
+
+(defun faces-generic ()
+  "Set some generic faces."
+  (custom-set-faces
+   '(tabbar-button ((t (:inherit tabbar-default
+				 :background "black" :foreground "#0c0"
+				 :box (:line-width 2 :color "black")))))
+   '(tabbar-button-face ((t (:inherit tabbar-default-face
+				      :background "black"
+				      :foreground "#0c0"
+				      :box (:line-width 2 :color "black")))))
+   '(tabbar-default ((t (:inherit variable-pitch
+				  :background "#111" :foreground "#0c0"))))
+   '(tabbar-default-face ((t (:inherit variable-pitch
+				       :background "#111"
+				       :foreground "#0c0"))))
+   '(tabbar-selected-face ((t (:inherit tabbar-default-face
+   					:background "black"
+   					:foreground "SpringGreen"
+   					:box (:line-width 2 :color "black")))))
+   '(tabbar-separator ((t (:foreground "#0c0" :background "#111"))))
+   '(tabbar-separator-face ((t (:foreground "#0c0"
+					    :background "#111")))))
+  (set-background-color "black")
+  (set-face-background 'default "black")
+  (set-face-background 'highlight "SeaGreen")
+  (set-face-background 'show-paren-match-face "DarkRed"))
+
+(defun faces-x ()
+  "Set some faces when in window system."
+  (custom-set-faces
+   '(default ((t (:foreground "wheat" :background "black" :height 80))))
+   '(mode-line ((t (:foreground "black" :background "LightSlateGray"
+   				:box (:line-width 1 :style "none")
+				:width condensed
+   				:height 90 :family "neep"))))
+   '(tabbar-selected ((t (:inherit tabbar-default :background "black"
+   				   :foreground "DeepSkyBlue"
+   				   :box (:line-width 2 :color "black")))))
+   '(tabbar-unselected ((t (:inherit tabbar-default :background "#222"
+   				     :foreground "DarkCyan"
+   				     :box (:line-width 2 :color "#090909")))))
+   '(highlight-changes ((t (:foreground nil :background "#382f2f"))))
+   '(highlight-changes-delete ((t (:foreground nil :background "#916868"))))
+   '(font-lock-comment-face ((t (:foreground "Coral")))))
+  (set-cursor-color "DeepSkyBlue")
+  (set-face-background 'hl-line "#123")
+  (set-foreground-color "wheat")
+  (set-face-foreground 'default "wheat")
+  (set-face-foreground 'region nil)
+  (set-face-background 'region "DarkSlateGray")
+  (set-face-foreground 'modeline "black")
+  (set-face-background 'modeline "DarkSlateGray")
+  (set-face-foreground 'modeline-inactive "DarkSlateGray")
+  (set-face-background 'modeline-inactive "honeydew4")
+  (set-face-background 'modeline-buffer-id "DeepSkyBlue")
+  (set-face-foreground 'modeline-buffer-id "black")
+  (ignore-errors
+    (set-face-font 'default
+		   (win-or-nix
+		    "-outline-Consolas-normal-r-normal-normal-12-97-96-96-c-*-iso8859-1"
+		    "inconsolata")))
+  (modify-frame-parameters (selected-frame) '((alpha . 99))))
+
+(defun faces-nox ()
+  "Set some faces when in terminal."
+  (custom-set-faces
+   '(mode-line ((t (:foreground "green" :background "black"
+				:box (:line-width 1 :style "none")
+				:width condensed
+				:height 90 :family "neep"))))
+   '(tabbar-selected ((t (:inherit tabbar-default :background "black"
+   				   :foreground "white"
+   				   :box (:line-width 2 :color "black")))))
+   '(tabbar-unselected ((t (:inherit tabbar-default :background "gray"
+   				     :foreground "cyan"
+   				     :box (:line-width 2 :color "gray")))))
+   '(highlight-changes ((t (:foreground nil :background "orange"))))
+   '(highlight-changes-delete ((t (:foreground nil :background "red"))))
+   '(font-lock-comment-face ((t (:foreground "orange")))))
+  (set-cursor-color "white")
+  (set-face-background 'hl-line "blue")
+  (set-face-foreground 'default "white")
+  (set-foreground-color "white")
+  (set-face-foreground 'region "white")
+  (set-face-background 'region "cyan")
+  (set-face-foreground 'modeline "black")
+  (set-face-background 'modeline "green")
+  (set-face-foreground 'modeline-inactive "white")
+  (set-face-background 'modeline-inactive "black")
+  (set-face-background 'modeline-buffer-id "black")
+  (set-face-foreground 'modeline-buffer-id "white"))
+
+(defun initialize-faces ()
+  "Set initial faces."
+  (interactive)
+  (faces-generic)
+  (if window-system
+      (faces-x)
+    (faces-nox)))
+
+(win-or-nix
+ (defun my-done ()
+   "Keep emacs running hidden on exit."
+   (interactive)
+   (server-edit)
+   (make-frame-invisible nil t))
+
+ ;; restore faces when switching terminal and X frames
+ (defun test-win-sys(frame)
+   "Reset some faces on every new FRAME."
+   (select-frame frame)
+   (if (window-system frame)
+       (faces-x)
+     (faces-nox))))
+
+(defun pretty-lambdas ()
+  "Show an actual lambda instead of the string `lambda'."
+  (font-lock-add-keywords nil `(("(\\(lambda\\>\\)"
+				 (0 (progn
+				      (compose-region
+				       (match-beginning 1)
+				       (match-end 1)
+				       ,(make-char 'greek-iso8859-7
+						   107))
+				      nil))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Set some path constants.
 (win-or-nix (defconst *win-path* "C:/" "Windows root path."))
@@ -83,14 +340,7 @@ NIX forms are executed on all other platforms."
 ;; set default directory for `*scratch*'
 (setq default-directory (concat (getenv "HOME") "/"))
 
-;;; `require-maybe' (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
-;; this is useful when this .emacs is used in an env where not all of
-;; the other stuff is available
-(defmacro require-maybe (feature &optional file)
-  "Try to require FEATURE in FILE but don't signal an error on fail."
-  `(require ,feature ,file 'noerror))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; mode a bit emacs
 
@@ -112,9 +362,9 @@ NIX forms are executed on all other platforms."
  '(show-paren-style 'parenthesis)
  '(transient-mark-mode t)
  '(delete-selection-mode t)
- '(global-font-lock-mode t)   ; Use colors to highlight commands, etc.
+ '(global-font-lock-mode t)
  '(font-lock-maximum-decoration t)
- '(inhibit-startup-message t)		 ; Disable the welcome message
+ '(inhibit-startup-message t)
  '(inhibit-startup-echo-area-message t)
  '(frame-title-format "emacs - %b (%f)") ; Format the title-bar
  '(mouse-wheel-mode t)		   ; Make the mouse wheel scroll Emacs
@@ -129,7 +379,7 @@ NIX forms are executed on all other platforms."
  '(require-final-newline t)		; end files with a newline
  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; UTF and languages
 
@@ -152,11 +402,11 @@ NIX forms are executed on all other platforms."
 (setq-default ispell-program-name "aspell")
 (setq ispell-dictionary "english")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; usefull stuff
 
-;; highlight the current line
+;; highlight current line
 (when (fboundp 'global-hl-line-mode)
   (global-hl-line-mode t))	 ; turn it on for all modes by default
 
@@ -189,21 +439,6 @@ NIX forms are executed on all other platforms."
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(defun nuke-all-buffers (currentp)
-  "Kill all buffers keeping only current if CURRENTP.
-Otherwise keep `*scratch*' only."
-  (interactive
-   (list (y-or-n-p "Keep current buffer? ")))
-  (if currentp
-      (let ((curr (current-buffer)))
-	(dolist (x (buffer-list))
-	  (or (eq x curr)
-	      (kill-buffer x))))
-    (dolist (x (buffer-list))
-      (or (equal (buffer-name x) "*scratch*")
-	  (kill-buffer x))))
-  (delete-other-windows))
-
 ;;; recentf
 (when (require-maybe 'recentf)		; save recently used files
   (setq recentf-max-saved-items 100	; max save 100
@@ -232,51 +467,11 @@ Otherwise keep `*scratch*' only."
 (when (fboundp file-name-shadow-mode)	; emacs22+
   (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; windowing stuff
 
-;;; fullscreen stuff
-(defvar my-fullscreen-p t "Check if fullscreen is on or off.")
-
-(defun my-non-fullscreen ()
-  "Exit fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND restore #xf120
-      (w32-send-sys-command 61728)
-    (set-frame-parameter nil 'width 110)
-    (set-frame-parameter nil 'fullscreen 'fullheight)))
-
-(defun my-fullscreen ()
-  "Fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND maximaze #xf030
-      (w32-send-sys-command 61488)
-    (set-frame-parameter nil 'fullscreen 'fullboth)))
-
-(defun my-toggle-fullscreen ()
-  "Toggle fullscreen."
-  (interactive)
-  (setq my-fullscreen-p (not my-fullscreen-p))
-  (if my-fullscreen-p
-      (my-non-fullscreen)
-    (my-fullscreen)))
-
 (global-set-key [f11] 'my-toggle-fullscreen)
-
-;;; control opacity
-(defun opacity-modify (&optional dec)
-  "Modify the transparency of the Emacs frame.
-If DEC is t, decrease the transparency;
-otherwise increase it in 5%-steps"
-  (let* ((alpha-or-nil (frame-parameter nil 'alpha)) ; nil before setting
-	 (oldalpha (or alpha-or-nil 99))
-	 (newalpha (if dec
-		       (- oldalpha 5)
-		     (if (>= oldalpha 95) 100 (+ oldalpha 5)))))
-    (and (>= newalpha frame-alpha-lower-limit)
-	 (<= newalpha 100)
-	 (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
 
 ;; C-9 will increase opacity (== decrease transparency)
 ;; C-8 will decrease opacity (== increase transparency)
@@ -307,143 +502,13 @@ otherwise increase it in 5%-steps"
     (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
 
   (global-set-key (kbd "C-<tab>") 'shk-tabbar-next)
-  (global-set-key (win-or-nix
-		   (kbd "C-S-<tab>")
-		   (kbd "<C-S-iso-lefttab>"))
+  (global-set-key (win-or-nix (kbd "C-S-<tab>")
+			      (kbd "<C-S-iso-lefttab>"))
 		  'shk-tabbar-prev))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Theme styles
-
-(defun faces-generic ()
-  "Set some generic faces."
-  (custom-set-faces
-   '(menu ((((type x-toolkit))
-	    (:background "LightSlateGray" :foreground "wheat"
-			 :box (:line-width 2
-					   :color "grey75"
-					   :style released-button)))))
-   ;;'(tool-bar ((((type x w32 mac) (class color))
-   ;;		(:background "midnight blue" :foreground "wheat"
-   ;;			     :box (:line-width 1
-   ;;					       :style released-button)))))
-   '(tabbar-button ((t (:inherit tabbar-default
-				 :background "black" :foreground "#0c0"
-				 :box (:line-width 2 :color "black")))))
-   '(tabbar-button-face ((t (:inherit tabbar-default-face
-				      :background "black"
-				      :foreground "#0c0"
-				      :box (:line-width 2 :color "black")))))
-   '(tabbar-default ((t (:inherit variable-pitch
-				  :background "#111" :foreground "#0c0"))))
-   '(tabbar-default-face ((t (:inherit variable-pitch
-				       :background "#111"
-				       :foreground "#0c0"))))
-   '(tabbar-selected-face ((t (:inherit tabbar-default-face
-					:background "black"
-					:foreground "SpringGreen"
-					:box (:line-width 2 :color "black")))))
-   '(tabbar-separator ((t (:foreground "#0c0" :background "#111"))))
-   '(tabbar-separator-face ((t (:foreground "#0c0"
-					    :background "#111")))))
-  (set-background-color "black")
-  (set-face-background 'default "black")
-  (set-face-background 'highlight "SeaGreen") ; Highlight face.
-  (set-face-background 'region "DarkSlateGray")
-  (set-face-background list-matching-lines-face "SeaGreen") ; Defined in `replace.el'
-  (set-face-background 'secondary-selection "White")
-  (set-face-foreground 'secondary-selection "Black"))
-
-(defun faces-x ()
-  "Set some faces when in window system."
-  (custom-set-faces
-   '(default ((t (:foreground "wheat" :background "black" :height 80))))
-   '(flyspell-duplicate ((t (:foreground "Gold3"
-					 :underline t :weight normal))))
-   '(flyspell-incorrect ((t (:foreground "OrangeRed"
-					 :underline t :weight normal))))
-   '(font-lock-comment-face ((t (:foreground "SteelBlue1"))))
-   '(font-lock-function-name-face ((t (:foreground "Gold"))))
-   '(font-lock-keyword-face ((t (:foreground "SpringGreen"))))
-   '(font-lock-type-face ((t (:foreground "PaleGreen"))))
-   '(font-lock-variable-name-face ((t (:foreground "LightCoral"))))
-   '(font-lock-string-face ((t (:foreground "Coral"))))
-   '(mode-line ((t (:foreground "black" :background "LightSlateGray"
-				:box (:line-width 1 :style "none")
-				:width condensed
-				:height 90 :family "neep"))))
-   '(tabbar-selected ((t (:inherit tabbar-default :background "black"
-				   :foreground "DeepSkyBlue"
-				   :box (:line-width 2 :color "Black")))))
-   '(tabbar-unselected ((t (:inherit tabbar-default :background "#222"
-				     :foreground "DarkCyan"
-				     :box (:line-width 2 :color "#090909")))))
-   '(highlight-changes ((t (:foreground nil :background "#382f2f"))))
-   '(highlight-changes-delete ((t (:foreground nil :background "#916868")))))
-  ;;(menu-bar-mode t)
-  (set-cursor-color "DeepSkyBlue")
-  (set-foreground-color "Wheat")
-  (set-face-foreground 'default "wheat")
-  (set-face-background 'hl-line "#112233")
-  (set-face-background 'show-paren-match-face "DarkRed")
-  (set-face-foreground 'modeline "Black")
-  (set-face-background 'modeline "DarkSlateGray")
-  (set-face-foreground 'modeline-inactive "white")
-  (set-face-background 'modeline-inactive "DimGray")
-  (set-face-background 'modeline-buffer-id "DeepSkyBlue")
-  (set-face-foreground 'modeline-buffer-id "Black")
-  (ignore-errors
-    (set-face-font 'default
-		   (win-or-nix
-		    "-outline-Consolas-normal-r-normal-normal-12-97-96-96-c-*-iso8859-1"
-		    "inconsolata")))
-  (modify-frame-parameters (selected-frame) '((alpha . 99))))
-
-(defun faces-nox ()
-  "Set some faces when in terminal."
-  (custom-set-faces
-   '(flyspell-duplicate ((t (:foreground "yellow"
-					 :underline t :weight normal))))
-   '(flyspell-incorrect ((t (:foreground "red"
-					 :underline t :weight normal))))
-   '(font-lock-comment-face ((t (:foreground "magenta"))))
-   '(font-lock-function-name-face ((t (:foreground "red"))))
-   '(font-lock-keyword-face ((t (:foreground "green"))))
-   '(font-lock-type-face ((t (:foreground "blue"))))
-   '(font-lock-string-face ((t (:foreground "cyan"))))
-   '(font-lock-variable-name-face ((t (:foreground "blue"))))
-   '(mode-line ((t (:foreground "green" :background "black"))))
-   '(tabbar-selected ((t (:inherit tabbar-default
-				   :background "black" :foreground "white"
-				   :box (:line-width 2 :color "black")))))
-   '(tabbar-unselected ((t (:inherit tabbar-default
-				     :background "gray75"
-				     :foreground "DarkCyan"
-				     :box (:line-width 2 :color "gray75")))))
-   '(highlight-changes ((t (:foreground nil :background "red"))))
-   '(highlight-changes-delete ((t (:foreground nil
-					       :background "red")))))
-  ;;(menu-bar-mode -1)
-  (set-face-background 'hl-line "gray")
-  (set-cursor-color "blue")
-  (set-foreground-color "white")
-  (set-face-foreground 'default "white")
-  (set-face-background 'show-paren-match-face "red")
-  (set-face-foreground 'modeline "Black")
-  (set-face-background 'modeline "green")
-  (set-face-foreground 'modeline-inactive "white")
-  (set-face-background 'modeline-inactive "black")
-  (set-face-background 'modeline-buffer-id "black")
-  (set-face-foreground 'modeline-buffer-id "white"))
-
-(defun initialize-faces ()
-  "Set initial faces."
-  (interactive)
-  (faces-generic)
-  (if window-system
-      (faces-x)
-    (faces-nox)))
 
 (initialize-faces)
 
@@ -451,121 +516,36 @@ otherwise increase it in 5%-steps"
 (win-or-nix (set-frame-width (selected-frame) 110))
 (add-to-list 'default-frame-alist '(width . 110))
 
-(win-or-nix
- ((defun my-done ()
-    "Keep emacs running hidden on exit."
-    (interactive)
-    (server-edit)
-    (make-frame-invisible nil t))
-  (global-set-key (kbd "C-x C-c") 'my-done))
-
 ;;; Colour theme
- (when (require-maybe 'color-theme)
-   (eval-after-load "color-theme"
-     '(progn
-	(defun color-theme-djcb-dark ()
-	  "Dark color theme created by djcb, Jan. 2009."
-	  (interactive)
-	  (color-theme-install
-	   '(color-theme-djcb-dark
-	     ((foreground-color . "#a9eadf")
-	      (background-color . "black")
-	      (background-mode . dark))
-	     (bold ((t (:bold t))))
-	     (bold-italic ((t (:italic t :bold t))))
-	     (default ((t (nil))))
+(when (require-maybe 'color-theme)
+  ;; (eval-after-load "color-theme"
+  ;;   '(progn
+  ;; 	(color-theme-initialize)
+  ;; 	(color-theme-euphoria)))
+  )
 
-	     (font-lock-builtin-face ((t (:italic t :foreground "#a96da0"))))
-	     (font-lock-comment-face ((t (:italic t :foreground "#bbbbbb"))))
-	     (font-lock-comment-delimiter-face ((t (:foreground "#666666"))))
-	     (font-lock-constant-face ((t (:bold t :foreground "#197b6e"))))
-	     (font-lock-doc-string-face ((t (:foreground "#3041c4"))))
-	     (font-lock-doc-face ((t (:foreground "gray"))))
-	     (font-lock-reference-face ((t (:foreground "white"))))
-	     (font-lock-function-name-face ((t (:foreground "#356da0"))))
-	     (font-lock-keyword-face ((t (:bold t :foreground "#bcf0f1"))))
-	     (font-lock-preprocessor-face ((t (:foreground "#e3ea94"))))
-	     (font-lock-string-face ((t (:foreground "#ffffff"))))
-	     (font-lock-type-face ((t (:bold t :foreground "#364498"))))
-	     (font-lock-variable-name-face ((t (:foreground "#7685de"))))
-	     (font-lock-warning-face ((t (:bold t :italic nil :underline nil
-						:foreground "yellow"))))
-	     (hl-line ((t (:background "#112233"))))
-	     (mode-line ((t (:foreground "#ffffff" :background "#333333"))))
-	     (region ((t (:foreground nil :background "#555555"))))
-	     (show-paren-match-face ((t (:bold t :foreground "#ffffff"
-					       :background "#050505")))))))
+;;; windowing
+(win-or-nix
+ (global-set-key (kbd "C-x C-c") 'my-done)
 
-	;;(color-theme-initialize)
-	;;(color-theme-djcb-dark)
-	;;(color-theme-euphoria)
-	)))
-
-;;; restore faces when switching terminal and X frames
- (defun test-win-sys(frame)
-   "Reset some faces on every new FRAME."
-   (select-frame frame)
-   (if (window-system frame)
-       (faces-x)
-     ;;(color-theme-djcb-dark)
-     (faces-nox)))
  ;; hook on after-make-frame-functions
  (add-hook 'after-make-frame-functions 'test-win-sys))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Lisp goodies
-
-(defun pretty-lambdas ()
-  "Show an actual lambda instead of the string `lambda'."
-  (font-lock-add-keywords nil `(("(\\(lambda\\>\\)"
-				 (0 (progn
-				      (compose-region
-				       (match-beginning 1)
-				       (match-end 1)
-				       ,(make-char 'greek-iso8859-7
-						   107))
-				      nil))))))
-
-(defmacro active-lisp-modes ()
-  "Build a function for activating existing convenient minor modes for s-exp."
-  `(defun activate-lisp-minor-modes ()
-     "Activate some convenient minor modes for editing s-exp"
-     (pretty-lambdas)
-;;; Highlight sexps and parens
-     ,(when (require-maybe 'hl-sexp)
-	'(hl-sexp-mode +1))
-     ,(when (require-maybe 'highlight-parentheses)
-	'(highlight-parentheses-mode +1))
-;;; Paredit
-     ,(when (require-maybe 'paredit)
-	'(paredit-mode +1))))
 
 ;; build appropriate `activate-lisp-minor-modes'
 (eval (macroexpand '(active-lisp-modes)))
 
-(defmacro hook-sexp-modes (&rest modes)
-  "Hook sexps minor MODES to some major modes."
-  (cons 'progn
-	(mapcar (lambda (mode)
-		  `(add-hook ',mode
-			     (lambda ()
-			       (activate-lisp-minor-modes)
-			       ,(when (memq mode
-					    '(emacs-lisp-mode-hook
-					      ielm-mode-hook))
-				  `(setq lisp-indent-function
-					 'lisp-indent-function)))
-			     t))
-		modes)))
-
-;; Hook convenient minor modes to some major modes.
-(hook-sexp-modes lisp-mode-hook inferior-lisp-mode-hook
-		 emacs-lisp-mode-hook slime-repl-mode-hook
-		 clips-mode-hook inferior-clips-mode-hook
-		 clojure-mode-hook ielm-mode-hook
-		 lisp-interaction-mode-hook
-		 inferior-scheme-mode-hook scheme-mode-hook)
+;; Hook convenient sexp minor modes to some major modes.
+(hook-modes (activate-lisp-minor-modes)
+	    inferior-lisp-mode-hook lisp-mode-hook
+	    lisp-interaction-mode-hook slime-repl-mode-hook
+	    emacs-lisp-mode-hook ielm-mode-hook
+	    clips-mode-hook inferior-clips-mode-hook
+	    inferior-scheme-mode-hook scheme-mode-hook
+	    clojure-mode-hook)
 
 ;;; Redshank
 (when (require-maybe 'redshank-loader
@@ -578,59 +558,51 @@ otherwise increase it in 5%-steps"
 
 ;;; ElDoc for Emacs Lisp
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
-(add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode t)
-(add-hook 'lisp-interaction-mode-hook 'turn-on-eldoc-mode t)
-(add-hook 'ielm-mode-hook 'turn-on-eldoc-mode t)
+(hook-modes (turn-on-eldoc-mode)
+	    emacs-lisp-mode-hook lisp-interaction-mode-hook
+	    ielm-mode-hook)
 
 ;;; elisp stuff
 (setq auto-mode-alist (append '(("\\.emacs$" .
 				 emacs-lisp-mode)) auto-mode-alist))
 
-(define-key emacs-lisp-mode-map (win-or-nix
-				 (kbd "S-<tab>")
-				 (kbd "<S-iso-lefttab>"))
+(define-key emacs-lisp-mode-map (win-or-nix (kbd "S-<tab>")
+					    (kbd "<S-iso-lefttab>"))
   'lisp-complete-symbol)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Programming extensions
 
 ;;; Clojure
 (when (require-maybe 'clojure-mode)
-  (defconst *clojure-dir* (concat *home-path*
-				  (win-or-nix "bin/" ".")
+  (defconst *clojure-dir* (concat *home-path* (win-or-nix "bin/" ".")
 				  "clojure")
-    "Clojure directory.")
+    "Path to the Clojure directory.")
   (and (file-exists-p *clojure-dir*)
        (require-maybe 'swank-clojure-autoload)
        (swank-clojure-config
 	(setq
-	 swank-clojure-jar-path (concat *clojure-dir*
-					"/clojure.jar")
+	 swank-clojure-jar-path (concat *clojure-dir* "/clojure.jar")
 	 swank-clojure-extra-classpaths
-	 (mapcar (lambda (jar)
-		   (concat *clojure-dir* jar))
-		 '("/clojure-contrib.jar" "/user.clj"))
+	 (directory-files *clojure-dir* t ".\\(jar\\|clj\\)$")
 	 swank-clojure-extra-vm-args
 	 '("-server" "-Xdebug"
-	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
-	 swank-clojure-library-paths (directory-files *clojure-dir*
-						      t ".jar$")))))
+	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")))))
 
-;;; Set up the Slime
+;;; Set up SLIME
 (when (require-maybe 'slime)
   (eval-after-load "slime"
     '(progn
        (slime-setup (win-or-nix
-		     '(slime-repl slime-fancy slime-banner slime-c-p-c
-				  slime-references slime-autodoc)
-		     '(slime-repl slime-fancy slime-banner slime-c-p-c
-				  slime-references slime-autodoc
-				  slime-asdf)))
+		     '(slime-fancy slime-banner slime-indentation
+				   slime-indentation-fu)
+		     '(slime-fancy slime-banner slime-indentation
+				   slime-indentation-fu slime-asdf)))
        (slime-autodoc-mode)
        (setq slime-complete-symbol*-fancy t
 	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	     lisp-indent-function 'common-lisp-indent-function
+	     ;;lisp-indent-function 'common-lisp-indent-function
 	     common-lisp-hyperspec-root
 	     (win-or-nix
 	      (concat *home-path* "docs/HyperSpec/")
@@ -640,9 +612,8 @@ otherwise increase it in 5%-steps"
 		      '(utf-8-unix iso-latin-1-unix
 				   iso-8859-1-unix binary)))))
 
-  (define-key slime-mode-map (win-or-nix
-			      (kbd "S-<tab>")
-			      (kbd "<S-iso-lefttab>"))
+  (define-key slime-mode-map (win-or-nix (kbd "S-<tab>")
+					 (kbd "<S-iso-lefttab>"))
     'slime-complete-symbol)
 
 ;;; Online JavaDoc to Slime
@@ -736,17 +707,15 @@ otherwise increase it in 5%-steps"
 
 ;;; (or CLisp SBCL)
   (add-to-list 'slime-lisp-implementations
-	       (win-or-nix
-		(list 'clisp (list
-			      (concat *home-path*
-				      "bin/clisp/clisp.exe")
-			      "-K" "full"))
-		'(sbcl ("/usr/local/bin/sbcl")))))
+	       (win-or-nix (list 'clisp (list
+					 (concat *home-path*
+						 "bin/clisp/clisp.exe")
+					 "-K" "full"))
+			   '(sbcl ("/usr/local/bin/sbcl")))))
 
 (setq inferior-lisp-program
-      (win-or-nix
-       (concat *home-path* "bin/clisp/clisp.exe -K full")
-       "/usr/local/bin/sbcl"))
+      (win-or-nix (concat *home-path* "bin/clisp/clisp.exe -K full")
+		  "/usr/local/bin/sbcl"))
 
 ;;; Scheme
 (when (file-exists-p (concat *extras-path*
@@ -760,6 +729,7 @@ otherwise increase it in 5%-steps"
     (clips-mode)
     ;;(auto-fill-mode)
     )
+
   (setq auto-mode-alist
 	(append '(("\.clp$" . fill-clips)) auto-mode-alist)
 	inferior-clips-program (win-or-nix
@@ -779,9 +749,9 @@ otherwise increase it in 5%-steps"
 (when (file-exists-p (concat *extras-path* "haskell"))
   ;;(require-maybe 'haskell-site-file)
   (load "haskell-site-file")
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-doc-mode)
-  (add-hook 'haskell-mode-hook 'turn-on-haskell-indent)
-  ;;(add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
+  (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indent)
+	      haskell-mode-hook)
+  ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
   ;; fixes the repeating input and ^J issues that have been occurring
   (defun inferior-haskell-fix-repeated-input (output)
@@ -839,16 +809,19 @@ otherwise increase it in 5%-steps"
 			   'hs-toggle-hiding))
 	  t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Auxiliary extensions
 
 ;;; AUCTeX
 (when (file-exists-p (concat *extras-path* "tex"))
   (load "auctex" nil t)
-  (load "preview-latex" nil t))
+  (load "preview-latex" nil t)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (hook-modes (flyspell-mode)
+	      latex-mode-hook tex-mode-hook bibtex-mode-hook))
 
-;;; Completion-ui
+;;; CompletionUI
 (when (require-maybe 'completion-ui)
   (global-set-key (kbd "M-/") 'complete-dabbrev)
   (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
@@ -868,35 +841,24 @@ otherwise increase it in 5%-steps"
 	  anything-c-source-etags-select
 	  anything-c-source-emacs-commands
 	  anything-c-source-emacs-functions-with-abbrevs
+	  anything-c-source-info-elisp
 	  anything-c-source-info-pages
 	  anything-c-source-man-pages
 	  ;;anything-c-source-simple-call-tree-functions-callers
 	  ;;anything-c-source-simple-call-tree-callers-functions
 	  ))
 
-  (defun anything-toggle-elisp-info ()
-    "Toggle anything-c-source-info-elisp in anything sources."
-    (interactive)
-    (if (memq 'anything-c-source-info-elisp anything-sources)
-	(progn
-	  (delete 'anything-c-source-info-elisp anything-sources)
-	  (message "Elisp-info removed from anything sources."))
-      (setq anything-sources (nconc anything-sources
-				    '(anything-c-source-info-elisp)))
-      (message "Elisp-info added to anything sources.")))
-
 ;;; Proel
-  (setq proel-dirs-with-projects (list (expand-file-name
-					(let ((default-proel
-						(win-or-nix
-						 (concat *win-path*
-							 "Program Files")
-						 (concat *home-path*
-							 "Programs"))))
-					  (if (file-exists-p
-					       default-proel)
-					      default-proel
-					    *home-path*)))))
+  (setq proel-dirs-with-projects
+	(list (expand-file-name
+	       (let ((default-proel (win-or-nix
+				     (concat *win-path*
+					     "Program Files")
+				     (concat *home-path* "Programs"))))
+		 (if (file-exists-p
+		      default-proel)
+		     default-proel
+		   *home-path*)))))
   (when (require-maybe 'proel)
     (grep-compute-defaults)
     (global-set-key (kbd "<f6>") 'proel-grep-in-project)
@@ -914,10 +876,10 @@ otherwise increase it in 5%-steps"
       (if (memq 'anything-c-source-auto-install-from-emacswiki
 		anything-sources)
 	  (progn
-	    (delete 'anything-c-source-auto-install-from-emacswiki
-		    anything-sources)
-	    (delete 'anything-c-source-auto-install-from-library
-		    anything-sources)
+	    (delete-many
+	     ('anything-c-source-auto-install-from-emacswiki
+	      'anything-c-source-auto-install-from-library)
+	     anything-sources)
 	    (ignore-errors
 	      (auto-install-update-emacswiki-package-name nil))
 	    (message "Auto-install removed from anything sources."))
@@ -939,10 +901,11 @@ otherwise increase it in 5%-steps"
   (defun gtags-create-or-update ()
     "Create or update the gnu global tag file."
     (interactive)
-    (or (= 0 (call-process "global" nil nil nil " -p")) ; tagfile doesn't exist?
+    (or (= 0 (call-process "global"
+			   nil nil nil " -p")) ; tagfile doesn't exist?
 	(let ((olddir default-directory)
-	      (topdir (read-directory-name
-		       "gtags: top of source tree:" default-directory)))
+	      (topdir (read-directory-name "gtags: top of source tree:"
+					   default-directory)))
 	  (cd topdir)
 	  (shell-command "gtags && echo 'created tagfile'")
 	  (cd olddir))		 ; restore
@@ -951,8 +914,10 @@ otherwise increase it in 5%-steps"
 
   (add-hook 'gtags-mode-hook
 	    (lambda ()
-	      (local-set-key (kbd "M-.") 'gtags-find-tag) ; find a tag, also M-.
-	      (local-set-key (kbd "M-,") 'gtags-find-rtag))) ; reverse tag
+	      (local-set-key (kbd "M-.")
+			     'gtags-find-tag) ; find a tag, also M-.
+	      (local-set-key (kbd "M-,")
+			     'gtags-find-rtag))) ; reverse tag
   (add-hook 'c-mode-common-hook
 	    (lambda ()
 	      (gtags-mode t)
@@ -960,7 +925,7 @@ otherwise increase it in 5%-steps"
 	      )
 	    t))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Specific OS extensions
 
@@ -1090,11 +1055,11 @@ If FOLDER is nil, use the default."
 	  (or (y-or-n-p "Possibly missing an attachment.  Send current draft? ")
 	      (error "Abort"))))))
 
-   (add-hook 'wl-mail-send-pre-hook 'wl-draft-subject-check)
-   (add-hook 'wl-mail-send-pre-hook 'wl-draft-attachment-check)))
+   (hook-modes (wl-draft-subject-check wl-draft-attachment-check)
+	       wl-mail-send-pre-hook)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;(server-start)
+;; (server-start) ; use --daemon or emacsW32 instead
 
 ;;; init.el ends here
