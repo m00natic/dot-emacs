@@ -772,8 +772,8 @@ Remove hooh when done."
 
 ;;; VB
 (when (require-maybe 'visual-basic-mode)
-  (autoload 'visual-basic-mode
-    "visual-basic-mode" "Visual Basic mode." t)
+  (autoload 'visual-basic-mode "visual-basic-mode"
+    "Visual Basic mode." t)
   (push '("\\.\\(frm\\|bas\\|cls\\)$" . visual-basic-mode)
 	auto-mode-alist))
 
@@ -798,8 +798,11 @@ Remove hooh when done."
   (load "auctex" nil t)
   (load "preview-latex" nil t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (hook-modes flyspell-mode
-	      latex-mode-hook tex-mode-hook bibtex-mode-hook))
+  (add-hook 'TeX-mode-hook
+	    (lambda ()
+	      (define-key TeX-mode-map
+		(win-or-nix (kbd "S-<tab>") (kbd "<S-iso-lefttab>"))
+		'TeX-complete-symbol))))
 
 ;;; CompletionUI
 (when (require-maybe 'completion-ui)
