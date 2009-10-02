@@ -575,7 +575,9 @@ Remove hooh when done."
 	(setq
 	 swank-clojure-jar-path (concat *clojure-dir* "/clojure.jar")
 	 swank-clojure-extra-classpaths
-	 (directory-files *clojure-dir* t ".\\(jar\\|clj\\)$")
+	 (cons (concat *extras-path*
+		       "/swank-clojure/src/main/clojure/")
+	       (directory-files *clojure-dir* t ".\\(jar\\|clj\\)$"))
 	 swank-clojure-extra-vm-args
 	 '("-server" "-Xdebug"
 	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"))))
