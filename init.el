@@ -112,9 +112,159 @@ Each function may be an atom or a list with parameters."
 ;;; Paredit
      ,(when (require-maybe 'paredit) '(paredit-mode +1))))
 
+(defmacro faces-generic ()
+  "My prefered faces which differ from default."
+  `(custom-set-faces
+    '(font-lock-comment-face
+      ((((class grayscale) (background light))
+	:foreground "DimGray" :weight bold :slant italic)
+       (((class grayscale) (background dark))
+	:foreground "LightGray" :weight bold :slant italic)
+       (((class color) (min-colors 88) (background light))
+	:foreground "Firebrick" :slant italic)
+       (((class color) (min-colors 88) (background dark))
+	:foreground "chocolate1" :slant italic)
+       (((class color) (min-colors 16) (background light))
+	:foreground "red" :slant italic)
+       (((class color) (min-colors 16) (background dark))
+	:foreground "red1" :slant italic)
+       (((class color) (min-colors 8) (background light))
+	:foreground "red" :slant italic)
+       (((class color) (min-colors 8) (background dark))
+	:foreground "red" :slant italic)
+       (t :weight bold :slant italic)))
+    '(mode-line
+      ((default :foreground "black" :box (:line-width 1 :style "none")
+	 :width condensed :height 90 :family "neep")
+       (((class color) (min-colors 88)) :background "DarkSlateGray")
+       (t :background "green")))
+    '(mode-line-inactive
+      ((default :inherit mode-line)
+       (((class color) (min-colors 88))
+	:foreground "DarkSlateGray" :background "honeydew4")
+       (t :foreground "white" :background "black")))
+    '(mode-line-buffer-id
+      ((default :inherit mode-line :foreground "black")
+       (((class color) (min-colors 88))
+	:background "CadetBlue" :weight extrabold)
+       (t :background "green" :weight normal)))
+    '(tabbar-default ((default :inherit variable-pitch)
+		      (((background dark))
+		       :background "#111" :foreground "#0c0")
+		      (t :background "LightGray" :foreground "black")))
+    '(tabbar-selected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background dark))
+	:background "black" :box (:line-width 2 :color "black")
+	:foreground "DeepSkyBlue")
+       (((background dark)) :background "black" :foreground "white"
+	:box (:line-width 2 :color "black"))
+       (t :background "white" :box (:line-width 2 :color "LightGray")
+	  :foreground "DeepSkyBlue")))
+    '(tabbar-unselected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background dark))
+	:background "#222" :foreground "DarkCyan"
+	:box (:line-width 2 :color "#090909"))
+       (((background dark))
+	:background "gray" :foreground "cyan"
+	:box (:line-width 2 :color "gray"))
+       (t :background "gray" :foreground "black"
+	  :box (:line-width 2 :color "white"))))
+    '(tabbar-button
+      ((default (:inherit tabbar-default))
+       (((background dark)) :background "black" :foreground "#0c0"
+	:box (:line-width 2 :color "black"))
+       (t :background "white" :foreground "black"
+	  :box (:line-width 2 :color "LightGray"))))
+    '(tabbar-button-face
+      ((default (:inherit tabbar-default-face))
+       (((background dark)) :background "black" :foreground "#0c0"
+	:box (:line-width 2 :color "black"))
+       (t :background "white" :foreground "black"
+	  :box (:line-width 2 :color "LightGray"))))
+    '(tabbar-selected-face
+      ((t :inherit tabbar-default-face :background "black"
+	  :foreground "SpringGreen"
+	  :box (:line-width 2 :color "black"))))
+    '(tabbar-separator ((t :foreground "#0c0" :background "#111")))
+    '(tabbar-separator-face ((t :foreground "#0c0" :background "#111")))
+    '(highlight-changes ((((class color) (min-colors 88))
+			  :background "#382f2f")
+			 (t :background "orange")))
+    '(highlight-changes-delete ((((class color) (min-colors 88))
+				 :background "#916868")
+				(t :background "red")))
+    '(highlight ((((class color) (min-colors 88) (background light))
+		  :background "darkseagreen2")
+		 (((class color) (min-colors 88) (background dark))
+		  :background "SeaGreen")
+		 (((class color) (min-colors 16) (background light))
+		  :background "darkseagreen2")
+		 (((class color) (min-colors 16) (background dark))
+		  :background "darkolivegreen")
+		 (((class color) (min-colors 8))
+		  :background "green" :foreground "black")
+		 (t :inverse-video t)))
+    '(region ((((class color) (min-colors 88) (background dark))
+	       :background "DarkSlateGray" :foreground nil)
+	      (((class color) (min-colors 88) (background light))
+	       :background "lightgoldenrod2")
+	      (((class color) (min-colors 16) (background dark))
+	       :background "blue3")
+	      (((class color) (min-colors 16) (background light))
+	       :background "lightgoldenrod2")
+	      (((class color) (min-colors 8))
+	       :background "cyan" :foreground "white")
+	      (((type tty) (class mono)) :inverse-video t)
+	      (t :background "gray")))
+    '(hl-line ((((class color) (min-colors 88) (background light))
+		:background "darkseagreen2")
+	       (((class color) (min-colors 88) (background dark))
+		:background "#123")
+	       (((class color) (min-colors 16) (background light))
+		:background "darkseagreen2")
+	       (((background dark)) :background "blue")
+	       (t :inherit highlight)))
+    '(cursor ((((class color)) :background "DeepSkyBlue")
+	      (((background light)) :background "black")
+	      (t :background "white")))
+    '(show-paren-match-face ((((class color) (background dark))
+			      :background "DarkRed")
+			     (((class color) (background light))
+			      :background "red")
+			     (((background dark)) :background "grey50")
+			     (t :background "gray")))))
+
+;;; fullscreen stuff
+(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
+(defconst *width* 100 "My prefered non-fullscreen width.")
+
+(defmacro my-non-fullscreen ()
+  "Exit fullscreen."
+  `(if (fboundp 'w32-send-sys-command)
+       ;; WM_SYSCOMMAND restore #xf120
+       (w32-send-sys-command 61728)
+     (set-frame-parameter nil 'width *width*)
+     (set-frame-parameter nil 'fullscreen 'fullheight)))
+
+(defmacro my-fullscreen ()
+  "Go fullscreen."
+  `(if (fboundp 'w32-send-sys-command)
+       ;; WM_SYSCOMMAND maximize #xf030
+       (w32-send-sys-command 61488)
+     (set-frame-parameter nil 'fullscreen 'fullboth)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent functions
+
+(defun my-toggle-fullscreen ()
+  "Toggle fullscreen."
+  (interactive)
+  (if (setq *fullscreen-p* (not *fullscreen-p*))
+      (my-fullscreen)
+    (my-non-fullscreen)))
 
 (defun nuke-buffers (reg-ex currentp)
   "Kill all buffers whose name is matched by REG-EX.
@@ -131,8 +281,7 @@ Leave current if CURRENTP."
     (if currentp
 	(let ((curr (current-buffer)))
 	  (dolist (buf (buffer-list))
-	    (or (eq buf curr)
-		(check-kill reg-ex buf))))
+	    (or (eq buf curr) (check-kill reg-ex buf))))
       (dolist (buf (buffer-list))
 	(check-kill reg-ex buf))))
   (when (string-equal reg-ex ".*") (delete-other-windows)))
@@ -144,32 +293,6 @@ Leave current if CURRENTP."
     (set-buffer buf)
     (when (string-match-p reg-ex (symbol-name major-mode))
       (kill-buffer buf))))
-
-;;; fullscreen stuff
-(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
-(defconst *width* 100 "My prefered non-fullscreen width.")
-
-(defun my-non-fullscreen ()
-  "Exit fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND restore #xf120
-      (w32-send-sys-command 61728)
-    (set-frame-parameter nil 'width *width*)
-    (set-frame-parameter nil 'fullscreen 'fullheight)))
-
-(defun my-fullscreen ()
-  "Go fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND maximize #xf030
-      (w32-send-sys-command 61488)
-    (set-frame-parameter nil 'fullscreen 'fullboth)))
-
-(defun my-toggle-fullscreen ()
-  "Toggle fullscreen."
-  (interactive)
-  (if (setq *fullscreen-p* (not *fullscreen-p*))
-      (my-fullscreen)
-    (my-non-fullscreen)))
 
 (defun opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
@@ -184,18 +307,33 @@ otherwise increase it in 5%-steps"
 	 (<= newalpha 100)
 	 (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
 
-(defun faces-graphical ()
+;;; themes
+(defvar *lighty-p* nil "Set light background?")
+
+(defun faces-fix ()
   "Set some faces which --daemon doesn't set correctly.
 Execute only once."
-  (custom-set-faces
-   '(default ((default (:background "black" :height 80))
-  	      (((class color) (min-colors 88)) (:foreground "wheat"))
-   	      (t (:foreground "white")))))
+  (if *lighty-p*
+      (custom-set-faces
+       '(default ((t (:foreground "black" :height 80
+				  :background "cornsilk")))))
+    (custom-set-faces
+     '(default ((default (:background "black" :height 80))
+		(((class color) (min-colors 88)) (:foreground "wheat"))
+		(t (:foreground "white"))))))
   (ignore-errors
-    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
+    (set-face-font 'default (win-or-nix "Consolas"
+					"Inconsolata")))
   (let ((frame (selected-frame)))
     (modify-frame-parameters frame '((alpha . 99)))
     (set-frame-height frame 40)))
+
+(defun switch-faces ()
+  "Toggle between light and dark look."
+  (interactive)
+  (setq *lighty-p* (not *lighty-p*))
+  (faces-fix)
+  (faces-generic))
 
 (win-or-nix
  (defun hide-emacs ()
@@ -209,12 +347,13 @@ Execute only once."
 Reset some faces which --daemon doesn't quite set.
 Remove hooh when done."
    (select-frame frame)
-   (if (window-system frame)
-       (progn (faces-graphical)
-	      (remove-hook 'after-make-frame-functions
-			   'reset-frame-faces))
-     (progn (set-face-background 'default "black" frame)
-	    (set-face-foreground 'default "white" frame)))))
+   (cond ((window-system frame)
+	  (faces-fix)
+	  (remove-hook 'after-make-frame-functions
+		       'reset-frame-faces))
+	 ((not *lighty-p*)
+	  (set-face-background 'default "black" frame)
+	  (set-face-foreground 'default "white" frame)))))
 
 (defun pretty-lambdas ()
   "Show an actual lambda instead of the string `lambda'."
@@ -230,6 +369,7 @@ Remove hooh when done."
 
 ;; Set some path constants.
 (win-or-nix (defconst *win-path* "C:/" "Windows root path."))
+
 (defconst *home-path*
   (win-or-nix
    (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
@@ -239,6 +379,7 @@ Remove hooh when done."
        "/home/andrey/"
      "~/"))
   "Home path.")
+
 (defconst *extras-path* (concat *home-path* ".emacs.d/extras/")
   "Elisp extensions' path.")
 
@@ -294,98 +435,18 @@ Remove hooh when done."
 
 ;;;; Theme styles
 
-(set-face-background 'highlight "SeaGreen")
-(set-face-background 'show-paren-match-face "DarkRed")
-
-(custom-set-faces
- '(font-lock-comment-face
-   ((((class grayscale) (background light))
-     (:foreground "DimGray" :weight bold :slant italic))
-    (((class grayscale) (background dark))
-     (:foreground "LightGray" :weight bold :slant italic))
-    (((class color) (min-colors 88) (background light))
-     (:foreground "Firebrick" :slant italic))
-    (((class color) (min-colors 88) (background dark))
-     (:foreground "chocolate1" :slant italic))
-    (((class color) (min-colors 16) (background light))
-     (:foreground "red" :slant italic))
-    (((class color) (min-colors 16) (background dark))
-     (:foreground "red1" :slant italic))
-    (((class color) (min-colors 8) (background light))
-     (:foreground "red" :slant italic))
-    (((class color) (min-colors 8) (background dark))
-     (:foreground "red" :slant italic))
-    (t (:weight bold :slant italic))))
- '(mode-line
-   ((default (:foreground "black" :box (:line-width 1 :style "none")
-			  :width condensed :height 90 :family "neep"))
-    (((class color) (min-colors 88)) (:background "DarkSlateGray"))
-    (t (:background "green"))))
- '(mode-line-inactive
-   ((default (:inherit mode-line))
-    (((class color) (min-colors 88))
-     (:foreground "DarkSlateGray" :background "honeydew4"))
-    (t (:foreground "white" :background "black"))))
- '(mode-line-buffer-id
-   ((default (:inherit mode-line :foreground "black"))
-    (((class color) (min-colors 88))
-     (:background "CadetBlue" :weight extrabold))
-    (t (:background "green" :weight normal))))
- '(tabbar-default ((t (:inherit variable-pitch :background "#111"
-				:foreground "#0c0"))))
- '(tabbar-default-face ((t (:inherit variable-pitch :background "#111"
-				     :foreground "#0c0"))))
- '(tabbar-selected
-   ((default (:inherit tabbar-default :background "black"
-		       :box (:line-width 2 :color "black")))
-    (((class color) (min-colors 88)) (:foreground "DeepSkyBlue"))
-    (t (:foreground "white"))))
- '(tabbar-unselected
-   ((default (:inherit tabbar-default))
-    (((class color) (min-colors 88))
-     (:background "#222" :foreground "DarkCyan"
-		  :box (:line-width 2 :color "#090909")))
-    (t (:background "gray" :foreground "cyan"
-		    :box (:line-width 2 :color "gray")))))
- '(tabbar-button
-   ((t (:inherit tabbar-default :background "black"
-		 :foreground "#0c0"
-		 :box (:line-width 2 :color "black")))))
- '(tabbar-button-face
-   ((t (:inherit tabbar-default-face :background "black"
-		 :foreground "#0c0"
-		 :box (:line-width 2 :color "black")))))
- '(tabbar-selected-face
-   ((t (:inherit tabbar-default-face :background "black"
-		 :foreground "SpringGreen"
-		 :box (:line-width 2 :color "black")))))
- '(tabbar-separator ((t (:foreground "#0c0" :background "#111"))))
- '(tabbar-separator-face ((t (:foreground "#0c0" :background "#111"))))
- '(highlight-changes ((((class color) (min-colors 88))
-		       (:background "#382f2f"))
-		      (t (:background "orange"))))
- '(highlight-changes-delete ((((class color) (min-colors 88))
-			      (:background "#916868"))
-			     (default (:background "red"))))
- '(region ((((class color) (min-colors 88))
-	    (:foreground nil :background "DarkSlateGray"))
-	   (t (:foreground "white" :background "cyan"))))
- '(hl-line ((((class color) (min-colors 88)) (:background "#123"))
-	    (t (:background "blue"))))
- '(cursor ((((class color) (min-colors 88))
-	    (:background "DeepSkyBlue"))
-	   (t (:background "white")))))
-
 ;;; set geometry
 (add-to-list 'default-frame-alist (cons 'width *width*))
 (win-or-nix (set-frame-width (selected-frame) *width*))
 
+(faces-generic)
+
 (win-or-nix
- ((faces-graphical)
+ ((faces-fix)
   (global-set-key (kbd "C-x C-c") 'hide-emacs))
 
  (if (window-system)
-     (faces-graphical)
+     (faces-fix)
    ;; hook, execute only first time in graphical frame
    ;;  (and indefinite times in terminal frames till then)
    (add-hook 'after-make-frame-functions 'reset-frame-faces)))
@@ -576,7 +637,7 @@ Remove hooh when done."
 	 swank-clojure-jar-path (concat *clojure-dir* "/clojure.jar")
 	 swank-clojure-extra-classpaths
 	 (cons (concat *extras-path*
-		       "/swank-clojure/src/main/clojure/")
+		       "/clojure/swank-clojure/src/main/clojure/")
 	       (directory-files *clojure-dir* t ".\\(jar\\|clj\\)$"))
 	 swank-clojure-extra-vm-args
 	 '("-server" "-Xdebug"
@@ -661,8 +722,7 @@ Remove hooh when done."
     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
     (interactive
      (list (slime-read-symbol-name "Class/Interface name: ")))
-    (or ci-name
-	(error "No name given"))
+    (or ci-name	(error "No name given"))
     (let ((name (replace-regexp-in-string "\\$" "." ci-name))
 	  (path (concat (expand-file-name
 			 slime-browse-local-javadoc-root)
