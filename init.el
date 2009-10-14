@@ -14,8 +14,8 @@
 ;;  Programming languages related:
 ;;   SLIME (http://common-lisp.net/project/slime)
 ;;   Quack (http://www.neilvandyke.org/quack/)
-;;   clojure-mode (http://github.com/jochu/clojure-mode/tree)
-;;   swank-clojure (http://github.com/jochu/swank-clojure/tree)
+;;   clojure-mode (http://github.com/jochu/clojure-mode)
+;;   swank-clojure (http://github.com/jochu/swank-clojure)
 ;;   clips-mode (http://www.cs.us.es/software/clips)
 ;;   Prolog (http://bruda.ca/emacs-prolog)
 ;;   haskell-mode (http://www.haskell.org/haskell-mode)
@@ -139,7 +139,8 @@ Each function may be an atom or a list with parameters."
        (((class color) (min-colors 88)) :background "DarkSlateGray")
        (t :background "green")))
     '(mode-line-inactive
-      ((default :inherit mode-line)
+      ((default :box (:line-width 1 :style "none")
+	 :width condensed :height 80 :family "neep")
        (((class color) (min-colors 88))
 	:foreground "DarkSlateGray" :background "honeydew4")
        (t :foreground "white" :background "black")))
@@ -169,7 +170,10 @@ Each function may be an atom or a list with parameters."
        (((background dark))
 	:background "gray" :foreground "cyan"
 	:box (:line-width 2 :color "gray"))
-       (t :background "gray" :foreground "black"
+       (((class color) (min-colors 88) (background light))
+	:background "gray" :foreground "black"
+	:box (:line-width 2 :color "white"))
+       (t :background "black" :foreground "white"
 	  :box (:line-width 2 :color "white"))))
     '(tabbar-button
       ((default (:inherit tabbar-default))
@@ -229,12 +233,11 @@ Each function may be an atom or a list with parameters."
     '(cursor ((((class color)) :background "DeepSkyBlue")
 	      (((background light)) :background "black")
 	      (t :background "white")))
-    '(show-paren-match-face ((((class color) (background dark))
-			      :background "DarkRed")
-			     (((class color) (background light))
-			      :background "red")
-			     (((background dark)) :background "grey50")
-			     (t :background "gray")))))
+    '(show-paren-match-face
+      ((((class color) (background dark)) :background "DarkRed")
+       (((class color) (background light)) :background "red")
+       (((background dark)) :background "grey50")
+       (t :background "gray")))))
 
 ;;; fullscreen stuff
 (defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
@@ -335,25 +338,25 @@ Execute only once."
   (faces-fix)
   (faces-generic))
 
+(defun reset-frame-faces (frame)
+  "Execute once on the first graphical new FRAME.
+Reset some faces which --daemon doesn't quite set.
+Remove hooh when done."
+  (select-frame frame)
+  (cond ((window-system frame)
+	 (faces-fix)
+	 (remove-hook 'after-make-frame-functions
+		      'reset-frame-faces))
+	((not *lighty-p*)
+	 (set-face-background 'default "black" frame)
+	 (set-face-foreground 'default "white" frame))))
+
 (win-or-nix
  (defun hide-emacs ()
    "Keep emacs running hidden on exit."
    (interactive)
    (server-edit)
-   (make-frame-invisible nil t))
-
- (defun reset-frame-faces (frame)
-   "Execute once on the first graphical new FRAME.
-Reset some faces which --daemon doesn't quite set.
-Remove hooh when done."
-   (select-frame frame)
-   (cond ((window-system frame)
-	  (faces-fix)
-	  (remove-hook 'after-make-frame-functions
-		       'reset-frame-faces))
-	 ((not *lighty-p*)
-	  (set-face-background 'default "black" frame)
-	  (set-face-foreground 'default "white" frame)))))
+   (make-frame-invisible nil t)))
 
 (defun pretty-lambdas ()
   "Show an actual lambda instead of the string `lambda'."
@@ -439,17 +442,13 @@ Remove hooh when done."
 (add-to-list 'default-frame-alist (cons 'width *width*))
 (win-or-nix (set-frame-width (selected-frame) *width*))
 
+(if (window-system)
+    (faces-fix)
+  ;; hook, execute only first time in graphical frame
+  ;;  (and indefinite times in terminal frames till then)
+  (add-hook 'after-make-frame-functions 'reset-frame-faces))
+
 (faces-generic)
-
-(win-or-nix
- ((faces-fix)
-  (global-set-key (kbd "C-x C-c") 'hide-emacs))
-
- (if (window-system)
-     (faces-fix)
-   ;; hook, execute only first time in graphical frame
-   ;;  (and indefinite times in terminal frames till then)
-   (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
 ;;; Colour theme
 (when (require-maybe 'color-theme)
@@ -463,11 +462,13 @@ Remove hooh when done."
 
 ;;;; windowing stuff
 
+(win-or-nix (global-set-key (kbd "C-x C-c") 'hide-emacs))
+
 (global-set-key [f11] 'my-toggle-fullscreen)
 
 ;; C-9 will increase opacity (== decrease transparency)
 ;; C-8 will decrease opacity (== increase transparency)
-;; C-0 will returns the state to normal
+;; C-0 will return the state to normal
 (global-set-key (kbd "C-9") (lambda () (interactive) (opacity-modify)))
 (global-set-key (kbd "C-8") (lambda () (interactive) (opacity-modify t)))
 (global-set-key (kbd "C-0") (lambda () (interactive)
@@ -715,8 +716,9 @@ Remove hooh when done."
 
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
-	(concat *home-path* (win-or-nix "docs" "Documents")
-		"/JDK-Doc"))
+	(concat (win-or-nix (concat *home-path* "docs")
+			    "/usr/share/doc")
+		"/javadoc"))
 
   (defun slime-browse-local-javadoc (ci-name)
     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
@@ -782,7 +784,8 @@ Remove hooh when done."
 			    "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 		    "clips"))
 
-  (hook-modes activate-lisp-minor-modes
+  (hook-modes (activate-lisp-minor-modes (setq indent-region-function
+					       nil))
 	      clips-mode-hook inferior-clips-mode-hook))
 
 ;;; Caml
@@ -903,7 +906,7 @@ Remove hooh when done."
     (grep-compute-defaults)
     (global-set-key (kbd "<f6>") 'proel-grep-in-project)
     (setq anything-sources (nconc anything-sources
-				  (list 'proel-anything-projects)))))
+				  '(proel-anything-projects)))))
 
 ;;; Auto Install
 (when (require-maybe 'auto-install)
@@ -1025,7 +1028,7 @@ Remove hooh when done."
   ;;   (setq elmo-spam-scheme 'sa
   ;; 	   wl-spam-folder ".spam"))	; maildir to store spam
 
-  (defun wl-summary-refile (&optional folder)
+  (defun my-wl-summary-refile (&optional folder)
     "Refile the current message to FOLDER.
 If FOLDER is nil, use the default."
     (interactive)

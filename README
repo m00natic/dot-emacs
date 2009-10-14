@@ -19,8 +19,8 @@ anything-auto-install
 Programming languages related:
 SLIME (http://common-lisp.net/project/slime)
 Quack (http://www.neilvandyke.org/quack/)
-clojure-mode (http://github.com/jochu/clojure-mode/tree)
-swank-clojure (http://github.com/jochu/swank-clojure/tree)
+clojure-mode (http://github.com/jochu/clojure-mode)
+swank-clojure (http://github.com/jochu/swank-clojure)
 clips-mode (http://www.cs.us.es/software/clips)
 Prolog (http://bruda.ca/emacs-prolog)
 haskell-mode (http://www.haskell.org/haskell-mode)
