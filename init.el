@@ -28,7 +28,10 @@
 ;;   ParEdit (http://www.emacswiki.org/emacs/ParEdit)
 ;;   Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
 ;;  misc:
+;;   ErgoEmacs-mode (http://xahlee.org/emacs/ergonomic_emacs_keybinding.html)
 ;;   AUCTeX (http://www.gnu.org/software/auctex)
+;;   LaTeX-beamer (http://latex-beamer.sourceforge.net)
+;;   Ditaa (http://ditaa.sourceforge.net)
 ;;   CompletionUI (http://www.emacswiki.org/emacs/CompletionUI)
 ;;   ColorTheme (http://www.emacswiki.org/emacs/ColorTheme)
 ;;   cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
@@ -110,7 +113,39 @@ Each function may be an atom or a list with parameters."
      ,(when (require-maybe 'highlight-parentheses)
 	'(highlight-parentheses-mode +1))
 ;;; Paredit
-     ,(when (require-maybe 'paredit) '(paredit-mode +1))))
+     ,(when (require-maybe 'paredit)
+	(when (getenv "ERGOEMACS_KEYBOARD_LAYOUT")
+	  (define-key paredit-mode-map (kbd "M-'")
+	    'paredit-comment-dwim)
+	  (define-key paredit-mode-map (kbd "M-R")
+	    'paredit-raise-sexp)
+	  (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
+	      (progn
+		(define-key paredit-mode-map (kbd "M-o")
+		  'isearch-forward)
+		(define-key paredit-mode-map (kbd "M-f")
+		  'paredit-backward-kill-word)
+		(define-key paredit-mode-map (kbd "M-p")
+		  'paredit-forward-kill-word)
+		(define-key paredit-mode-map (kbd "M-s")
+		  'paredit-backward-delete)
+		(define-key paredit-mode-map (kbd "M-t")
+		  'paredit-forward-delete)
+		(define-key paredit-mode-map (kbd "M-d") 'kill-line)
+		(define-key paredit-mode-map (kbd "M-r")
+		  'paredit-splice-sexp)
+		(define-key paredit-mode-map (kbd "M-;")
+		  'recenter-top-bottom))
+	    (define-key paredit-mode-map (kbd "M-;") 'isearch-forward)
+	    (define-key paredit-mode-map (kbd "M-e")
+	      'paredit-backward-kill-word)
+	    (define-key paredit-mode-map (kbd "M-r")
+	      'paredit-forward-kill-word)
+	    (define-key paredit-mode-map (kbd "M-d")
+	      'paredit-backward-delete)
+	    (define-key paredit-mode-map (kbd "M-f")
+	      'paredit-forward-delete)))
+	'(paredit-mode +1))))
 
 (defmacro faces-generic ()
   "My prefered faces which differ from default."
@@ -427,12 +462,12 @@ Remove hooh when done."
  '(global-linum-mode 1)			; show line numbers
  ;;'(visible-bell t)		 ; Flash instead of that annoying bell
  '(icomplete-prospects-height 2)	; don't spam my minibuffer
- '(completion-ignore-case t)	      ; ignore case when completing...
- '(read-file-name-completion-ignore-case t) ; ...filenames too
- '(search-highlight t)			; highlight when searching...
- '(query-replace-highlight t)		; ...and replacing
- '(require-final-newline t)		; end files with a newline
- )
+ '(completion-ignore-case t)
+ '(read-file-name-completion-ignore-case t)
+ '(search-highlight t)
+ '(query-replace-highlight t)
+ '(require-final-newline t)
+ '(tool-bar-mode nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -513,7 +548,7 @@ Remove hooh when done."
 (set-selection-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
-(global-set-key (kbd "C-s-c")
+(global-set-key (kbd "C-s-k")
 		(lambda ()
 		  (interactive)
 		  (revert-buffer-with-coding-system 'cp1251)))
@@ -525,6 +560,17 @@ Remove hooh when done."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; usefull stuff
+
+;;; ErgoEmacs minor mode
+(when (file-exists-p (concat *extras-path* "/ergo"))
+  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
+  (load "ergoemacs-mode")
+  (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
+      (define-key ergoemacs-keymap (kbd "M-o") 'recenter-top-bottom)
+    (define-key ergoemacs-keymap (kbd "M-;") 'recenter-top-bottom))
+  (define-key ergoemacs-keymap (kbd "M-3") 'move-cursor-previous-pane)
+  (define-key ergoemacs-keymap (kbd "M-#") 'move-cursor-next-pane)
+  (ergoemacs-mode 1))
 
 ;; highlight current line, turn it on for all modes by default
 (when (fboundp 'global-hl-line-mode) (global-hl-line-mode t))
@@ -548,8 +594,8 @@ Remove hooh when done."
 (global-set-key (kbd "<C-M-next>") 'next-error)
 
 ;;; clipboard
-(global-set-key (kbd "C-s-y") 'clipboard-yank)
-(global-set-key (kbd "C-s-w") 'clipboard-kill-ring-save)
+(global-set-key (kbd "C-s-v") 'clipboard-yank)
+(global-set-key (kbd "C-s-c") 'clipboard-kill-ring-save)
 
 ;;; enable some actions
 (put 'narrow-to-region 'disabled nil)
@@ -869,9 +915,56 @@ Remove hooh when done."
 		(win-or-nix (kbd "S-<tab>") (kbd "<S-iso-lefttab>"))
 		'TeX-complete-symbol))))
 
+;;; LaTeX beamer
+;; allow for export=>beamer by placing
+;; #+LaTeX_CLASS: beamer in org files
+(unless (boundp 'org-export-latex-classes)
+  (setq org-export-latex-classes nil))
+
+(add-to-list 'org-export-latex-classes
+	     '("beamer"
+	       "\\documentclass[11pt]{beamer}\n
+      \\mode<presentation>\n
+      \\usetheme{Antibes}\n
+      \\usecolortheme{lily}\n
+      \\beamertemplateballitem\n
+      \\setbeameroption{show notes}
+      \\usepackage[utf8]{inputenc}\n
+      \\usepackage[T1]{fontenc}\n
+      \\usepackage{hyperref}\n
+      \\usepackage{color}
+      \\usepackage{listings}
+      \\lstset{numbers=none,language=[ISO]C++,tabsize=4,
+  frame=single,
+  basicstyle=\\small,
+  showspaces=false,showstringspaces=false,
+  showtabs=false,
+  keywordstyle=\\color{blue}\\bfseries,
+  commentstyle=\\color{red},
+  }\n
+      \\usepackage{verbatim}\n
+      \\institute{Sofia University, FMI}\n
+       \\subject{RMRF}\n"
+	       ("\\section{%s}" . "\\section*{%s}")
+
+	       ("\\begin{frame}[fragile]\\frametitle{%s}"
+		"\\end{frame}"
+		"\\begin{frame}[fragile]\\frametitle{%s}"
+		"\\end{frame}")))
+
+;;; Ditaa
+(let ((ditaa-path (concat *extras-path* "ditaa0_6b.jar")))
+  (when (file-exists-p ditaa-path)
+    (setq org-ditaa-jar-path ditaa-path)
+
+    (defun ditaa-generate ()
+      (interactive)
+      (shell-command (concat "java -jar " org-ditaa-jar-path " "
+			     buffer-file-name)))))
+
 ;;; CompletionUI
 (when (require-maybe 'completion-ui)
-  (global-set-key (kbd "M-/") 'complete-dabbrev)
+  (global-set-key (kbd "M-?") 'complete-dabbrev)
   (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
 
 ;;; Anything
@@ -986,7 +1079,7 @@ Remove hooh when done."
 	wl-smtp-connection-type 'starttls
 	wl-smtp-posting-port 587
 	wl-smtp-authenticate-type "plain"
-	wl-smtp-posting-user "m00natic"
+	wl-smtp-posting-user "m00naticus@gmail.com"
 	wl-smtp-posting-server "smtp.gmail.com"
 	wl-local-domain "gmail.com"
 
@@ -1039,7 +1132,7 @@ If FOLDER is nil, use the default."
   ;; (define-key wl-summary-mode-map (kbd "b x") ; => Project X
   ;;   (lambda ()
   ;;     (interactive)
-  ;;     (wl-summary-refile ".project-x")))
+  ;;     (my-wl-summary-refile ".project-x")))
 
   ;; suggested by Masaru Nomiya on the WL mailing list
   (defun wl-draft-subject-check ()
