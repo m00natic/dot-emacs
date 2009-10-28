@@ -47,13 +47,13 @@
 ;;;; extension independent macros
 
 ;; do some OS recognition
-(defconst *winp* (or (eq system-type 'windows-nt)
+(defconst +winp+ (or (eq system-type 'windows-nt)
 		     (eq system-type 'ms-dos)) "Windows detection.")
 
 (defmacro win-or-nix (win &rest nix)
   "OS conditional.  WIN may be a list and is executed on windows systems.
 NIX forms are executed on all other platforms."
-  (if *winp*
+  (if +winp+
       (if (consp win)
 	  (let ((form (car win)))
 	    (cond ((not (consp form)) win)
@@ -276,14 +276,14 @@ Each function may be an atom or a list with parameters."
 
 ;;; fullscreen stuff
 (defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
-(defconst *width* 100 "My prefered non-fullscreen width.")
+(defconst +width+ 100 "My prefered non-fullscreen width.")
 
 (defmacro my-non-fullscreen ()
   "Exit fullscreen."
   `(if (fboundp 'w32-send-sys-command)
        ;; WM_SYSCOMMAND restore #xf120
        (w32-send-sys-command 61728)
-     (set-frame-parameter nil 'width *width*)
+     (set-frame-parameter nil 'width +width+)
      (set-frame-parameter nil 'fullscreen 'fullheight)))
 
 (defmacro my-fullscreen ()
@@ -406,9 +406,9 @@ Remove hooh when done."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Set some path constants.
-(win-or-nix (defconst *win-path* "C:/" "Windows root path."))
+(win-or-nix (defconst +win-path+ "C:/" "Windows root path."))
 
-(defconst *home-path*
+(defconst +home-path+
   (win-or-nix
    (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
        (match-string-no-properties 0 exec-directory)
@@ -418,14 +418,14 @@ Remove hooh when done."
      "~/"))
   "Home path.")
 
-(defconst *extras-path* (concat *home-path* ".emacs.d/extras/")
+(defconst +extras-path+ (concat +home-path+ ".emacs.d/extras/")
   "Elisp extensions' path.")
 
-;; add `*extras-path*' and subdirs to `load-path'
-(and (file-exists-p *extras-path*)
+;; add `+extras-path+' and subdirs to `load-path'
+(and (file-exists-p +extras-path+)
      (fboundp 'normal-top-level-add-subdirs-to-load-path)
-     (let ((default-directory *extras-path*))
-       (setq load-path (cons *extras-path* load-path))
+     (let ((default-directory +extras-path+))
+       (setq load-path (cons +extras-path+ load-path))
        (normal-top-level-add-subdirs-to-load-path)))
 
 ;; set default directory for `*scratch*'
@@ -474,8 +474,8 @@ Remove hooh when done."
 ;;;; Theme styles
 
 ;;; set geometry
-(add-to-list 'default-frame-alist (cons 'width *width*))
-(win-or-nix (set-frame-width (selected-frame) *width*))
+(add-to-list 'default-frame-alist (cons 'width +width+))
+(win-or-nix (set-frame-width (selected-frame) +width+))
 
 (if (window-system)
     (faces-fix)
@@ -562,12 +562,12 @@ Remove hooh when done."
 ;;;; usefull stuff
 
 ;;; ErgoEmacs minor mode
-(when (file-exists-p (concat *extras-path* "/ergo"))
+(when (file-exists-p (concat +extras-path+ "/ergo"))
   (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
   (load "ergoemacs-mode")
   (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-      (define-key ergoemacs-keymap (kbd "M-o") 'recenter-top-bottom)
-    (define-key ergoemacs-keymap (kbd "M-;") 'recenter-top-bottom))
+      (define-key ergoemacs-keymap (kbd "M-;") 'recenter-top-bottom)
+    (define-key ergoemacs-keymap (kbd "M-p") 'recenter-top-bottom))
   (define-key ergoemacs-keymap (kbd "M-3") 'move-cursor-previous-pane)
   (define-key ergoemacs-keymap (kbd "M-#") 'move-cursor-next-pane)
   (ergoemacs-mode 1))
@@ -607,7 +607,7 @@ Remove hooh when done."
 ;;; recentf
 (when (require-maybe 'recentf)		; save recently used files
   (setq recentf-max-saved-items 100	; max save 100
-	recentf-save-file (concat *home-path*
+	recentf-save-file (concat +home-path+
 				  ".emacs.d/recentf") ; keep ~/ clean
 	recentf-max-menu-items 15)	       ; max 15 in menu
   (recentf-mode t))			       ; turn it on
@@ -615,8 +615,9 @@ Remove hooh when done."
 ;;; backups
 (setq make-backup-files t		; do make backups
       backup-by-copying t		; and copy them ...
-      backup-directory-alist `(("." . ,(concat *home-path* ; ... here
+      backup-directory-alist `(("." . ,(concat +home-path+ ; ... here
 					       ".emacs.d/backup/")))
+      tramp-backup-directory-alist backup-directory-alist
       version-control t
       kept-new-versions 5
       kept-old-versions 2
@@ -648,7 +649,7 @@ Remove hooh when done."
 
 ;;; Redshank
 (when (require-maybe 'redshank-loader
-		     (concat *extras-path*
+		     (concat +extras-path+
 			     "lisp-modes/redshank/redshank-loader"))
   (eval-after-load "redshank-loader"
     `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
@@ -662,8 +663,6 @@ Remove hooh when done."
 	    ielm-mode-hook)
 
 ;;; elisp stuff
-(push '("\\.emacs$" . emacs-lisp-mode) auto-mode-alist)
-
 (define-key emacs-lisp-mode-map (win-or-nix (kbd "S-<tab>")
 					    (kbd "<S-iso-lefttab>"))
   'lisp-complete-symbol)
@@ -674,18 +673,18 @@ Remove hooh when done."
 
 ;;; Clojure
 (when (require-maybe 'clojure-mode)
-  (defconst *clojure-dir* (concat *home-path* (win-or-nix "bin/" ".")
+  (defconst +clojure-dir+ (concat +home-path+ (win-or-nix "bin/" ".")
 				  "clojure")
     "Path to the Clojure directory.")
-  (and (file-exists-p *clojure-dir*)
+  (and (file-exists-p +clojure-dir+)
        (require-maybe 'swank-clojure-autoload)
        (swank-clojure-config
 	(setq
-	 swank-clojure-jar-path (concat *clojure-dir* "/clojure.jar")
+	 swank-clojure-jar-path (concat +clojure-dir+ "/clojure.jar")
 	 swank-clojure-extra-classpaths
-	 (cons (concat *extras-path*
+	 (cons (concat +extras-path+
 		       "/clojure/swank-clojure/src/main/clojure/")
-	       (directory-files *clojure-dir* t ".\\(jar\\|clj\\)$"))
+	       (directory-files +clojure-dir+ t ".\\(jar\\|clj\\)$"))
 	 swank-clojure-extra-vm-args
 	 '("-server" "-Xdebug"
 	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"))))
@@ -707,8 +706,8 @@ Remove hooh when done."
 	     ;;lisp-indent-function 'common-lisp-indent-function
 	     common-lisp-hyperspec-root
 	     (win-or-nix
-	      (concat *home-path* "docs/HyperSpec/")
-	      (concat "file://" *home-path* "Documents/HyperSpec/"))
+	      (concat +home-path+ "docs/HyperSpec/")
+	      (concat "file://" +home-path+ "Documents/HyperSpec/"))
 	     slime-net-coding-system
 	     (find-if 'slime-find-coding-system
 		      '(utf-8-unix iso-latin-1-unix
@@ -762,7 +761,7 @@ Remove hooh when done."
 
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
-	(concat (win-or-nix (concat *home-path* "docs")
+	(concat (win-or-nix (concat +home-path+ "docs")
 			    "/usr/share/doc")
 		"/javadoc"))
 
@@ -808,17 +807,17 @@ Remove hooh when done."
 ;;; (or CLisp SBCL)
   (add-to-list 'slime-lisp-implementations
 	       (win-or-nix (list 'clisp (list
-					 (concat *home-path*
+					 (concat +home-path+
 						 "bin/clisp/clisp.exe")
 					 "-K" "full"))
 			   '(sbcl ("/usr/local/bin/sbcl")))))
 
 (setq inferior-lisp-program
-      (win-or-nix (concat *home-path* "bin/clisp/clisp.exe -K full")
+      (win-or-nix (concat +home-path+ "bin/clisp/clisp.exe -K full")
 		  "/usr/local/bin/sbcl"))
 
 ;;; Scheme
-(when (file-exists-p (concat *extras-path* "lisp-modes/quack.el"))
+(when (file-exists-p (concat +extras-path+ "lisp-modes/quack.el"))
   (setq quack-global-menu-p nil)
   (require-maybe 'quack))
 
@@ -826,7 +825,7 @@ Remove hooh when done."
 (when (require-maybe 'inf-clips)
   (push '("\.clp$" . clips-mode) auto-mode-alist)
   (setq inferior-clips-program
-	(win-or-nix (concat *win-path*
+	(win-or-nix (concat +win-path+
 			    "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 		    "clips"))
 
@@ -843,7 +842,7 @@ Remove hooh when done."
 			      auto-mode-alist)))
 
 ;;; Haskell
-(when (file-exists-p (concat *extras-path* "haskell"))
+(when (file-exists-p (concat +extras-path+ "haskell"))
   ;;(require-maybe 'haskell-site-file)
   (load "haskell-site-file")
   (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indent)
@@ -905,7 +904,7 @@ Remove hooh when done."
 ;;;; Auxiliary extensions
 
 ;;; AUCTeX
-(when (file-exists-p (concat *extras-path* "tex"))
+(when (file-exists-p (concat +extras-path+ "tex"))
   (load "auctex" nil t)
   (load "preview-latex" nil t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
@@ -953,7 +952,7 @@ Remove hooh when done."
 		"\\end{frame}")))
 
 ;;; Ditaa
-(let ((ditaa-path (concat *extras-path* "ditaa0_6b.jar")))
+(let ((ditaa-path (concat +extras-path+ "ditaa.jar")))
   (when (file-exists-p ditaa-path)
     (setq org-ditaa-jar-path ditaa-path)
 
@@ -989,12 +988,12 @@ Remove hooh when done."
   (setq proel-dirs-with-projects
 	(list (expand-file-name
 	       (let ((default-proel (win-or-nix
-				     (concat *win-path*
+				     (concat +win-path+
 					     "Program Files")
-				     (concat *home-path* "Programs"))))
+				     (concat +home-path+ "Programs"))))
 		 (if (file-exists-p default-proel)
 		     default-proel
-		   *home-path*)))))
+		   +home-path+)))))
   (when (require-maybe 'proel)
     (grep-compute-defaults)
     (global-set-key (kbd "<f6>") 'proel-grep-in-project)
@@ -1003,7 +1002,7 @@ Remove hooh when done."
 
 ;;; Auto Install
 (when (require-maybe 'auto-install)
-  (setq auto-install-directory (concat *extras-path*
+  (setq auto-install-directory (concat +extras-path+
 				       "auto-install-dir/"))
   (when (require-maybe 'anything-auto-install)
     (defun anything-toggle-auto-install ()
@@ -1066,7 +1065,7 @@ Remove hooh when done."
   (autoload 'wl "wl" "Wanderlust" t)
   (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
   (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
-  ;;(setq wl-init-file (concat *home-path* ".emacs.d/wl.el"))
+  ;;(setq wl-init-file (concat +home-path+ ".emacs.d/wl.el"))
 
   ;; IMAP
   (setq elmo-imap4-default-server "imap.gmail.com"
@@ -1164,7 +1163,7 @@ If FOLDER is nil, use the default."
 
 (win-or-nix
 ;;; Cygwin
- (let ((cygwin-dir (concat *win-path* "cygwin/bin")))
+ (let ((cygwin-dir (concat +win-path+ "cygwin/bin")))
    (when (and (file-exists-p cygwin-dir)
 	      (require-maybe 'cygwin-mount))
      (cygwin-mount-activate)
