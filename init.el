@@ -1,4 +1,4 @@
-;;; init.el --- Andrey Kotlarski's .emacs
+;; init.el --- Andrey Kotlarski's .emacs
 
 ;;; Commentary:
 ;; Utilized extensions:
@@ -115,35 +115,32 @@ Each function may be an atom or a list with parameters."
 ;;; Paredit
      ,(when (require-maybe 'paredit)
 	(when (getenv "ERGOEMACS_KEYBOARD_LAYOUT")
-	  (define-key paredit-mode-map (kbd "M-'")
-	    'paredit-comment-dwim)
-	  (define-key paredit-mode-map (kbd "M-R")
-	    'paredit-raise-sexp)
+	  (define-key paredit-mode-map "\M-'" 'paredit-comment-dwim)
+	  (define-key paredit-mode-map "\M-R" 'paredit-raise-sexp)
 	  (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
 	      (progn
-		(define-key paredit-mode-map (kbd "M-o")
-		  'isearch-forward)
-		(define-key paredit-mode-map (kbd "M-f")
+		(define-key paredit-mode-map "\M-o" 'isearch-forward)
+		(define-key paredit-mode-map "\M-f"
 		  'paredit-backward-kill-word)
-		(define-key paredit-mode-map (kbd "M-p")
+		(define-key paredit-mode-map "\M-p"
 		  'paredit-forward-kill-word)
-		(define-key paredit-mode-map (kbd "M-s")
+		(define-key paredit-mode-map "\M-s"
 		  'paredit-backward-delete)
-		(define-key paredit-mode-map (kbd "M-t")
+		(define-key paredit-mode-map "\M-t"
 		  'paredit-forward-delete)
-		(define-key paredit-mode-map (kbd "M-d") 'kill-line)
-		(define-key paredit-mode-map (kbd "M-r")
+		(define-key paredit-mode-map "\M-d" 'kill-line)
+		(define-key paredit-mode-map "\M-r"
 		  'paredit-splice-sexp)
-		(define-key paredit-mode-map (kbd "M-;")
+		(define-key paredit-mode-map "\M-;"
 		  'recenter-top-bottom))
-	    (define-key paredit-mode-map (kbd "M-;") 'isearch-forward)
-	    (define-key paredit-mode-map (kbd "M-e")
+	    (define-key paredit-mode-map "\M-;" 'isearch-forward)
+	    (define-key paredit-mode-map "\M-e"
 	      'paredit-backward-kill-word)
-	    (define-key paredit-mode-map (kbd "M-r")
+	    (define-key paredit-mode-map "\M-r"
 	      'paredit-forward-kill-word)
-	    (define-key paredit-mode-map (kbd "M-d")
+	    (define-key paredit-mode-map "\M-d"
 	      'paredit-backward-delete)
-	    (define-key paredit-mode-map (kbd "M-f")
+	    (define-key paredit-mode-map "\M-f"
 	      'paredit-forward-delete)))
 	'(paredit-mode +1))))
 
@@ -403,6 +400,13 @@ Remove hooh when done."
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
 
+(defun su-mode-line-function ()
+  "Change modeline when root."
+  (when (string-match "^/su\\(do\\)?:" default-directory)
+    (setq mode-line-format
+	  (format-mode-line mode-line-format
+			    'font-lock-warning-face))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Set some path constants.
@@ -497,7 +501,7 @@ Remove hooh when done."
 
 ;;;; windowing stuff
 
-(win-or-nix (global-set-key (kbd "C-x C-c") 'hide-emacs))
+(win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
 
 (global-set-key [f11] 'my-toggle-fullscreen)
 
@@ -566,10 +570,10 @@ Remove hooh when done."
   (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
   (load "ergoemacs-mode")
   (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-      (define-key ergoemacs-keymap (kbd "M-;") 'recenter-top-bottom)
-    (define-key ergoemacs-keymap (kbd "M-p") 'recenter-top-bottom))
-  (define-key ergoemacs-keymap (kbd "M-3") 'move-cursor-previous-pane)
-  (define-key ergoemacs-keymap (kbd "M-#") 'move-cursor-next-pane)
+      (define-key ergoemacs-keymap "\M-;" 'recenter-top-bottom)
+    (define-key ergoemacs-keymap "\M-p" 'recenter-top-bottom))
+  (define-key ergoemacs-keymap "\M-3" 'move-cursor-previous-pane)
+  (define-key ergoemacs-keymap "\M-#" 'move-cursor-next-pane)
   (ergoemacs-mode 1))
 
 ;; highlight current line, turn it on for all modes by default
@@ -622,6 +626,10 @@ Remove hooh when done."
       kept-new-versions 5
       kept-old-versions 2
       delete-old-versions t)
+
+;;; tramp-ing as root
+(hook-modes su-mode-line-function
+	    find-file-hooks dired-mode-hook)
 
 (mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
 (icomplete-mode t)		  ; completion in minibuffer
@@ -703,7 +711,6 @@ Remove hooh when done."
        (slime-autodoc-mode)
        (setq slime-complete-symbol*-fancy t
 	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	     ;;lisp-indent-function 'common-lisp-indent-function
 	     common-lisp-hyperspec-root
 	     (win-or-nix
 	      (concat +home-path+ "docs/HyperSpec/")
@@ -752,12 +759,12 @@ Remove hooh when done."
 	      (interactive)
 	      (slime-redirect-inferior-output)
 	      (define-key slime-mode-map
-		(kbd "C-c d") 'slime-java-describe)
+		"\C-cd" 'slime-java-describe)
 	      (define-key slime-repl-mode-map
-		(kbd "C-c d") 'slime-java-describe)
-	      (define-key slime-mode-map (kbd "C-c D") 'slime-javadoc)
+		"\C-cd" 'slime-java-describe)
+	      (define-key slime-mode-map "\C-cD" 'slime-javadoc)
 	      (define-key slime-repl-mode-map
-		(kbd "C-c D") 'slime-javadoc)))
+		"\C-cD" 'slime-javadoc)))
 
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
@@ -798,10 +805,10 @@ Remove hooh when done."
 
   (add-hook 'slime-connected-hook (lambda ()
 				    (define-key slime-mode-map
-				      (kbd "C-c b")
+				      "\C-cb"
 				      'slime-browse-local-javadoc)
 				    (define-key slime-repl-mode-map
-				      (kbd "C-c b")
+				      "\C-cb"
 				      'slime-browse-local-javadoc)))
 
 ;;; (or CLisp SBCL)
@@ -929,7 +936,7 @@ Remove hooh when done."
       \\beamertemplateballitem\n
       \\setbeameroption{show notes}
       \\usepackage[utf8]{inputenc}\n
-      \\usepackage[T1]{fontenc}\n
+      \\usepackage[bulgarian]{babel}\n
       \\usepackage{hyperref}\n
       \\usepackage{color}
       \\usepackage{listings}
@@ -943,7 +950,7 @@ Remove hooh when done."
   }\n
       \\usepackage{verbatim}\n
       \\institute{Sofia University, FMI}\n
-       \\subject{RMRF}\n"
+      \\subject{RMRF}\n"
 	       ("\\section{%s}" . "\\section*{%s}")
 
 	       ("\\begin{frame}[fragile]\\frametitle{%s}"
@@ -963,7 +970,7 @@ Remove hooh when done."
 
 ;;; CompletionUI
 (when (require-maybe 'completion-ui)
-  (global-set-key (kbd "M-?") 'complete-dabbrev)
+  (global-set-key "\M-?" 'complete-dabbrev)
   (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
 
 ;;; Anything
@@ -1050,9 +1057,9 @@ Remove hooh when done."
 	 (shell-command "global -u && echo 'updated tagfile'"))))
 
   (add-hook 'gtags-mode-hook (lambda ()
-			       (local-set-key (kbd "M-.") ; find a tag
+			       (local-set-key "\M-." ; find a tag
 					      'gtags-find-tag)
-			       (local-set-key (kbd "M-,") ;reverse tag
+			       (local-set-key "\M-," ;reverse tag
 					      'gtags-find-rtag)))
   (add-hook 'c-mode-common-hook (lambda ()
 				  (gtags-mode t)
@@ -1068,10 +1075,11 @@ Remove hooh when done."
   ;;(setq wl-init-file (concat +home-path+ ".emacs.d/wl.el"))
 
   ;; IMAP
-  (setq elmo-imap4-default-server "imap.gmail.com"
+  (setq elmo-maildir-folder-path (concat +home-path+ "Mail")
+	elmo-imap4-default-server "imap.gmail.com"
 	elmo-imap4-default-user "m00naticus@gmail.com"
 	elmo-imap4-default-authenticate-type 'clear
-	elmo-imap4-default-port '993
+	elmo-imap4-default-port 993
 	elmo-imap4-default-stream-type 'ssl
 	elmo-imap4-use-modified-utf7 t
 	;; SMTP
@@ -1082,13 +1090,22 @@ Remove hooh when done."
 	wl-smtp-posting-server "smtp.gmail.com"
 	wl-local-domain "gmail.com"
 
-	wl-default-folder "%Inbox"
-	wl-default-spec "%"
-	wl-draft-folder "%[Gmail]/Drafts" ; Gmail IMAP
-	wl-trash-folder "%[Gmail]/Trash"
+	wl-default-folder "%inbox"
+	wl-draft-folder ".drafts"
+	wl-trash-folder ".trash"
+	wl-spam-folder ".trash"
+	wl-queue-folder ".queue"
 
 	wl-folder-check-async t
-	elmo-imap4-use-modified-utf7 t)
+	elmo-imap4-use-modified-utf7 t
+
+	wl-fcc ".sent"
+	wl-fcc-force-as-read t
+	wl-from "Andr <m00naticus@gmail.com>"
+	wl-message-id-use-wl-from t
+	wl-insert-mail-followup-to t
+	wl-draft-buffer-style 'keep
+	wl-subscribed-mailing-list '("slime-devel@common-lisp.net"))
 
   (autoload 'wl-user-agent-compose "wl-draft" nil t)
   (when (boundp 'mail-user-agent)
