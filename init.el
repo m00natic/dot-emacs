@@ -357,8 +357,7 @@ Execute only once."
 		(((class color) (min-colors 88)) (:foreground "wheat"))
 		(t (:foreground "white"))))))
   (ignore-errors
-    (set-face-font 'default (win-or-nix "Consolas"
-					"Inconsolata")))
+    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
   (let ((frame (selected-frame)))
     (modify-frame-parameters frame '((alpha . 99)))
     (set-frame-height frame 40)))
@@ -611,8 +610,7 @@ Remove hooh when done."
 ;;; recentf
 (when (require-maybe 'recentf)		; save recently used files
   (setq recentf-max-saved-items 100	; max save 100
-	recentf-save-file (concat +home-path+
-				  ".emacs.d/recentf") ; keep ~/ clean
+	recentf-save-file (concat +home-path+ ".emacs.d/recentf")
 	recentf-max-menu-items 15)	       ; max 15 in menu
   (recentf-mode t))			       ; turn it on
 
@@ -758,13 +756,12 @@ Remove hooh when done."
 	    (lambda ()
 	      (interactive)
 	      (slime-redirect-inferior-output)
-	      (define-key slime-mode-map
-		"\C-cd" 'slime-java-describe)
-	      (define-key slime-repl-mode-map
-		"\C-cd" 'slime-java-describe)
+	      (define-key slime-mode-map "\C-cd" 'slime-java-describe)
+	      (define-key slime-repl-mode-map "\C-cd"
+		'slime-java-describe)
 	      (define-key slime-mode-map "\C-cD" 'slime-javadoc)
-	      (define-key slime-repl-mode-map
-		"\C-cD" 'slime-javadoc)))
+	      (define-key slime-repl-mode-map "\C-cD"
+		'slime-javadoc)))
 
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
@@ -786,8 +783,7 @@ Remove hooh when done."
 	(let ((l (delq nil
 		       (mapcar (lambda (rgx)
 				 (let* ((r (concat
-					    "\\.?\\("
-					    rgx
+					    "\\.?\\(" rgx
 					    "[^./]+\\)[^.]*\\.?$"))
 					(n (if (string-match r name)
 					       (match-string 1 name)
@@ -804,8 +800,7 @@ Remove hooh when done."
 	    (error (concat "Not found: " ci-name)))))))
 
   (add-hook 'slime-connected-hook (lambda ()
-				    (define-key slime-mode-map
-				      "\C-cb"
+				    (define-key slime-mode-map "\C-cb"
 				      'slime-browse-local-javadoc)
 				    (define-key slime-repl-mode-map
 				      "\C-cb"
@@ -1045,11 +1040,11 @@ Remove hooh when done."
    (defun gtags-create-or-update ()
      "Create or update the gnu global tag file."
      (interactive)
-     (or (= 0 (call-process "global"
-			    nil nil nil " -p")) ; tagfile doesn't exist?
+     (or (= 0 (call-process "global" nil nil nil " -p"))
 	 (let ((olddir default-directory)
-	       (topdir (read-directory-name "gtags: top of source tree:"
-					    default-directory)))
+	       (topdir (read-directory-name
+			"gtags: top of source tree:"
+			default-directory)))
 	   (cd topdir)
 	   (shell-command "gtags && echo 'created tagfile'")
 	   (cd olddir))		 ; restore
@@ -1057,9 +1052,8 @@ Remove hooh when done."
 	 (shell-command "global -u && echo 'updated tagfile'"))))
 
   (add-hook 'gtags-mode-hook (lambda ()
-			       (local-set-key "\M-." ; find a tag
-					      'gtags-find-tag)
-			       (local-set-key "\M-," ;reverse tag
+			       (local-set-key "\M-." 'gtags-find-tag)
+			       (local-set-key "\M-,"
 					      'gtags-find-rtag)))
   (add-hook 'c-mode-common-hook (lambda ()
 				  (gtags-mode t)
@@ -1067,8 +1061,7 @@ Remove hooh when done."
 				  )))
 
 ;;; Wanderlust
-(when (and (require-maybe 'wl)
-	   (require-maybe 'wl-draft))
+(when (and (require-maybe 'wl) (require-maybe 'wl-draft))
   (autoload 'wl "wl" "Wanderlust" t)
   (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
   (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
@@ -1097,15 +1090,14 @@ Remove hooh when done."
 	wl-queue-folder ".queue"
 
 	wl-folder-check-async t
-	elmo-imap4-use-modified-utf7 t
-
 	wl-fcc ".sent"
 	wl-fcc-force-as-read t
 	wl-from "Andr <m00naticus@gmail.com>"
 	wl-message-id-use-wl-from t
 	wl-insert-mail-followup-to t
 	wl-draft-buffer-style 'keep
-	wl-subscribed-mailing-list '("slime-devel@common-lisp.net"))
+	wl-subscribed-mailing-list '("slime-devel@common-lisp.net"
+				     "tramp-devel@gnu.org"))
 
   (autoload 'wl-user-agent-compose "wl-draft" nil t)
   (when (boundp 'mail-user-agent)
@@ -1135,7 +1127,7 @@ Remove hooh when done."
   ;; (when (require-maybe 'wl-spam)
   ;;   (wl-spam-setup)
   ;;   (setq elmo-spam-scheme 'sa
-  ;; 	   wl-spam-folder ".spam"))	; maildir to store spam
+  ;; 	     wl-spam-folder ".spam"))	; maildir to store spam
 
   (defun my-wl-summary-refile (&optional folder)
     "Refile the current message to FOLDER.
