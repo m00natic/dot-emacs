@@ -402,9 +402,16 @@ Remove hooh when done."
 (defun su-mode-line-function ()
   "Change modeline when root."
   (when (string-match "^/su\\(do\\)?:" default-directory)
-    (setq mode-line-format
-	  (format-mode-line mode-line-format
-			    'font-lock-warning-face))))
+    (make-local-variable 'mode-line-buffer-identification)
+    (setq mode-line-buffer-identification
+	  (cons
+	   (propertize
+	    (concat "su"
+		    (match-string-no-properties 1
+						default-directory)
+		    ": ")
+	    'face 'font-lock-warning-face)
+	   (default-value 'mode-line-buffer-identification)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -624,6 +631,11 @@ Remove hooh when done."
       kept-new-versions 5
       kept-old-versions 2
       delete-old-versions t)
+
+;;; bookmarks
+(setq
+ bookmark-default-file "~/.emacs.d/bookmarks" ; keep my ~/ clean
+ bookmark-save-flag 1)                        ; autosave each change
 
 ;;; tramp-ing as root
 (hook-modes su-mode-line-function
@@ -871,7 +883,8 @@ Remove hooh when done."
     "prolog" "Major mode for editing Prolog programs." t)
   (autoload 'mercury-mode "prolog"
     "Major mode for editing Mercury programs." t)
-  (setq prolog-system 'swi	  ; optional, the system you are using
+  (setq prolog-program-name "pl"
+	prolog-system 'swi	  ; optional, the system you are using
 	auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				 ("\\.m$" . mercury-mode))
 			       auto-mode-alist)))
@@ -1180,6 +1193,8 @@ If FOLDER is nil, use the default."
 
 ;;; w3m
  (when (require-maybe 'w3m-load)
+   (require 'mime-w3m)
+
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))
      (let ((pop-up-frames nil))
