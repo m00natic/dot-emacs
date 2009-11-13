@@ -323,7 +323,8 @@ Leave current if CURRENTP."
 
 (defun nuke-modes (reg-ex)
   "Kill all buffers whose major mode name is matched by REG-EX."
-  (interactive (list (read-regexp "Major modes to kill?" ".*")))
+  (interactive (list (read-regexp "Major modes to kill?"
+				  (symbol-name major-mode))))
   (dolist (buf (buffer-list))
     (set-buffer buf)
     (when (string-match-p reg-ex (symbol-name major-mode))
@@ -412,6 +413,72 @@ Remove hooh when done."
 		    ": ")
 	    'face 'font-lock-warning-face)
 	   (default-value 'mode-line-buffer-identification)))))
+
+(defvar *apropos-url-alist*
+  '(("^gw?:? +\\(.*\\)" .		; Google Web
+     "http://www.google.bg/search?q=\\1")
+    ("^g!:? +\\(.*\\)" .		; Google Lucky
+     "http://www.google.bg/search?btnI=I%27m+Feeling+Lucky&q=\\1")
+    ("^gl:? +\\(.*\\)" .		; Google Linux
+     "http://www.google.bg/linux?q=\\1")
+    ("^gi:? +\\(.*\\)" .		; Google Images
+     "http://images.google.bg/images?sa=N&tab=wi&q=\\1")
+    ("^gv:? +\\(.*\\)" .		; Google Video
+     "http://video.google.bg/videosearch?q=\\1")
+    ("^gg:? +\\(.*\\)" .		; Google Groups
+     "http://groups.google.bg/groups?q=\\1")
+    ("^gd:? +\\(.*\\)" .		; Google Directory
+     "http://www.google.bg/search?&sa=N&cat=gwd/Top&tab=gd&q=\\1")
+    ("^gn:? +\\(.*\\)" .		; Google News
+     "http://news.google.bg/news?sa=N&tab=dn&q=\\1")
+    ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Google Translate URL
+     "http://translate.google.bg/translate?langpair=\\1|\\2&u=\\3")
+    ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Translate Text
+     "http://translate.google.bg/translate_t?langpair=\\1|\\2&text=\\3")
+    ("^googledict:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
+     "http://www.google.bg/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
+    ("^w:? +\\(.*\\)" .			; Wikipedia en
+     "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
+    ("^yt:? +\\(.*\\)" .		; YouTube
+     "http://www.youtube.com/results?search_query=\\1&search=Search")
+    ("^/\\.$" .				; Slashdot
+     "http://www.slashdot.org")
+    ("^/\\.:? +\\(.*\\)" .		; Slashdot search
+     "http://www.osdn.com/osdnsearch.pl?site=Slashdot&query=\\1")
+    ("^fm$" .				; Freshmeat
+     "http://www.freshmeat.net")
+    ("^r:? +\\(.*\\)" .			; sub Reddits (mobile)
+     "http://m.reddit.com/r/\\1")
+    ("^hn$" .				; HackerNews
+     "http://news.ycombinator.com")
+    ("^ewiki$" .			; Emacs Wiki
+     "http://www.emacswiki.org")
+    ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
+     "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
+    ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
+     "http://www.google.bg/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
+    ("^arda$" .				; The Encyclopedia of Arda
+     "http://www.glyphweb.com/arda/")
+    ("^hayoo:? +\\(.*\\)" .		; Hayoo
+     "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
+    ("^m:? +\\(.*\\)" .		       ; Encyclopaedia Metallum, bands
+     ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
+     "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com"))
+  "Search engines and sites.")
+
+(defun browse-apropos-url (text &optional new-window)
+  "Search for TEXT by some search engine in NEW-WINDOW if needed."
+  (interactive (browse-url-interactive-arg "Location: "))
+  (let ((text (replace-regexp-in-string
+	       "^ *\\| *$" ""
+	       (replace-regexp-in-string "[ \t\n]+" " " text))))
+    (let ((url (assoc-default text *apropos-url-alist*
+			      '(lambda (a b)
+				 (setq __braplast a)
+				 (string-match a b))
+			      text)))
+      (browse-url (replace-regexp-in-string __braplast url text)
+		  new-window))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -582,6 +649,9 @@ Remove hooh when done."
   (define-key ergoemacs-keymap "\M-#" 'move-cursor-next-pane)
   (ergoemacs-mode 1))
 
+;;; browse web
+(global-set-key (kbd "<f6>") 'browse-apropos-url)
+
 ;; highlight current line, turn it on for all modes by default
 (when (fboundp 'global-hl-line-mode) (global-hl-line-mode t))
 
@@ -613,6 +683,21 @@ Remove hooh when done."
 
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
+
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single line instead."
+  (interactive (if mark-active
+		   (list (region-beginning) (region-end))
+		 (message "Copied line")
+		 (list (line-beginning-position)
+		       (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-cut activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (list (line-beginning-position)
+	   (line-beginning-position 2)))))
 
 ;;; recentf
 (when (require-maybe 'recentf)		; save recently used files
@@ -1011,7 +1096,7 @@ Remove hooh when done."
 		   +home-path+)))))
   (when (require-maybe 'proel)
     (grep-compute-defaults)
-    (global-set-key (kbd "<f6>") 'proel-grep-in-project)
+    (global-set-key (kbd "<f8>") 'proel-grep-in-project)
     (setq anything-sources (nconc anything-sources
 				  '(proel-anything-projects)))))
 
@@ -1193,7 +1278,7 @@ If FOLDER is nil, use the default."
 
 ;;; w3m
  (when (require-maybe 'w3m-load)
-   (require 'mime-w3m)
+   (require-maybe 'mime-w3m)	     ; for integration with Wanderlust
 
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))
@@ -1201,13 +1286,22 @@ If FOLDER is nil, use the default."
        (switch-to-buffer-other-window (w3m-get-buffer-create "*w3m*"))
        (w3m-browse-url url)))
 
-   (setq browse-url-browser-function
+   (define-key w3m-mode-map "i" 'w3m-save-image)
+   (define-key w3m-mode-map "l" 'w3m-horizontal-recenter)
+   (setq w3m-use-toolbar t
+	 w3m-use-cookies t
+	 ;; w3m-use-mule-ucs t
+	 browse-url-browser-function
 	 '(("^ftp:/.*" . (lambda (url &optional nf)
 			   (call-interactively
 			    'find-file-at-point url)))
-	   ("hyperspec" . w3m-browse-url)
-	   ("weitz" . w3m-browse-url)
-	   ("." . browse-url-firefox))
+	   ;; ("hyperspec" . w3m-browse-url)
+	   ;; ("weitz" . w3m-browse-url)
+	   ;; ("google" . w3m-browse-url)
+	   ;; ("." . browse-url-firefox)
+	   ("video" . browse-url-firefox)
+	   ("youtube" . browse-url-firefox)
+	   ("." . w3m-browse-url))
 	 browse-url-new-window-flag t
 	 browse-url-firefox-new-window-is-tab t)))
 
