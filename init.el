@@ -3,52 +3,46 @@
 ;;; Commentary:
 ;; Utilized extensions:
 ;;  Anything related:
-;;   Anything (http://www.emacswiki.org/emacs/Anything)
-;;   anything-etags (http://www.emacswiki.org/emacs/anything-etags.el)
-;;   anything-match (http://www.emacswiki.org/emacs/AnythingPlugins)
-;;   fuzzy-match (http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion)
-;;   Proel (http://www.stifflog.com/2008/12/14/proel-project-support-for-emacs)
-;;  AutoInstall related: (http://www.emacswiki.org/emacs/AutoInstall)
+;;   Anything http://www.emacswiki.org/emacs/Anything
+;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
+;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
+;;   fuzzy-match http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion
+;;  AutoInstall related: http://www.emacswiki.org/emacs/AutoInstall
 ;;   auto-install
 ;;   anything-auto-install
 ;;  Programming languages related:
-;;   SLIME (http://common-lisp.net/project/slime)
-;;   Quack (http://www.neilvandyke.org/quack/)
-;;   clojure-mode (http://github.com/jochu/clojure-mode)
-;;   swank-clojure (http://github.com/jochu/swank-clojure)
-;;   clips-mode (http://www.cs.us.es/software/clips)
-;;   Prolog (http://bruda.ca/emacs-prolog)
-;;   haskell-mode (http://www.haskell.org/haskell-mode)
-;;   tuareg-mode (http://www-rocq.inria.fr/~acohen/tuareg)
-;;   CSharpMode (http://www.emacswiki.org/emacs/CSharpMode)
-;;   VisualBasicMode (http://www.emacswiki.org/emacs/VisualBasicMode)
+;;   SLIME http://common-lisp.net/project/slime
+;;   Quack http://www.neilvandyke.org/quack/
+;;   clojure-mode http://github.com/jochu/clojure-mode
+;;   swank-clojure http://github.com/jochu/swank-clojure
+;;   clips-mode http://www.cs.us.es/software/clips
+;;   Prolog http://bruda.ca/emacs-prolog
+;;   haskell-mode http://www.haskell.org/haskell-mode
+;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg
+;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
+;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 ;;  Lisp goodies:
-;;   highlight-parentheses (http://nschum.de/src/emacs/highlight-parentheses)
-;;   hl-sexp (http://edward.oconnor.cx/elisp/hl-sexp.el)
-;;   ParEdit (http://www.emacswiki.org/emacs/ParEdit)
-;;   Redshank (http://www.foldr.org/~michaelw/emacs/redshank)
+;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
+;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
+;;   ParEdit http://www.emacswiki.org/emacs/ParEdit
+;;   Redshank http://www.foldr.org/~michaelw/emacs/redshank
 ;;  misc:
-;;   ErgoEmacs-mode (http://xahlee.org/emacs/ergonomic_emacs_keybinding.html)
-;;   AUCTeX (http://www.gnu.org/software/auctex)
-;;   LaTeX-beamer (http://latex-beamer.sourceforge.net)
-;;   Ditaa (http://ditaa.sourceforge.net)
-;;   CompletionUI (http://www.emacswiki.org/emacs/CompletionUI)
-;;   ColorTheme (http://www.emacswiki.org/emacs/ColorTheme)
-;;   cygwin-mount (http://www.emacswiki.org/emacs/cygwin-mount.el)
-;;   gtags (http://www.gnu.org/software/global)
-;;   traverselisp (http://www.emacswiki.org/emacs/traverselisp.el)
-;;   TabBar (http://www.emacswiki.org/emacs/TabBarMode)
-;;   w3m (http://emacs-w3m.namazu.org)
-;;   Wanderlust (http://www.gohome.org/wl)
+;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
+;;   AUCTeX http://www.gnu.org/software/auctex
+;;   LaTeX-beamer http://latex-beamer.sourceforge.net
+;;   Ditaa http://ditaa.sourceforge.net
+;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
+;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
+;;   gtags http://www.gnu.org/software/global
+;;   traverselisp http://www.emacswiki.org/emacs/traverselisp.el
+;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
+;;   w3m http://emacs-w3m.namazu.org
+;;   Wanderlust http://www.gohome.org/wl
 
 ;;; Code:
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;; extension independent macros
-
-;; do some OS recognition
-(defconst +winp+ (or (eq system-type 'windows-nt)
-		     (eq system-type 'ms-dos)) "Windows detection.")
+;; do some OS recognition and set main parameters
+(defconst +winp+ (memq system-type '(windows-nt ms-dos))
+  "Windows detection.")
 
 (defmacro win-or-nix (win &rest nix)
   "OS conditional.  WIN may be a list and is executed on windows systems.
@@ -63,6 +57,37 @@ NIX forms are executed on all other platforms."
     (if (cadr nix)
 	`(progn ,@nix)
       (car nix))))
+
+;; Set some path constants.
+(win-or-nix (defconst +win-path+ "C:/" "Windows root path."))
+
+(defconst +home-path+
+  (win-or-nix
+   (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
+       (match-string 0 exec-directory)
+     (concat (getenv "HOME") "/"))
+   (concat (getenv "HOME") "/"))
+  "Home path.")
+
+(defconst +extras-path+ (concat +home-path+ ".emacs.d/extras/")
+  "Elisp extensions' path.")
+
+;; add `+extras-path+' and subdirs to `load-path'
+(and (fboundp 'normal-top-level-add-subdirs-to-load-path)
+     (file-exists-p +extras-path+)
+     (let ((default-directory +extras-path+))
+       (push +extras-path+ load-path)
+       (normal-top-level-add-subdirs-to-load-path)))
+
+;; set default directory for `*scratch*' and some info
+(setq default-directory +home-path+
+      add-log-full-name "Andrey Kotlarski")
+
+(setenv "EMAIL" "m00naticus@gmail.com")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;; extension independent macros
 
 ;;; `require-maybe' (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
 ;; this is useful when this .emacs is used in an env where not all of
@@ -103,45 +128,70 @@ Each function may be an atom or a list with parameters."
       sequence
     `(delete ,(car elts) (delete-many ,(cdr elts) ,sequence))))
 
+(defmacro define-keys (mode &rest keys)
+  "Define cascade of keys for a MODE.
+KEYS is alternating list of key-value."
+  (cons 'progn
+	(let ((res nil))
+	  (while keys
+	    (push `(define-key ,mode ,(car keys) ,(cadr keys)) res)
+	    (setq keys (cddr keys)))
+	  (nreverse res))))
+
+(defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
+				   &optional do-always)
+  "Create a one-argument interactive function FUN with COMMENT.
+ ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
+ DO-ALWAYS is always executed beforehand."
+  `(defun ,fun (arg)
+     ,comment
+     (interactive "P")
+     ,do-always
+     (if (null arg)
+	 ,on-no-prefix
+       ,on-prefix)))
+
+(defmacro do-buffers (buf &rest body)
+  "Execute action over all buffers with BUF as iterator.
+With prefix arg, skip executing BODY over current."
+  `(if current-prefix-arg
+       (let ((curr (current-buffer)))
+	 (dolist (,buf (buffer-list))
+	   (,(if (cdr body)
+		 'unless
+	       'or)
+	    (eq ,buf curr)
+	    ,@body)))
+     (dolist (,buf (buffer-list))
+       ,@body)))
+
 (defmacro active-lisp-modes ()
   "Build a function for activating existing convenient minor modes for s-exp."
   `(defun activate-lisp-minor-modes ()
      "Activate some convenient minor modes for editing s-exp"
      (pretty-lambdas)
-;;; Highlight s-exps and parens
+;;; Highlight s-expressions and parenthesis
      ,(when (require-maybe 'hl-sexp) '(hl-sexp-mode +1))
      ,(when (require-maybe 'highlight-parentheses)
 	'(highlight-parentheses-mode +1))
 ;;; Paredit
      ,(when (require-maybe 'paredit)
-	(when (getenv "ERGOEMACS_KEYBOARD_LAYOUT")
-	  (define-key paredit-mode-map "\M-'" 'paredit-comment-dwim)
-	  (define-key paredit-mode-map "\M-R" 'paredit-raise-sexp)
-	  (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-	      (progn
-		(define-key paredit-mode-map "\M-o" 'isearch-forward)
-		(define-key paredit-mode-map "\M-f"
-		  'paredit-backward-kill-word)
-		(define-key paredit-mode-map "\M-p"
-		  'paredit-forward-kill-word)
-		(define-key paredit-mode-map "\M-s"
-		  'paredit-backward-delete)
-		(define-key paredit-mode-map "\M-t"
-		  'paredit-forward-delete)
-		(define-key paredit-mode-map "\M-d" 'kill-line)
-		(define-key paredit-mode-map "\M-r"
-		  'paredit-splice-sexp)
-		(define-key paredit-mode-map "\M-;"
-		  'recenter-top-bottom))
-	    (define-key paredit-mode-map "\M-;" 'isearch-forward)
-	    (define-key paredit-mode-map "\M-e"
-	      'paredit-backward-kill-word)
+	(when (boundp 'ergoemacs-mode)
+	  (define-keys paredit-mode-map
+	    ergoemacs-comment-dwim-key 'paredit-comment-dwim
+	    ergoemacs-isearch-forward-key 'isearch-forward
+	    ergoemacs-backward-kill-word-key
+	    'paredit-backward-kill-word
+	    ergoemacs-kill-word-key 'paredit-forward-kill-word
+	    ergoemacs-delete-backward-char-key
+	    'paredit-backward-delete
+	    ergoemacs-delete-char-key 'paredit-forward-delete
+	    ergoemacs-kill-line-key 'paredit-kill
+	    ergoemacs-recenter-key 'recenter-top-bottom
+	    "\M-R" 'paredit-raise-sexp)
+	  (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
 	    (define-key paredit-mode-map "\M-r"
-	      'paredit-forward-kill-word)
-	    (define-key paredit-mode-map "\M-d"
-	      'paredit-backward-delete)
-	    (define-key paredit-mode-map "\M-f"
-	      'paredit-forward-delete)))
+	      'paredit-splice-sexp)))
 	'(paredit-mode +1))))
 
 (defmacro faces-generic ()
@@ -153,17 +203,15 @@ Each function may be an atom or a list with parameters."
        (((class grayscale) (background dark))
 	:foreground "LightGray" :weight bold :slant italic)
        (((class color) (min-colors 88) (background light))
-	:foreground "Firebrick" :slant italic)
+	:foreground "Firebrick")
        (((class color) (min-colors 88) (background dark))
-	:foreground "chocolate1" :slant italic)
+	:foreground "chocolate1")
        (((class color) (min-colors 16) (background light))
-	:foreground "red" :slant italic)
+	:foreground "red")
        (((class color) (min-colors 16) (background dark))
-	:foreground "red1" :slant italic)
-       (((class color) (min-colors 8) (background light))
-	:foreground "red" :slant italic)
-       (((class color) (min-colors 8) (background dark))
-	:foreground "red" :slant italic)
+	:foreground "red1")
+       (((class color) (min-colors 8))
+	:foreground "red")
        (t :weight bold :slant italic)))
     '(mode-line
       ((default :foreground "black" :box (:line-width 1 :style "none")
@@ -271,6 +319,23 @@ Each function may be an atom or a list with parameters."
        (((background dark)) :background "grey50")
        (t :background "gray")))))
 
+(defmacro opacity-modify (&optional dec)
+  "Modify the transparency of the Emacs frame.
+If DEC is t, decrease transparency;
+otherwise increase it in 5%-steps"
+  `(let* ((oldalpha (or (frame-parameter nil 'alpha) 99))
+	  (newalpha ,(if dec
+			 `(if (<= oldalpha 5)
+			      0
+			    (- oldalpha 5))
+		       `(if (>= oldalpha 95)
+			    100
+			  (+ oldalpha 5)))))
+     (and (>= newalpha frame-alpha-lower-limit)
+	  (<= newalpha 100)
+	  (modify-frame-parameters nil (list (cons 'alpha
+						   newalpha))))))
+
 ;;; fullscreen stuff
 (defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
 (defconst +width+ 100 "My prefered non-fullscreen width.")
@@ -301,85 +366,63 @@ Each function may be an atom or a list with parameters."
       (my-fullscreen)
     (my-non-fullscreen)))
 
-(defun nuke-buffers (reg-ex currentp)
-  "Kill all buffers whose name is matched by REG-EX.
-Leave current if CURRENTP."
-  (interactive
-   (let ((reg-str (read-regexp "Buffer names to kill?" ".*")))
-     (list reg-str (when (string-equal reg-str ".*")
-		     (y-or-n-p "Keep current buffer? ")))))
-  (macrolet ((check-kill (reg-ex buf)
-			 `(when (string-match-p ,reg-ex
-						(or (buffer-name ,buf)
-						    ""))
-			    (kill-buffer buf))))
-    (if currentp
-	(let ((curr (current-buffer)))
-	  (dolist (buf (buffer-list))
-	    (or (eq buf curr) (check-kill reg-ex buf))))
-      (dolist (buf (buffer-list))
-	(check-kill reg-ex buf))))
+(defun nuke-buffers (reg-ex)
+  "Kill buffers whose name is matched by REG-EX.
+With prefix arg, leave current."
+  (interactive (list (read-regexp "Buffer names to kill?" ".*")))
+  (do-buffers buf
+	      (when (string-match-p reg-ex (or (buffer-name buf) ""))
+		(kill-buffer buf)))
   (when (string-equal reg-ex ".*") (delete-other-windows)))
 
 (defun nuke-modes (reg-ex)
-  "Kill all buffers whose major mode name is matched by REG-EX."
+  "Kill buffers whose major mode name is matched by REG-EX.
+With prefix arg, leave current."
   (interactive (list (read-regexp "Major modes to kill?"
 				  (symbol-name major-mode))))
-  (dolist (buf (buffer-list))
-    (set-buffer buf)
-    (when (string-match-p reg-ex (symbol-name major-mode))
-      (kill-buffer buf))))
-
-(defun opacity-modify (&optional dec)
-  "Modify the transparency of the Emacs frame.
-If DEC is t, decrease the transparency;
-otherwise increase it in 5%-steps"
-  (let* ((alpha-or-nil (frame-parameter nil 'alpha)) ; nil before setting
-	 (oldalpha (or alpha-or-nil 99))
-	 (newalpha (cond (dec (- oldalpha 5))
-			 ((>= oldalpha 95) 100)
-			 (t (+ oldalpha 5)))))
-    (and (>= newalpha frame-alpha-lower-limit)
-	 (<= newalpha 100)
-	 (modify-frame-parameters nil (list (cons 'alpha newalpha))))))
+  (save-excursion
+    (do-buffers buf
+		(set-buffer buf)
+		(when (string-match-p reg-ex (symbol-name major-mode))
+		  (kill-buffer buf)))))
 
 ;;; themes
-(defvar *lighty-p* nil "Set light background?")
-
-(defun faces-fix ()
-  "Set some faces which --daemon doesn't set correctly.
-Execute only once."
-  (if *lighty-p*
+(defun faces-fix (&optional light)
+  "Set some important faces.  If LIGHT is not given, look current.
+If LIGHT is `:dark', let it be darkness, otherwise light."
+  (if (or (eq light :dark)
+	  (and (not light)
+	       (equal (face-background 'default) "black")))
       (custom-set-faces
-       '(default ((t (:foreground "black" :height 80
-				  :background "cornsilk")))))
+       '(default ((default (:background "black" :height 80))
+		  (((class color) (min-colors 88))
+		   (:foreground "wheat"))
+		  (t (:foreground "white")))))
     (custom-set-faces
-     '(default ((default (:background "black" :height 80))
-		(((class color) (min-colors 88)) (:foreground "wheat"))
-		(t (:foreground "white"))))))
+     '(default ((t (:foreground "black" :height 80
+				:background "cornsilk"))))))
   (ignore-errors
     (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
   (let ((frame (selected-frame)))
     (modify-frame-parameters frame '((alpha . 99)))
     (set-frame-height frame 40)))
 
-(defun switch-faces ()
-  "Toggle between light and dark look."
-  (interactive)
-  (setq *lighty-p* (not *lighty-p*))
-  (faces-fix)
+(defun switch-faces (light)
+  "Set dark faces.  With prefix, light."
+  (interactive "P")
+  (faces-fix (or light :dark))
   (faces-generic))
 
 (defun reset-frame-faces (frame)
-  "Execute once on the first graphical new FRAME.
+  "Execute once in the first graphical new FRAME.
 Reset some faces which --daemon doesn't quite set.
-Remove hooh when done."
+Remove hook when done."
   (select-frame frame)
   (cond ((window-system frame)
 	 (faces-fix)
 	 (remove-hook 'after-make-frame-functions
 		      'reset-frame-faces))
-	((not *lighty-p*)
+	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
 	 (set-face-foreground 'default "white" frame))))
 
@@ -407,14 +450,11 @@ Remove hooh when done."
     (setq mode-line-buffer-identification
 	  (cons
 	   (propertize
-	    (concat "su"
-		    (match-string-no-properties 1
-						default-directory)
-		    ": ")
+	    (concat "su" (match-string 1 default-directory) ": ")
 	    'face 'font-lock-warning-face)
 	   (default-value 'mode-line-buffer-identification)))))
 
-(defvar *apropos-url-alist*
+(defconst +apropos-url-alist+
   '(("^gw?:? +\\(.*\\)" .		; Google Web
      "http://www.google.bg/search?q=\\1")
     ("^g!:? +\\(.*\\)" .		; Google Lucky
@@ -427,7 +467,7 @@ Remove hooh when done."
      "http://video.google.bg/videosearch?q=\\1")
     ("^gg:? +\\(.*\\)" .		; Google Groups
      "http://groups.google.bg/groups?q=\\1")
-    ("^gd:? +\\(.*\\)" .		; Google Directory
+    ("^gdir:? +\\(.*\\)" .		; Google Directory
      "http://www.google.bg/search?&sa=N&cat=gwd/Top&tab=gd&q=\\1")
     ("^gn:? +\\(.*\\)" .		; Google News
      "http://news.google.bg/news?sa=N&tab=dn&q=\\1")
@@ -435,7 +475,7 @@ Remove hooh when done."
      "http://translate.google.bg/translate?langpair=\\1|\\2&u=\\3")
     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Translate Text
      "http://translate.google.bg/translate_t?langpair=\\1|\\2&text=\\3")
-    ("^googledict:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
+    ("^gd:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
      "http://www.google.bg/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
     ("^w:? +\\(.*\\)" .			; Wikipedia en
      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
@@ -461,7 +501,7 @@ Remove hooh when done."
      "http://www.glyphweb.com/arda/")
     ("^hayoo:? +\\(.*\\)" .		; Hayoo
      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
-    ("^m:? +\\(.*\\)" .		       ; Encyclopaedia Metallum, bands
+    ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
      "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com"))
   "Search engines and sites.")
@@ -471,42 +511,15 @@ Remove hooh when done."
   (interactive (browse-url-interactive-arg "Location: "))
   (let ((text (replace-regexp-in-string
 	       "^ *\\| *$" ""
-	       (replace-regexp-in-string "[ \t\n]+" " " text))))
-    (let ((url (assoc-default text *apropos-url-alist*
-			      '(lambda (a b)
-				 (setq __braplast a)
-				 (string-match a b))
+	       (replace-regexp-in-string "[ \t\n]+" " " text)))
+	(apropo-reg "^$"))
+    (let ((url (assoc-default text +apropos-url-alist+
+			      (lambda (a b)
+				(when (string-match a b)
+				  (setq apropo-reg a)))
 			      text)))
-      (browse-url (replace-regexp-in-string __braplast url text)
-		  new-window))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Set some path constants.
-(win-or-nix (defconst +win-path+ "C:/" "Windows root path."))
-
-(defconst +home-path+
-  (win-or-nix
-   (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
-       (match-string-no-properties 0 exec-directory)
-     (concat (getenv "HOME") "/"))
-   (if (file-exists-p "/home/andrey/")
-       "/home/andrey/"
-     "~/"))
-  "Home path.")
-
-(defconst +extras-path+ (concat +home-path+ ".emacs.d/extras/")
-  "Elisp extensions' path.")
-
-;; add `+extras-path+' and subdirs to `load-path'
-(and (file-exists-p +extras-path+)
-     (fboundp 'normal-top-level-add-subdirs-to-load-path)
-     (let ((default-directory +extras-path+))
-       (setq load-path (cons +extras-path+ load-path))
-       (normal-top-level-add-subdirs-to-load-path)))
-
-;; set default directory for `*scratch*'
-(setq default-directory (concat (getenv "HOME") "/"))
+      (browse-url (replace-regexp-in-string apropo-reg url text)
+      		  new-window))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -548,9 +561,9 @@ Remove hooh when done."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; Theme styles
+;;;; appearance
 
-;;; set geometry
+;;; geometry
 (add-to-list 'default-frame-alist (cons 'width +width+))
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
@@ -562,54 +575,21 @@ Remove hooh when done."
 
 (faces-generic)
 
-;;; Colour theme
-(when (require-maybe 'color-theme)
-  ;; (eval-after-load "color-theme"
-  ;;   '(progn
-  ;; 	(color-theme-initialize)
-  ;; 	(color-theme-euphoria)))
-  )
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;;;; windowing stuff
-
 (win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
 
-(global-set-key [f11] 'my-toggle-fullscreen)
+(global-set-key [f10] 'my-toggle-fullscreen)
 
-;; C-9 will increase opacity (== decrease transparency)
-;; C-8 will decrease opacity (== increase transparency)
-;; C-0 will return the state to normal
-(global-set-key (kbd "C-9") (lambda () (interactive) (opacity-modify)))
-(global-set-key (kbd "C-8") (lambda () (interactive) (opacity-modify t)))
-(global-set-key (kbd "C-0") (lambda () (interactive)
-			      (modify-frame-parameters
-			       nil '((alpha . 99)))))
-
-;;; TabBar
-(when (require-maybe 'tabbar)
-  (tabbar-mode)
-
-  (defmacro defun-prefix-alt (name on-no-prefix on-prefix
-				   &optional do-always)
-    "NAME ON-NO-PREFIX ON-PREFIX DO-ALWAYS."
-    `(defun ,name (arg)
-       (interactive "P")
-       ,do-always
-       (if (equal nil arg)
-	   ,on-no-prefix
-	 ,on-prefix)))
-
-  (defun-prefix-alt shk-tabbar-next
-    (tabbar-forward-tab) (tabbar-forward-group) (tabbar-mode 1))
-  (defun-prefix-alt shk-tabbar-prev
-    (tabbar-backward-tab) (tabbar-backward-group) (tabbar-mode 1))
-
-  (global-set-key (kbd "C-<tab>") 'shk-tabbar-next)
-  (global-set-key (win-or-nix (kbd "C-S-<tab>")
-			      (kbd "<C-S-iso-lefttab>"))
-		  'shk-tabbar-prev))
+;;; opacity
+(global-set-key (kbd "C-M-9") (lambda () "Increase window opacity."
+				(interactive)
+				(opacity-modify)))
+(global-set-key (kbd "C-M-8") (lambda () "Decrease window opacity."
+				(interactive)
+				(opacity-modify t)))
+(global-set-key (kbd "C-M-0") (lambda () "Set window opacity to 99%."
+				(interactive)
+				(modify-frame-parameters
+				 nil '((alpha . 99)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -617,7 +597,7 @@ Remove hooh when done."
 
 ;;; unicode + bulgarian phonetic
 (add-hook 'set-language-environment-hook
-	  (lambda ()
+	  (lambda ()			; set alternating input language (C-\)
 	    (setq default-input-method "bulgarian-phonetic")))
 (win-or-nix nil (setq locale-coding-system 'utf-8))
 (set-terminal-coding-system 'utf-8)
@@ -625,9 +605,8 @@ Remove hooh when done."
 (set-selection-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
-(global-set-key (kbd "C-s-k")
-		(lambda ()
-		  (interactive)
+(global-set-key (kbd "C-s-k")	  ; revert buffer encoding to cyrillic
+		(lambda () (interactive)
 		  (revert-buffer-with-coding-system 'cp1251)))
 
 ;;; ispell
@@ -636,21 +615,17 @@ Remove hooh when done."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; usefull stuff
-
-;;; ErgoEmacs minor mode
-(when (file-exists-p (concat +extras-path+ "/ergo"))
-  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
-  (load "ergoemacs-mode")
-  (if (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-      (define-key ergoemacs-keymap "\M-;" 'recenter-top-bottom)
-    (define-key ergoemacs-keymap "\M-p" 'recenter-top-bottom))
-  (define-key ergoemacs-keymap "\M-3" 'move-cursor-previous-pane)
-  (define-key ergoemacs-keymap "\M-#" 'move-cursor-next-pane)
-  (ergoemacs-mode 1))
+;;;; useful stuff
 
 ;;; browse web
-(global-set-key (kbd "<f6>") 'browse-apropos-url)
+(global-set-key [f6] 'browse-apropos-url)
+
+(setq browse-url-new-window-flag t
+      browse-url-firefox-new-window-is-tab t
+      browse-url-mozilla-new-window-is-tab t
+      browse-url-epiphany-new-window-is-tab t
+      browse-url-galeon-new-window-is-tab t
+      browse-url-netscape-new-window-is-tab t)
 
 ;; highlight current line, turn it on for all modes by default
 (when (fboundp 'global-hl-line-mode) (global-hl-line-mode t))
@@ -660,7 +635,7 @@ Remove hooh when done."
 (setq highlight-changes-visibility-initial-state nil) ; hide initially
 
 ;; toggle changes visibility
-(global-set-key (kbd "<f7>") 'highlight-changes-visible-mode)
+(global-set-key [f7] 'highlight-changes-visible-mode)
 
 ;; remove the change-highlight in region
 (global-set-key (kbd "S-<f7>") 'highlight-changes-remove-highlight)
@@ -684,20 +659,23 @@ Remove hooh when done."
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(defadvice kill-ring-save (before slick-copy activate compile)
-  "When called interactively with no active region, copy a single line instead."
-  (interactive (if mark-active
-		   (list (region-beginning) (region-end))
-		 (message "Copied line")
-		 (list (line-beginning-position)
-		       (line-beginning-position 2)))))
-
-(defadvice kill-region (before slick-cut activate compile)
-  "When called interactively with no active region, kill a single line instead."
+(defadvice kill-ring-save (before slick-copy
+				  activate compile)
+  "When called interactively with no active region, copy current line."
   (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (list (line-beginning-position)
-	   (line-beginning-position 2)))))
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Copied line.")
+     (list (line-beginning-position) (line-beginning-position 2)))))
+
+(defadvice kill-region (before slick-cut
+			       activate compile)
+  "When called interactively with no active region, kill current line."
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Killed line.")
+     (list (line-beginning-position) (line-beginning-position 2)))))
 
 ;;; recentf
 (when (require-maybe 'recentf)		; save recently used files
@@ -733,15 +711,120 @@ Remove hooh when done."
 (when (fboundp 'set-fringe-mode)	; emacs22+
   (set-fringe-mode 1))			; space left of col1 in pixels
 
-(when (fboundp file-name-shadow-mode)	; emacs22+
+(when (fboundp 'file-name-shadow-mode)	; emacs22+
   (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;;; extensions
+
+;;; TabBar
+(when (require-maybe 'tabbar)
+  (tabbar-mode)
+
+  (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
+					      (tab) activate compile)
+    "Attach full file path to help message.
+If not a file, attach current directory."
+    (let* ((tab-buffer (tabbar-tab-value tab))
+	   (full-path (buffer-file-name tab-buffer)))
+      (if full-path
+	  (setq ad-return-value (concat full-path "\n"
+					ad-return-value))
+	(save-excursion
+	  (set-buffer tab-buffer)
+	  (setq ad-return-value (concat default-directory "\n"
+					ad-return-value))))))
+
+  (defadvice tabbar-buffer-groups (around tabbar-groups-extension
+					  activate compile)
+    "Add some rules for grouping tabs to run before original."
+    (cond
+     ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
+      (setq ad-return-value (list "Mail")))
+     ((memq major-mode '(woman-mode completion-list-mode))
+      (setq ad-return-value (list "Help")))
+     ((memq major-mode '(fundamental-mode org-mode))
+      (setq ad-return-value (list "Common")))
+     (t ad-do-it)))	      ; if none of above applies, run original
+
+  (def-interactive-arg tabbar-move-next
+    "Go to next tab. With prefix, next group."
+    (tabbar-forward-tab) (tabbar-forward-group))
+  (def-interactive-arg tabbar-move-prev
+    "Go to previous tab. With prefix, previous group."
+    (tabbar-backward-tab) (tabbar-backward-group))
+
+  (global-set-key (kbd "C-<tab>") 'tabbar-move-next)
+  (global-set-key [backtab] 'tabbar-move-prev) ; for terminal
+  (global-set-key (win-or-nix (kbd "C-S-<tab>")
+  			      (kbd "<C-S-iso-lefttab>"))
+  		  'tabbar-move-prev)
+
+  (add-hook 'org-load-hook
+	    (lambda ()
+	      (define-keys org-mode-map
+		(kbd "C-<tab>") nil
+		[backtab] nil
+		(win-or-nix (kbd "C-S-<tab>")
+			    (kbd "<C-S-iso-lefttab>")) nil)))
+
+  ;; remove buffer name from modeline as it now becomes redundant
+  (setq-default mode-line-buffer-identification ""))
+
+;;; Anything
+(when (require-maybe 'anything-config)
+  (global-set-key [f5] 'anything)
+  (setq anything-sources
+	'(anything-c-source-buffers+
+	  anything-c-source-recentf
+	  anything-c-source-files-in-current-dir+
+	  anything-c-source-ffap-guesser
+	  anything-c-source-locate
+	  anything-c-source-emacs-functions-with-abbrevs
+	  anything-c-source-emacs-variables
+	  anything-c-source-info-elisp
+	  anything-c-source-info-pages
+	  anything-c-source-man-pages
+	  anything-c-source-bookmarks
+	  anything-c-source-semantic))
+
+  (require-maybe 'anything-match-plugin)
+  (when (require-maybe 'anything-etags)
+    (setq anything-sources
+	  (nconc anything-sources
+		 '(anything-c-source-etags-select)))))
+
+;;; ErgoEmacs minor mode
+(when (file-exists-p (concat +extras-path+ "/ergo"))
+  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
+  (load "ergoemacs-mode")
+
+  (define-key isearch-mode-map ergoemacs-recenter-key
+    'recenter-top-bottom)
+  (when (fboundp 'recenter-top-bottom)
+    (define-key ergoemacs-keymap ergoemacs-recenter-key
+      'recenter-top-bottom))
+  (define-keys ergoemacs-keymap
+    "\M-3" 'move-cursor-previous-pane
+    "\M-#" 'move-cursor-next-pane)
+
+  ;; workaround arrows not active in terminal with ErgoEmacs active
+  (when (require-maybe 'anything)
+    (define-keys anything-map
+      "\C-d" 'anything-next-line
+      "\C-u" 'anything-previous-line
+      (kbd "C-M-d") 'anything-next-source
+      (kbd "C-M-u") 'anything-previous-source))
+
+  (ergoemacs-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Lisp goodies
 
 ;; build appropriate `activate-lisp-minor-modes'
-(eval (macroexpand '(active-lisp-modes)))
+(eval (macroexpand '(active-lisp-modes))) ; ugly but works
 
 ;; Hook convenient s-exp minor modes to some major modes.
 (hook-modes activate-lisp-minor-modes
@@ -759,16 +842,12 @@ Remove hooh when done."
 				      inferior-lisp-mode-hook)
 		     t)))
 
-;;; ElDoc for Emacs Lisp
+;;; elisp stuff
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
-
-;;; elisp stuff
-(define-key emacs-lisp-mode-map (win-or-nix (kbd "S-<tab>")
-					    (kbd "<S-iso-lefttab>"))
-  'lisp-complete-symbol)
+(define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -807,18 +886,16 @@ Remove hooh when done."
        (setq slime-complete-symbol*-fancy t
 	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
 	     common-lisp-hyperspec-root
-	     (win-or-nix
-	      (concat +home-path+ "docs/HyperSpec/")
-	      (concat "file://" +home-path+ "Documents/HyperSpec/"))
+	     (concat "file://" +home-path+ (win-or-nix
+					    ("docs") ("Documents"))
+		     "/HyperSpec/")
 	     slime-net-coding-system
 	     (find-if 'slime-find-coding-system
 		      '(utf-8-unix iso-latin-1-unix
 				   iso-8859-1-unix binary)))))
 
   (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-  (define-key slime-mode-map (win-or-nix (kbd "S-<tab>")
-					 (kbd "<S-iso-lefttab>"))
-    'slime-complete-symbol)
+  (define-key slime-mode-map "\M-g" 'slime-complete-symbol)
 
 ;;; Online JavaDoc to Slime
   (defun slime-java-describe (symbol-name)
@@ -850,15 +927,14 @@ Remove hooh when done."
       (other-window 1)))
 
   (add-hook 'slime-connected-hook
-	    (lambda ()
-	      (interactive)
+	    (lambda () (interactive)
 	      (slime-redirect-inferior-output)
-	      (define-key slime-mode-map "\C-cd" 'slime-java-describe)
-	      (define-key slime-repl-mode-map "\C-cd"
-		'slime-java-describe)
-	      (define-key slime-mode-map "\C-cD" 'slime-javadoc)
-	      (define-key slime-repl-mode-map "\C-cD"
-		'slime-javadoc)))
+	      (define-keys slime-mode-map
+		"\C-cd" 'slime-java-describe
+		"\C-cD" 'slime-javadoc)
+	      (define-keys slime-repl-mode-map
+		"\C-cd"	'slime-java-describe
+		"\C-cD" 'slime-javadoc)))
 
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
@@ -942,11 +1018,7 @@ Remove hooh when done."
 
 ;;; Haskell
 (when (file-exists-p (concat +extras-path+ "haskell"))
-  ;;(require-maybe 'haskell-site-file)
   (load "haskell-site-file")
-  (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indent)
-	      haskell-mode-hook)
-  ;; (add-hook 'haskell-mode-hook 'turn-on-haskell-simple-indent)
 
   ;; fixes the repeating input and ^J issues that have been occurring
   (defun inferior-haskell-fix-repeated-input (output)
@@ -969,7 +1041,7 @@ Remove hooh when done."
   (autoload 'mercury-mode "prolog"
     "Major mode for editing Mercury programs." t)
   (setq prolog-program-name "pl"
-	prolog-system 'swi	  ; optional, the system you are using
+	prolog-system 'swi
 	auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				 ("\\.m$" . mercury-mode))
 			       auto-mode-alist)))
@@ -1010,15 +1082,13 @@ Remove hooh when done."
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'TeX-mode-hook
 	    (lambda ()
-	      (define-key TeX-mode-map
-		(win-or-nix (kbd "S-<tab>") (kbd "<S-iso-lefttab>"))
-		'TeX-complete-symbol))))
+	      (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
 ;; #+LaTeX_CLASS: beamer in org files
-(unless (boundp 'org-export-latex-classes)
-  (setq org-export-latex-classes nil))
+(or (boundp 'org-export-latex-classes)
+    (setq org-export-latex-classes nil))
 
 (add-to-list 'org-export-latex-classes
 	     '("beamer"
@@ -1052,78 +1122,49 @@ Remove hooh when done."
 		"\\end{frame}")))
 
 ;;; Ditaa
-(let ((ditaa-path (concat +extras-path+ "ditaa.jar")))
+(let ((ditaa-path (concat +extras-path+ "misc/ditaa.jar")))
   (when (file-exists-p ditaa-path)
     (setq org-ditaa-jar-path ditaa-path)
 
     (defun ditaa-generate ()
+      "Invoke ditaa over current buffer."
       (interactive)
       (shell-command (concat "java -jar " org-ditaa-jar-path " "
 			     buffer-file-name)))))
 
 ;;; CompletionUI
 (when (require-maybe 'completion-ui)
-  (global-set-key "\M-?" 'complete-dabbrev)
+  (global-set-key "\M-G" 'complete-dabbrev)
   (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
-
-;;; Anything
-(when (and (require-maybe 'anything-config)
-	   (require-maybe 'anything-match-plugin)
-	   (require-maybe 'anything-etags))
-  (global-set-key (kbd "<f5>") 'anything)
-  (setq anything-sources
-	'(anything-c-source-buffers+
-	  anything-c-source-recentf
-	  anything-c-source-locate
-	  anything-c-source-ffap-guesser
-	  anything-c-source-files-in-current-dir+
-	  anything-c-source-etags-select
-	  anything-c-source-emacs-commands
-	  anything-c-source-emacs-functions-with-abbrevs
-	  anything-c-source-info-elisp
-	  anything-c-source-info-pages
-	  anything-c-source-man-pages))
-
-;;; Proel
-  (setq proel-dirs-with-projects
-	(list (expand-file-name
-	       (let ((default-proel (win-or-nix
-				     (concat +win-path+
-					     "Program Files")
-				     (concat +home-path+ "Programs"))))
-		 (if (file-exists-p default-proel)
-		     default-proel
-		   +home-path+)))))
-  (when (require-maybe 'proel)
-    (grep-compute-defaults)
-    (global-set-key (kbd "<f8>") 'proel-grep-in-project)
-    (setq anything-sources (nconc anything-sources
-				  '(proel-anything-projects)))))
 
 ;;; Auto Install
 (when (require-maybe 'auto-install)
   (setq auto-install-directory (concat +extras-path+
 				       "auto-install-dir/"))
-  (when (require-maybe 'anything-auto-install)
-    (defun anything-toggle-auto-install ()
-      "Toggle anything-c-source-auto-installs in anything sources."
-      (interactive)
-      (if (memq 'anything-c-source-auto-install-from-emacswiki
+  (and (require-maybe 'anything)
+       (require-maybe 'anything-auto-install)
+
+       (defun anything-toggle-auto-install ()
+	 "Toggle anything-c-source-auto-installs in anything sources."
+	 (interactive)
+	 (if (memq 'anything-c-source-auto-install-from-emacswiki
+		   anything-sources)
+	     (progn
+	       (delete-many
+		('anything-c-source-auto-install-from-emacswiki
+		 'anything-c-source-auto-install-from-library)
 		anything-sources)
-	  (progn
-	    (delete-many
-	     ('anything-c-source-auto-install-from-emacswiki
-	      'anything-c-source-auto-install-from-library)
-	     anything-sources)
-	    (ignore-errors
-	      (auto-install-update-emacswiki-package-name nil))
-	    (message "Auto-install removed from anything sources."))
-	(setq anything-sources
-	      (nconc anything-sources
-		     '(anything-c-source-auto-install-from-emacswiki
-		       anything-c-source-auto-install-from-library)))
-	(ignore-errors (auto-install-update-emacswiki-package-name t))
-	(message "Auto-install added to anything sources.")))))
+	       (ignore-errors
+		 (auto-install-update-emacswiki-package-name nil))
+	       (message "Auto-install removed from Anything."))
+	   (setq anything-sources
+		 (nconc
+		  anything-sources
+		  '(anything-c-source-auto-install-from-emacswiki
+		    anything-c-source-auto-install-from-library)))
+	   (ignore-errors
+	     (auto-install-update-emacswiki-package-name t))
+	   (message "Auto-install added to anything sources.")))))
 
 ;;; Git
 (require-maybe 'vc-git)
@@ -1190,7 +1231,7 @@ Remove hooh when done."
 	wl-folder-check-async t
 	wl-fcc ".sent"
 	wl-fcc-force-as-read t
-	wl-from "Andr <m00naticus@gmail.com>"
+	wl-from "Andrey Kotlarski <m00naticus@gmail.com>"
 	wl-message-id-use-wl-from t
 	wl-insert-mail-followup-to t
 	wl-draft-buffer-style 'keep
@@ -1224,20 +1265,18 @@ Remove hooh when done."
 
   ;; (when (require-maybe 'wl-spam)
   ;;   (wl-spam-setup)
-  ;;   (setq elmo-spam-scheme 'sa
-  ;; 	     wl-spam-folder ".spam"))	; maildir to store spam
+  ;;   (setq elmo-spam-scheme 'sa))
 
-  (defun my-wl-summary-refile (&optional folder)
-    "Refile the current message to FOLDER.
-If FOLDER is nil, use the default."
-    (interactive)
-    (wl-summary-refile (wl-summary-message-number) folder)
-    (wl-summary-next)
-    (message (concat "refiled to " folder)))
+  ;; (defun my-wl-summary-refile (&optional folder)
+  ;;     "Refile the current message to FOLDER.
+  ;; If FOLDER is nil, use the default."
+  ;;     (interactive)
+  ;;     (wl-summary-refile (wl-summary-message-number) folder)
+  ;;     (wl-summary-next)
+  ;;     (message (concat "refiled to " folder)))
 
   ;; (define-key wl-summary-mode-map (kbd "b x") ; => Project X
-  ;;   (lambda ()
-  ;;     (interactive)
+  ;;   (lambda () (interactive)
   ;;     (my-wl-summary-refile ".project-x")))
 
   ;; suggested by Masaru Nomiya on the WL mailing list
@@ -1286,24 +1325,34 @@ If FOLDER is nil, use the default."
        (switch-to-buffer-other-window (w3m-get-buffer-create "*w3m*"))
        (w3m-browse-url url)))
 
-   (define-key w3m-mode-map "i" 'w3m-save-image)
-   (define-key w3m-mode-map "l" 'w3m-horizontal-recenter)
+   (define-keys w3m-mode-map
+     "i" 'w3m-save-image
+     "l" 'w3m-horizontal-recenter)
    (setq w3m-use-toolbar t
-	 w3m-use-cookies t
 	 ;; w3m-use-mule-ucs t
+	 w3m-use-cookies t
+	 ;; detect w3m command, if present,
+	 ;; make it default for most URLs
 	 browse-url-browser-function
-	 '(("^ftp:/.*" . (lambda (url &optional nf)
-			   (call-interactively
-			    'find-file-at-point url)))
-	   ;; ("hyperspec" . w3m-browse-url)
-	   ;; ("weitz" . w3m-browse-url)
-	   ;; ("google" . w3m-browse-url)
-	   ;; ("." . browse-url-firefox)
-	   ("video" . browse-url-firefox)
-	   ("youtube" . browse-url-firefox)
-	   ("." . w3m-browse-url))
-	 browse-url-new-window-flag t
-	 browse-url-firefox-new-window-is-tab t)))
+	 (cons '("^ftp:/.*" . (lambda (url &optional nf)
+				(call-interactively
+				 'find-file-at-point url)))
+	       (if (equal (substring (shell-command-to-string
+				      "w3m -version")
+				     0 11)
+			  "w3m version")
+		   `(("video" . ,browse-url-browser-function)
+		     ("youtube" . ,browse-url-browser-function)
+		     ("." . w3m-browse-url))
+		 `(("." . ,browse-url-browser-function)))))))
+
+;;; handle ftp with emacs, if not set above
+(or (consp browse-url-browser-function)
+    (setq browse-url-browser-function
+	  `(("^ftp:/.*" . (lambda (url &optional nf)
+			    (call-interactively
+			     'find-file-at-point url)))
+	    ("." . ,browse-url-browser-function))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
