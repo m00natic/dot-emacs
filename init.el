@@ -194,131 +194,6 @@ With prefix arg, skip executing BODY over current."
 	      'paredit-splice-sexp)))
 	'(paredit-mode +1))))
 
-(defmacro faces-generic ()
-  "My prefered faces which differ from default."
-  `(custom-set-faces
-    '(font-lock-comment-face
-      ((((class grayscale) (background light))
-	:foreground "DimGray" :weight bold :slant italic)
-       (((class grayscale) (background dark))
-	:foreground "LightGray" :weight bold :slant italic)
-       (((class color) (min-colors 88) (background light))
-	:foreground "Firebrick")
-       (((class color) (min-colors 88) (background dark))
-	:foreground "chocolate1")
-       (((class color) (min-colors 16) (background light))
-	:foreground "red")
-       (((class color) (min-colors 16) (background dark))
-	:foreground "red1")
-       (((class color) (min-colors 8))
-	:foreground "red")
-       (t :weight bold :slant italic)))
-    '(mode-line
-      ((default :foreground "black" :box (:line-width 1 :style "none")
-	 :width condensed :height 90 :family "neep")
-       (((class color) (min-colors 88)) :background "DarkSlateGray")
-       (t :background "green")))
-    '(mode-line-inactive
-      ((default :box (:line-width 1 :style "none")
-	 :width condensed :height 80 :family "neep")
-       (((class color) (min-colors 88))
-	:foreground "DarkSlateGray" :background "honeydew4")
-       (t :foreground "white" :background "black")))
-    '(mode-line-buffer-id
-      ((default :inherit mode-line :foreground "black")
-       (((class color) (min-colors 88))
-	:background "CadetBlue" :weight extrabold)
-       (t :background "green" :weight normal)))
-    '(tabbar-default ((default :inherit variable-pitch)
-		      (((background dark))
-		       :background "#111" :foreground "#0c0")
-		      (t :background "LightGray" :foreground "black")))
-    '(tabbar-selected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background dark))
-	:background "black" :box (:line-width 2 :color "black")
-	:foreground "DeepSkyBlue")
-       (((background dark)) :background "black" :foreground "white"
-	:box (:line-width 2 :color "black"))
-       (t :background "white" :box (:line-width 2 :color "LightGray")
-	  :foreground "DeepSkyBlue")))
-    '(tabbar-unselected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background dark))
-	:background "#222" :foreground "DarkCyan"
-	:box (:line-width 2 :color "#090909"))
-       (((background dark))
-	:background "gray" :foreground "cyan"
-	:box (:line-width 2 :color "gray"))
-       (((class color) (min-colors 88) (background light))
-	:background "gray" :foreground "black"
-	:box (:line-width 2 :color "white"))
-       (t :background "black" :foreground "white"
-	  :box (:line-width 2 :color "white"))))
-    '(tabbar-button
-      ((default (:inherit tabbar-default))
-       (((background dark)) :background "black" :foreground "#0c0"
-	:box (:line-width 2 :color "black"))
-       (t :background "white" :foreground "black"
-	  :box (:line-width 2 :color "LightGray"))))
-    '(tabbar-button-face
-      ((default (:inherit tabbar-default-face))
-       (((background dark)) :background "black" :foreground "#0c0"
-	:box (:line-width 2 :color "black"))
-       (t :background "white" :foreground "black"
-	  :box (:line-width 2 :color "LightGray"))))
-    '(tabbar-selected-face
-      ((t :inherit tabbar-default-face :background "black"
-	  :foreground "SpringGreen"
-	  :box (:line-width 2 :color "black"))))
-    '(tabbar-separator ((t :foreground "#0c0" :background "#111")))
-    '(tabbar-separator-face ((t :foreground "#0c0" :background "#111")))
-    '(highlight-changes ((((class color) (min-colors 88))
-			  :background "#382f2f")
-			 (t :background "orange")))
-    '(highlight-changes-delete ((((class color) (min-colors 88))
-				 :background "#916868")
-				(t :background "red")))
-    '(highlight ((((class color) (min-colors 88) (background light))
-		  :background "darkseagreen2")
-		 (((class color) (min-colors 88) (background dark))
-		  :background "SeaGreen")
-		 (((class color) (min-colors 16) (background light))
-		  :background "darkseagreen2")
-		 (((class color) (min-colors 16) (background dark))
-		  :background "darkolivegreen")
-		 (((class color) (min-colors 8))
-		  :background "green" :foreground "black")
-		 (t :inverse-video t)))
-    '(region ((((class color) (min-colors 88) (background dark))
-	       :background "DarkSlateGray" :foreground nil)
-	      (((class color) (min-colors 88) (background light))
-	       :background "lightgoldenrod2")
-	      (((class color) (min-colors 16) (background dark))
-	       :background "blue3")
-	      (((class color) (min-colors 16) (background light))
-	       :background "lightgoldenrod2")
-	      (((class color) (min-colors 8))
-	       :background "cyan" :foreground "white")
-	      (((type tty) (class mono)) :inverse-video t)
-	      (t :background "gray")))
-    '(hl-line ((((class color) (min-colors 88) (background light))
-		:background "darkseagreen2")
-	       (((class color) (min-colors 88) (background dark))
-		:background "#123")
-	       (((class color) (min-colors 16) (background light))
-		:background "darkseagreen2")
-	       (((background dark)) :background "blue")
-	       (t :inherit highlight)))
-    '(cursor ((((class color)) :background "DeepSkyBlue")
-	      (((background light)) :background "black")
-	      (t :background "white")))
-    '(show-paren-match-face
-      ((((class color) (background dark)) :background "DarkRed")
-       (((class color) (background light)) :background "red")
-       (((background dark)) :background "grey50")
-       (t :background "gray")))))
-
 (defmacro opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
 If DEC is t, decrease transparency;
@@ -387,6 +262,131 @@ With prefix arg, leave current."
 		  (kill-buffer buf)))))
 
 ;;; themes
+(defun faces-generic ()
+  "My prefered faces which differ from default."
+  (custom-set-faces
+   '(font-lock-comment-face
+     ((((class grayscale) (background light))
+       :foreground "DimGray" :weight bold :slant italic)
+      (((class grayscale) (background dark))
+       :foreground "LightGray" :weight bold :slant italic)
+      (((class color) (min-colors 88) (background light))
+       :foreground "Firebrick")
+      (((class color) (min-colors 88) (background dark))
+       :foreground "chocolate1")
+      (((class color) (min-colors 16) (background light))
+       :foreground "red")
+      (((class color) (min-colors 16) (background dark))
+       :foreground "red1")
+      (((class color) (min-colors 8))
+       :foreground "red")
+      (t :weight bold :slant italic)))
+   '(mode-line
+     ((default :foreground "black" :box (:line-width 1 :style "none")
+	:width condensed :height 90 :family "neep")
+      (((class color) (min-colors 88)) :background "DarkSlateGray")
+      (t :background "green")))
+   '(mode-line-inactive
+     ((default :box (:line-width 1 :style "none")
+	:width condensed :height 80 :family "neep")
+      (((class color) (min-colors 88))
+       :foreground "DarkSlateGray" :background "honeydew4")
+      (t :foreground "white" :background "black")))
+   '(mode-line-buffer-id
+     ((default :inherit mode-line :foreground "black")
+      (((class color) (min-colors 88))
+       :background "CadetBlue" :weight extrabold)
+      (t :background "green" :weight normal)))
+   '(tabbar-default ((default :inherit variable-pitch)
+		     (((background dark))
+		      :background "#111" :foreground "#0c0")
+		     (t :background "LightGray" :foreground "black")))
+   '(tabbar-selected
+     ((default :inherit tabbar-default)
+      (((class color) (min-colors 88) (background dark))
+       :background "black" :box (:line-width 2 :color "black")
+       :foreground "DeepSkyBlue")
+      (((background dark)) :background "black" :foreground "white"
+       :box (:line-width 2 :color "black"))
+      (t :background "white" :box (:line-width 2 :color "LightGray")
+	 :foreground "DeepSkyBlue")))
+   '(tabbar-unselected
+     ((default :inherit tabbar-default)
+      (((class color) (min-colors 88) (background dark))
+       :background "#222" :foreground "DarkCyan"
+       :box (:line-width 2 :color "#090909"))
+      (((background dark))
+       :background "gray" :foreground "cyan"
+       :box (:line-width 2 :color "gray"))
+      (((class color) (min-colors 88) (background light))
+       :background "gray" :foreground "black"
+       :box (:line-width 2 :color "white"))
+      (t :background "black" :foreground "white"
+	 :box (:line-width 2 :color "white"))))
+   '(tabbar-button
+     ((default (:inherit tabbar-default))
+      (((background dark)) :background "black" :foreground "#0c0"
+       :box (:line-width 2 :color "black"))
+      (t :background "white" :foreground "black"
+	 :box (:line-width 2 :color "LightGray"))))
+   '(tabbar-button-face
+     ((default (:inherit tabbar-default-face))
+      (((background dark)) :background "black" :foreground "#0c0"
+       :box (:line-width 2 :color "black"))
+      (t :background "white" :foreground "black"
+	 :box (:line-width 2 :color "LightGray"))))
+   '(tabbar-selected-face
+     ((t :inherit tabbar-default-face :background "black"
+	 :foreground "SpringGreen"
+	 :box (:line-width 2 :color "black"))))
+   '(tabbar-separator ((t :foreground "#0c0" :background "#111")))
+   '(tabbar-separator-face ((t :foreground "#0c0" :background "#111")))
+   '(highlight-changes ((((class color) (min-colors 88))
+			 :background "#382f2f")
+			(t :background "orange")))
+   '(highlight-changes-delete ((((class color) (min-colors 88))
+				:background "#916868")
+			       (t :background "red")))
+   '(highlight ((((class color) (min-colors 88) (background light))
+		 :background "darkseagreen2")
+		(((class color) (min-colors 88) (background dark))
+		 :background "SeaGreen")
+		(((class color) (min-colors 16) (background light))
+		 :background "darkseagreen2")
+		(((class color) (min-colors 16) (background dark))
+		 :background "darkolivegreen")
+		(((class color) (min-colors 8))
+		 :background "green" :foreground "black")
+		(t :inverse-video t)))
+   '(region ((((class color) (min-colors 88) (background dark))
+	      :background "DarkSlateGray" :foreground nil)
+	     (((class color) (min-colors 88) (background light))
+	      :background "lightgoldenrod2")
+	     (((class color) (min-colors 16) (background dark))
+	      :background "blue3")
+	     (((class color) (min-colors 16) (background light))
+	      :background "lightgoldenrod2")
+	     (((class color) (min-colors 8))
+	      :background "cyan" :foreground "white")
+	     (((type tty) (class mono)) :inverse-video t)
+	     (t :background "gray")))
+   '(hl-line ((((class color) (min-colors 88) (background light))
+	       :background "darkseagreen2")
+	      (((class color) (min-colors 88) (background dark))
+	       :background "#123")
+	      (((class color) (min-colors 16) (background light))
+	       :background "darkseagreen2")
+	      (((background dark)) :background "blue")
+	      (t :inherit highlight)))
+   '(cursor ((((class color)) :background "DeepSkyBlue")
+	     (((background light)) :background "black")
+	     (t :background "white")))
+   '(show-paren-match-face
+     ((((class color) (background dark)) :background "DarkRed")
+      (((class color) (background light)) :background "red")
+      (((background dark)) :background "grey50")
+      (t :background "gray")))))
+
 (defun faces-fix (&optional light)
   "Set some important faces.  If LIGHT is not given, look current.
 If LIGHT is `:dark', let it be darkness, otherwise light."
@@ -419,19 +419,17 @@ Reset some faces which --daemon doesn't quite set.
 Remove hook when done."
   (select-frame frame)
   (cond ((window-system frame)
-	 (faces-fix)
-	 (remove-hook 'after-make-frame-functions
-		      'reset-frame-faces))
+	 (faces-fix :dark)		; start dark
+	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
 	 (set-face-foreground 'default "white" frame))))
 
-(win-or-nix
- (defun hide-emacs ()
-   "Keep emacs running hidden on exit."
-   (interactive)
-   (server-edit)
-   (make-frame-invisible nil t)))
+(win-or-nix (defun hide-emacs ()
+	      "Keep emacs running hidden on exit."
+	      (interactive)
+	      (server-edit)
+	      (make-frame-invisible nil t)))
 
 (defun pretty-lambdas ()
   "Show an actual lambda instead of the string `lambda'."
@@ -568,7 +566,7 @@ Remove hook when done."
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
 (if (window-system)
-    (faces-fix)
+    (faces-fix :dark)
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
   (add-hook 'after-make-frame-functions 'reset-frame-faces))
@@ -580,13 +578,13 @@ Remove hook when done."
 (global-set-key [f10] 'my-toggle-fullscreen)
 
 ;;; opacity
-(global-set-key (kbd "C-M-9") (lambda () "Increase window opacity."
-				(interactive)
-				(opacity-modify)))
-(global-set-key (kbd "C-M-8") (lambda () "Decrease window opacity."
-				(interactive)
-				(opacity-modify t)))
-(global-set-key (kbd "C-M-0") (lambda () "Set window opacity to 99%."
+(global-set-key (kbd "C-=") (lambda () "Increase window opacity."
+			      (interactive)
+			      (opacity-modify)))
+(global-set-key (kbd "C-+") (lambda () "Decrease window opacity."
+			      (interactive)
+			      (opacity-modify t)))
+(global-set-key (kbd "C-M-=") (lambda () "Set window opacity to 99%."
 				(interactive)
 				(modify-frame-parameters
 				 nil '((alpha . 99)))))
@@ -626,6 +624,9 @@ Remove hook when done."
       browse-url-epiphany-new-window-is-tab t
       browse-url-galeon-new-window-is-tab t
       browse-url-netscape-new-window-is-tab t)
+
+;; Imenu
+(global-set-key (kbd "C-`") 'imenu)
 
 ;; highlight current line, turn it on for all modes by default
 (when (fboundp 'global-hl-line-mode) (global-hl-line-mode t))
@@ -740,10 +741,15 @@ If not a file, attach current directory."
 					  activate compile)
     "Add some rules for grouping tabs to run before original."
     (cond
+     ((memq major-mode '(woman-mode completion-list-mode
+				    slime-fuzzy-completions-mode))
+      (setq ad-return-value (list "Help")))
      ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
       (setq ad-return-value (list "Mail")))
-     ((memq major-mode '(woman-mode completion-list-mode))
-      (setq ad-return-value (list "Help")))
+     ((string-match "^*inferior" (buffer-name))
+      (setq ad-return-value (list "Process")))
+     ((string-match "^*slime" (buffer-name))
+      (setq ad-return-value (list "Slime")))
      ((memq major-mode '(fundamental-mode org-mode))
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
@@ -886,8 +892,8 @@ If not a file, attach current directory."
        (setq slime-complete-symbol*-fancy t
 	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
 	     common-lisp-hyperspec-root
-	     (concat "file://" +home-path+ (win-or-nix
-					    ("docs") ("Documents"))
+	     (concat "file://" +home-path+ (win-or-nix "docs"
+						       "Documents")
 		     "/HyperSpec/")
 	     slime-net-coding-system
 	     (find-if 'slime-find-coding-system
@@ -896,6 +902,19 @@ If not a file, attach current directory."
 
   (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
   (define-key slime-mode-map "\M-g" 'slime-complete-symbol)
+
+  (when (boundp 'ergoemacs-mode)	; fix some shortcuts
+    (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+      (cond ((equal ergo-layout "colemak")
+	     (define-keys slime-mode-map
+	       "\M-k" 'slime-next-note
+	       "\M-K" 'slime-previous-note
+	       "\M-n" nil
+	       "\M-p" nil))
+	    ((equal ergo-layout "en")
+	     (define-keys slime-mode-map
+	       "\M-N" 'slime-previous-note
+	       "\M-p" nil)))))
 
 ;;; Online JavaDoc to Slime
   (defun slime-java-describe (symbol-name)
@@ -1019,6 +1038,8 @@ If not a file, attach current directory."
 ;;; Haskell
 (when (file-exists-p (concat +extras-path+ "haskell"))
   (load "haskell-site-file")
+  (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indentation)
+	      haskell-mode-hook)
 
   ;; fixes the repeating input and ^J issues that have been occurring
   (defun inferior-haskell-fix-repeated-input (output)
