@@ -501,7 +501,9 @@ Remove hook when done."
      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
-     "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com"))
+     "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com")
+    ("^aur:? +\\(.*\\)" .	       ; Search in Arch Linux's Aur packages
+     "http://aur.archlinux.org/packages.php?&K=\\1"))
   "Search engines and sites.")
 
 (defun browse-apropos-url (text &optional new-window)
@@ -576,6 +578,7 @@ Remove hook when done."
 (win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
 
 (global-set-key [f10] 'my-toggle-fullscreen)
+(global-set-key (kbd "M-<f10>") 'menu-bar-mode)
 
 ;;; opacity
 (global-set-key (kbd "C-=") (lambda () "Increase window opacity."
@@ -624,6 +627,9 @@ Remove hook when done."
       browse-url-epiphany-new-window-is-tab t
       browse-url-galeon-new-window-is-tab t
       browse-url-netscape-new-window-is-tab t)
+
+;; gdb
+(setq gdb-many-windows t)
 
 ;; Imenu
 (global-set-key (kbd "C-`") 'imenu)
