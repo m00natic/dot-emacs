@@ -36,7 +36,8 @@
 ;;   gtags http://www.gnu.org/software/global
 ;;   traverselisp http://www.emacswiki.org/emacs/traverselisp.el
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
-;;   w3m http://emacs-w3m.namazu.org
+;;   emacs-w3m http://emacs-w3m.namazu.org
+;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 ;;   Wanderlust http://www.gohome.org/wl
 
 ;;; Code:
@@ -478,32 +479,26 @@ Remove hook when done."
     ("^w:? +\\(.*\\)" .			; Wikipedia en
      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
     ("^yt:? +\\(.*\\)" .		; YouTube
-     "http://www.youtube.com/results?search_query=\\1&search=Search")
-    ("^/\\.$" .				; Slashdot
-     "http://www.slashdot.org")
+     "http://www.youtube.com/results?search_query=\\1")
     ("^/\\.:? +\\(.*\\)" .		; Slashdot search
      "http://www.osdn.com/osdnsearch.pl?site=Slashdot&query=\\1")
-    ("^fm$" .				; Freshmeat
-     "http://www.freshmeat.net")
-    ("^r:? +\\(.*\\)" .			; sub Reddits (mobile)
+    ("^fm:? +\\(.*\\)" .		; Freshmeat
+     "http://www.freshmeat.net/search?q=\\1")
+    ("^rd:? +\\(.*\\)" .		; sub Reddits (mobile)
      "http://m.reddit.com/r/\\1")
-    ("^hn$" .				; HackerNews
-     "http://news.ycombinator.com")
-    ("^ewiki$" .			; Emacs Wiki
-     "http://www.emacswiki.org")
     ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
      "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
     ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
      "http://www.google.bg/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
-    ("^arda$" .				; The Encyclopedia of Arda
-     "http://www.glyphweb.com/arda/")
     ("^hayoo:? +\\(.*\\)" .		; Hayoo
      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
      "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com")
     ("^aur:? +\\(.*\\)" .	       ; Search in Arch Linux's Aur packages
-     "http://aur.archlinux.org/packages.php?&K=\\1"))
+     "http://aur.archlinux.org/packages.php?&K=\\1")
+    ("^fp:? +\\(.*\\)" .	       ; FreeBSD's FreshPorts
+     "http://www.FreshPorts.org/search.php?query=\\1&num=20"))
   "Search engines and sites.")
 
 (defun browse-apropos-url (text &optional new-window)
@@ -628,6 +623,19 @@ Remove hook when done."
       browse-url-galeon-new-window-is-tab t
       browse-url-netscape-new-window-is-tab t)
 
+;; wget
+(when (file-exists-p (concat +extras-path+ "wget"))
+  (autoload 'wget "wget" "wget interface for Emacs." t)
+  (autoload 'wget-web-page "wget"
+    "wget interface to download whole web page." t)
+
+  (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
+  (setq
+   wget-download-directory-filter 'wget-download-dir-filter-regexp
+   wget-download-directory
+   `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
+     ("." . ,(concat +home-path+ "Downloads")))))
+
 ;; gdb
 (setq gdb-many-windows t)
 
@@ -703,9 +711,9 @@ Remove hook when done."
       delete-old-versions t)
 
 ;;; bookmarks
-(setq
- bookmark-default-file "~/.emacs.d/bookmarks" ; keep my ~/ clean
- bookmark-save-flag 1)                        ; autosave each change
+(setq					; keep my ~/ clean
+ bookmark-default-file (concat +home-path+ ".emacs.d/bookmarks")
+ bookmark-save-flag 1)			; autosave each change
 
 ;;; tramp-ing as root
 (hook-modes su-mode-line-function
@@ -1345,6 +1353,7 @@ If not a file, attach current directory."
 ;;; w3m
  (when (require-maybe 'w3m-load)
    (require-maybe 'mime-w3m)	     ; for integration with Wanderlust
+   (require-maybe 'w3m-wget)	     ; integration with wget
 
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))

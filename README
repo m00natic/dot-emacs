@@ -49,5 +49,6 @@ cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 gtags http://www.gnu.org/software/global
 traverselisp http://www.emacswiki.org/emacs/traverselisp.el
 TabBar http://www.emacswiki.org/emacs/TabBarMode
-w3m http://emacs-w3m.namazu.org
+emacs-w3m http://emacs-w3m.namazu.org
+emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 Wanderlust http://www.gohome.org/wl
