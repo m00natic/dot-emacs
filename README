@@ -1,5 +1,5 @@
 This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
-windows with GNU/Emacs 23.0.96 onwards.  Most things are shamelessly
+windows with GNU/Emacs 23.0.95 onwards.  Most things are shamelessly
 adopted from other people.  It is compilable and is supposed to be
 tolerant to missing extensions without complaining and errors.  It's
 somewhat personalized, thus if someone is to try it out, some glitches
@@ -46,8 +46,6 @@ LaTeX-beamer http://latex-beamer.sourceforge.net
 Ditaa http://ditaa.sourceforge.net
 CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-gtags http://www.gnu.org/software/global
-traverselisp http://www.emacswiki.org/emacs/traverselisp.el
 TabBar http://www.emacswiki.org/emacs/TabBarMode
 emacs-w3m http://emacs-w3m.namazu.org
 emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget

@@ -642,6 +642,11 @@ Remove hook when done."
 ;; Imenu
 (global-set-key (kbd "C-`") 'imenu)
 
+;; don't count on same named files, rather show path difference
+(when (require-maybe 'uniquify)
+  (setq uniquify-buffer-name-style 'post-forward
+	uniquify-separator ":"))
+
 ;; highlight current line, turn it on for all modes by default
 (when (fboundp 'global-hl-line-mode) (global-hl-line-mode t))
 
@@ -869,6 +874,13 @@ If not a file, attach current directory."
 	    ielm-mode-hook)
 (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
+;; common lisp hyperspec info look-up
+(require 'info-look)
+(info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
+		      :ignore-case t
+		      :doc-spec '(("(ansicl)Symbol Index"
+				   nil nil nil)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Programming extensions
@@ -972,8 +984,8 @@ If not a file, attach current directory."
 ;;; Local JavaDoc to Slime
   (setq slime-browse-local-javadoc-root
 	(concat (win-or-nix (concat +home-path+ "docs")
-			    "/usr/share/doc")
-		"/javadoc"))
+			    "/usr/share")
+		"/javadoc/java-1.6.0-openjdk"))
 
   (defun slime-browse-local-javadoc (ci-name)
     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
@@ -983,7 +995,7 @@ If not a file, attach current directory."
     (let ((name (replace-regexp-in-string "\\$" "." ci-name))
 	  (path (concat (expand-file-name
 			 slime-browse-local-javadoc-root)
-			"/docs/api/")))
+			"/api/")))
       (with-temp-buffer
 	(insert-file-contents (concat path "allclasses-noframe.html"))
 	(let ((l (delq nil
@@ -1203,36 +1215,6 @@ If not a file, attach current directory."
 
 ;;; Git
 (require-maybe 'vc-git)
-
-;;; Traverse
-(require-maybe 'traverselisp)
-
-;;; Global tags
-(when (require-maybe 'gtags)
-  (win-or-nix
-   nil
-   (defun gtags-create-or-update ()
-     "Create or update the gnu global tag file."
-     (interactive)
-     (or (= 0 (call-process "global" nil nil nil " -p"))
-	 (let ((olddir default-directory)
-	       (topdir (read-directory-name
-			"gtags: top of source tree:"
-			default-directory)))
-	   (cd topdir)
-	   (shell-command "gtags && echo 'created tagfile'")
-	   (cd olddir))		 ; restore
-	 ;;  tagfile already exists; update it
-	 (shell-command "global -u && echo 'updated tagfile'"))))
-
-  (add-hook 'gtags-mode-hook (lambda ()
-			       (local-set-key "\M-." 'gtags-find-tag)
-			       (local-set-key "\M-,"
-					      'gtags-find-rtag)))
-  (add-hook 'c-mode-common-hook (lambda ()
-				  (gtags-mode t)
-				  ;;(gtags-create-or-update)
-				  )))
 
 ;;; Wanderlust
 (when (and (require-maybe 'wl) (require-maybe 'wl-draft))
