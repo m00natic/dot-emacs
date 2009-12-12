@@ -28,8 +28,9 @@ clojure-mode http://github.com/jochu/clojure-mode
 swank-clojure http://github.com/jochu/swank-clojure
 clips-mode http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
-haskell-mode http://www.haskell.org/haskell-mode
+haskell-mode http://projects.haskell.org/haskellmode-emacs
 tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg
+python-mode https://launchpad.net/python-mode
 CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 
@@ -50,3 +51,5 @@ TabBar http://www.emacswiki.org/emacs/TabBarMode
 emacs-w3m http://emacs-w3m.namazu.org
 emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 Wanderlust http://www.gohome.org/wl
+EMMS http://www.gnu.org/software/emms
+MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey

@@ -17,8 +17,9 @@
 ;;   swank-clojure http://github.com/jochu/swank-clojure
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   Prolog http://bruda.ca/emacs-prolog
-;;   haskell-mode http://www.haskell.org/haskell-mode
+;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
 ;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg
+;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 ;;  Lisp goodies:
@@ -39,6 +40,8 @@
 ;;   emacs-w3m http://emacs-w3m.namazu.org
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 ;;   Wanderlust http://www.gohome.org/wl
+;;   EMMS http://www.gnu.org/software/emms
+;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
 
 ;;; Code:
 ;; do some OS recognition and set main parameters
@@ -79,6 +82,8 @@ NIX forms are executed on all other platforms."
      (let ((default-directory +extras-path+))
        (push +extras-path+ load-path)
        (normal-top-level-add-subdirs-to-load-path)))
+
+(add-to-list 'exec-path (concat +extras-path+ "bin"))
 
 ;; set default directory for `*scratch*' and some info
 (setq default-directory +home-path+
@@ -256,9 +261,8 @@ With prefix arg, leave current."
 With prefix arg, leave current."
   (interactive (list (read-regexp "Major modes to kill?"
 				  (symbol-name major-mode))))
-  (save-excursion
-    (do-buffers buf
-		(set-buffer buf)
+  (do-buffers buf
+	      (with-current-buffer buf
 		(when (string-match-p reg-ex (symbol-name major-mode))
 		  (kill-buffer buf)))))
 
@@ -275,12 +279,10 @@ With prefix arg, leave current."
        :foreground "Firebrick")
       (((class color) (min-colors 88) (background dark))
        :foreground "chocolate1")
-      (((class color) (min-colors 16) (background light))
+      (((class color) (background light))
        :foreground "red")
-      (((class color) (min-colors 16) (background dark))
+      (((class color) (background dark))
        :foreground "red1")
-      (((class color) (min-colors 8))
-       :foreground "red")
       (t :weight bold :slant italic)))
    '(mode-line
      ((default :foreground "black" :box (:line-width 1 :style "none")
@@ -341,7 +343,8 @@ With prefix arg, leave current."
 	 :foreground "SpringGreen"
 	 :box (:line-width 2 :color "black"))))
    '(tabbar-separator ((t :foreground "#0c0" :background "#111")))
-   '(tabbar-separator-face ((t :foreground "#0c0" :background "#111")))
+   '(tabbar-separator-face ((t :foreground "#0c0"
+			       :background "#111")))
    '(highlight-changes ((((class color) (min-colors 88))
 			 :background "#382f2f")
 			(t :background "orange")))
@@ -623,18 +626,9 @@ Remove hook when done."
       browse-url-galeon-new-window-is-tab t
       browse-url-netscape-new-window-is-tab t)
 
-;; wget
-(when (file-exists-p (concat +extras-path+ "wget"))
-  (autoload 'wget "wget" "wget interface for Emacs." t)
-  (autoload 'wget-web-page "wget"
-    "wget interface to download whole web page." t)
-
-  (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
-  (setq
-   wget-download-directory-filter 'wget-download-dir-filter-regexp
-   wget-download-directory
-   `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
-     ("." . ,(concat +home-path+ "Downloads")))))
+;; handle window configuration
+(when (fboundp 'winner-mode)
+  (winner-mode 1))
 
 ;; gdb
 (setq gdb-many-windows t)
@@ -738,6 +732,32 @@ Remove hook when done."
 
 ;;;; extensions
 
+;; wget
+(when (file-exists-p (concat +extras-path+ "wget"))
+  (autoload 'wget "wget" "wget interface for Emacs." t)
+  (autoload 'wget-web-page "wget"
+    "wget interface to download whole web page." t)
+
+  (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
+  (setq
+   wget-download-directory-filter 'wget-download-dir-filter-regexp
+   wget-download-directory
+   `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
+     ("." . ,(concat +home-path+ "Downloads"))))
+
+  (defun wget-site (uri)
+    "Get a whole web-site pointed by URI through Wget.
+Make links point to local files."
+    (interactive
+     (list (read-string "Web Site URI: "
+			(thing-at-point-url-at-point))))
+    (let ((dir (wget-cd-download-dir t uri)))
+      (when dir
+	(if (string= uri "")
+	    (error "There is no uri")
+	  (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
+			      "--no-check-certificate")))))))
+
 ;;; TabBar
 (when (require-maybe 'tabbar)
   (tabbar-mode)
@@ -751,8 +771,7 @@ If not a file, attach current directory."
       (if full-path
 	  (setq ad-return-value (concat full-path "\n"
 					ad-return-value))
-	(save-excursion
-	  (set-buffer tab-buffer)
+	(with-current-buffer tab-buffer
 	  (setq ad-return-value (concat default-directory "\n"
 					ad-return-value))))))
 
@@ -763,6 +782,8 @@ If not a file, attach current directory."
      ((memq major-mode '(woman-mode completion-list-mode
 				    slime-fuzzy-completions-mode))
       (setq ad-return-value (list "Help")))
+     ((string-match "^emms" (symbol-name major-mode))
+      (setq ad-return-value (list "EMMS")))
      ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
       (setq ad-return-value (list "Mail")))
      ((string-match "^*inferior" (buffer-name))
@@ -948,8 +969,7 @@ If not a file, attach current directory."
     (interactive (list (slime-read-symbol-name
 			"Java Class/instance: ")))
     (or symbol-name (error "No symbol given"))
-    (save-excursion
-      (set-buffer (slime-output-buffer))
+    (with-current-buffer (slime-output-buffer)
       (or (eq (current-buffer) (window-buffer))
 	  (pop-to-buffer (current-buffer) t))
       (goto-char (point-max))
@@ -1169,7 +1189,7 @@ If not a file, attach current directory."
 		"\\end{frame}")))
 
 ;;; Ditaa
-(let ((ditaa-path (concat +extras-path+ "misc/ditaa.jar")))
+(let ((ditaa-path (concat +extras-path+ "bin/ditaa.jar")))
   (when (file-exists-p ditaa-path)
     (setq org-ditaa-jar-path ditaa-path)
 
@@ -1303,8 +1323,8 @@ If not a file, attach current directory."
 	 (not (y-or-n-p "No subject! Send current draft? "))
 	 (error "Abort")))
 
-  ;; note, this check could cause some false positives; anyway, better
-  ;; safe than sorry...
+  ;; note, this check could cause some false positives;
+  ;; anyway, better safe than sorry...
   (defun wl-draft-attachment-check ()
     "If attachment is mention but none included, warn the the user."
     (save-excursion
@@ -1319,6 +1339,92 @@ If not a file, attach current directory."
 
   (hook-modes (wl-draft-subject-check wl-draft-attachment-check)
 	      wl-mail-send-pre-hook))
+
+;;; mldonkey
+(when (require-maybe 'mldonkey)
+  (setq mldonkey-host "localhost"
+	mldonkey-port 4000))
+
+;;; emms
+(when (require-maybe 'emms-setup)
+  (when (require-maybe 'emms-info-libtag)
+    (add-to-list 'emms-info-functions 'emms-info-libtag))
+  (require-maybe 'emms-mark)
+
+  (emms-devel)
+  (emms-default-players)
+
+  ;; swap time and other track info
+  (let ((new-global-mode-string nil))
+    (while (and (not (eq 'emms-mode-line-string
+			 (car global-mode-string)))
+	        global-mode-string)
+      (push (car global-mode-string) new-global-mode-string)
+      (setq global-mode-string (cdr global-mode-string)))
+    (push 'emms-playing-time-string new-global-mode-string)
+    (push 'emms-mode-line-string new-global-mode-string)
+    (setq global-mode-string (nreverse new-global-mode-string)))
+
+  (add-hook 'emms-player-started-hook 'emms-show)
+
+  (defun my-emms-track-description-function (track)
+    "Return a description of the current track."
+    (let ((type (emms-track-type track))
+	  (name (emms-track-name track)))
+      (cond
+       ((eq 'file type)
+	(let ((artist (emms-track-get track 'info-artist)))
+	  (if artist
+	      (let ((title (or (emms-track-get track 'info-title)
+			       (file-name-sans-extension
+				(file-name-nondirectory name))))
+		    (tracknumber (emms-track-get track
+						 'info-tracknumber))
+		    (year (emms-track-get track 'info-year))
+		    (last-played (or (emms-track-get track
+						     'last-played)
+				     '(0 0 0))))
+		(concat
+		 artist " - "
+		 (if tracknumber
+		     (format "%02d. "
+			     (string-to-number tracknumber))
+		   "")
+		 title " 《" (if year (concat year " - ") "")
+		 (or (emms-track-get track 'info-album)
+		     "unknown")
+		 "》 (" (number-to-string
+			 (or (emms-track-get track 'play-count)
+			     0))
+		 ", " (emms-last-played-format-date last-played)
+		 ")"))
+	    name)))
+       ((eq 'url type)
+	(emms-format-url-track-name name))
+       (t (concat
+	   (symbol-name type) ": " name " ("
+	   (number-to-string (or (emms-track-get track 'play-count)
+				 0))
+	   ")")))))
+
+  (setq emms-show-format "EMMS: %s"
+	emms-mode-line-format " %s "
+	emms-info-asynchronously t
+	later-do-interval 0.0001
+ 	emms-source-file-default-directory "~/Music/"
+	emms-lastfm-username "m00natic"
+	emms-lastfm-password "sorr0w"
+	emms-last-played-format-alist
+	'(((emms-last-played-seconds-today) . "%a %H:%M")
+	  (604800 . "%a %H:%M") ; this week
+	  ((emms-last-played-seconds-month) . "%d")
+	  ((emms-last-played-seconds-year) . "%m/%d")
+	  (t . "%Y/%m/%d"))
+	emms-track-description-function
+	'my-emms-track-description-function)
+
+  (emms-lastfm 1)
+  (global-set-key [XF86AudioStop] 'emms-pause))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1335,7 +1441,7 @@ If not a file, attach current directory."
 ;;; w3m
  (when (require-maybe 'w3m-load)
    (require-maybe 'mime-w3m)	     ; for integration with Wanderlust
-   (require-maybe 'w3m-wget)	     ; integration with wget
+   (require-maybe 'w3m-wget)	     ; integration with Wget
 
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))
@@ -1346,7 +1452,9 @@ If not a file, attach current directory."
    (define-keys w3m-mode-map
      "i" 'w3m-save-image
      "l" 'w3m-horizontal-recenter)
-   (setq w3m-use-toolbar t
+   (setq w3m-home-page (concat "file://" +home-path+
+			       ".w3m/bookmark.html")
+	 w3m-use-toolbar nil
 	 ;; w3m-use-mule-ucs t
 	 w3m-use-cookies t
 	 ;; detect w3m command, if present,
