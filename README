@@ -1,15 +1,15 @@
 This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
 windows with GNU/Emacs 23.0.95 onwards.  Most things are shamelessly
-adopted from other people.  It is compilable and is supposed to be
-tolerant to missing extensions without complaining and errors.  It's
-somewhat personalized, thus if someone is to try it out, some glitches
-(obviously personal data and paths eventually) may have to be tuned.
-The download section contains a relevant set of extensions that is
-kept up to date (as much as possible) at time of upload.  It's
-expected to be untared in ~/.emacs.d/ to run out of the box.  There
-are just elisp sources, so all extensions should be byte compiled as
-soon as possible.  Here's a list of extensions that this .emacs is
-somewhat aware of in some order and links:
+adopted from other people (thanks emacswiki).  It is compilable and
+supposed to be tolerant to missing extensions without complaining and
+errors.  It's somewhat personalized, thus if someone is to try it out,
+some glitches (obviously personal data and paths eventually) may have
+to be tuned.  The download section contains a relevant set of
+extensions that is kept up to date (as much as possible) at time of
+upload.  It's expected to be untared in ~/.emacs.d/ to run out of the
+box.  There are just elisp sources, thus all extensions should be byte
+compiled.  Here's a list of extensions that this .emacs is somewhat
+aware of in some order and links:
 
 Anything related:
 Anything http://www.emacswiki.org/emacs/Anything
@@ -24,12 +24,12 @@ anything-auto-install
 Programming languages related:
 SLIME http://common-lisp.net/project/slime
 Quack http://www.neilvandyke.org/quack/
-clojure-mode http://github.com/jochu/clojure-mode
+clojure-mode http://github.com/technomancy/clojure-mode
 swank-clojure http://github.com/jochu/swank-clojure
 clips-mode http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
 haskell-mode http://projects.haskell.org/haskellmode-emacs
-tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg
+tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
 python-mode https://launchpad.net/python-mode
 CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
@@ -41,12 +41,15 @@ ParEdit http://www.emacswiki.org/emacs/ParEdit
 Redshank http://www.foldr.org/~michaelw/emacs/redshank
 
 misc:
+ELPA http://tromey.com/elpa
 ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 AUCTeX http://www.gnu.org/software/auctex
 LaTeX-beamer http://latex-beamer.sourceforge.net
 Ditaa http://ditaa.sourceforge.net
 CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
+gtags http://www.gnu.org/software/global
+traverselisp http://mercurial.intuxication.org/hg/traverselisp
 TabBar http://www.emacswiki.org/emacs/TabBarMode
 emacs-w3m http://emacs-w3m.namazu.org
 emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget

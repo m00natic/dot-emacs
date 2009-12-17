@@ -12,13 +12,13 @@
 ;;   anything-auto-install
 ;;  Programming languages related:
 ;;   SLIME http://common-lisp.net/project/slime
-;;   Quack http://www.neilvandyke.org/quack/
-;;   clojure-mode http://github.com/jochu/clojure-mode
+;;   Quack http://www.neilvandyke.org/quack
+;;   clojure-mode http://github.com/technomancy/clojure-mode
 ;;   swank-clojure http://github.com/jochu/swank-clojure
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
-;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg
+;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
 ;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
@@ -28,6 +28,7 @@
 ;;   ParEdit http://www.emacswiki.org/emacs/ParEdit
 ;;   Redshank http://www.foldr.org/~michaelw/emacs/redshank
 ;;  misc:
+;;   ELPA http://tromey.com/elpa
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   LaTeX-beamer http://latex-beamer.sourceforge.net
@@ -35,7 +36,7 @@
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   gtags http://www.gnu.org/software/global
-;;   traverselisp http://www.emacswiki.org/emacs/traverselisp.el
+;;   traverselisp http://mercurial.intuxication.org/hg/traverselisp
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   emacs-w3m http://emacs-w3m.namazu.org
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
@@ -555,7 +556,8 @@ Remove hook when done."
  '(search-highlight t)
  '(query-replace-highlight t)
  '(require-final-newline t)
- '(tool-bar-mode nil))
+ '(tool-bar-mode nil)
+ '(menu-bar-mode nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -732,6 +734,10 @@ Remove hook when done."
 
 ;;;; extensions
 
+;;; ELPA
+(when (require-maybe 'package)
+  (package-initialize))
+
 ;; wget
 (when (file-exists-p (concat +extras-path+ "wget"))
   (autoload 'wget "wget" "wget interface for Emacs." t)
@@ -880,9 +886,10 @@ If not a file, attach current directory."
 	    inferior-scheme-mode-hook scheme-mode-hook)
 
 ;;; Redshank
-(when (require-maybe 'redshank-loader
-		     (concat +extras-path+
-			     "lisp-modes/redshank/redshank-loader"))
+(when (require-maybe
+       'redshank-loader
+       (concat +extras-path+
+	       "p-languages/lisp-modes/redshank/redshank-loader"))
   (eval-after-load "redshank-loader"
     `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
 				      inferior-lisp-mode-hook)
@@ -918,7 +925,7 @@ If not a file, attach current directory."
 	 swank-clojure-jar-path (concat +clojure-dir+ "/clojure.jar")
 	 swank-clojure-extra-classpaths
 	 (cons (concat +extras-path+
-		       "/clojure/swank-clojure/src/main/clojure/")
+		       "/clojure/swank-clojure/src/swank/")
 	       (directory-files +clojure-dir+ t ".\\(jar\\|clj\\)$"))
 	 swank-clojure-extra-vm-args
 	 '("-server" "-Xdebug"
@@ -1057,7 +1064,8 @@ If not a file, attach current directory."
 		  "/usr/local/bin/sbcl"))
 
 ;;; Scheme
-(when (file-exists-p (concat +extras-path+ "lisp-modes/quack.el"))
+(when (file-exists-p (concat +extras-path+
+			     "p-languages/lisp-modes/quack.el"))
   (setq quack-global-menu-p nil)
   (require-maybe 'quack))
 
@@ -1082,7 +1090,7 @@ If not a file, attach current directory."
 			      auto-mode-alist)))
 
 ;;; Haskell
-(when (file-exists-p (concat +extras-path+ "haskell"))
+(when (file-exists-p (concat +extras-path+ "p-languages/haskell"))
   (load "haskell-site-file")
   (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indentation)
 	      haskell-mode-hook)
@@ -1235,6 +1243,9 @@ If not a file, attach current directory."
 
 ;;; Git
 (require-maybe 'vc-git)
+
+;;; Traverse
+(require-maybe 'traverselisp)
 
 ;;; Wanderlust
 (when (and (require-maybe 'wl) (require-maybe 'wl-draft))
@@ -1411,9 +1422,10 @@ If not a file, attach current directory."
 	emms-mode-line-format " %s "
 	emms-info-asynchronously t
 	later-do-interval 0.0001
- 	emms-source-file-default-directory "~/Music/"
+ 	emms-source-file-default-directory (concat +home-path+
+						   "Music/")
 	emms-lastfm-username "m00natic"
-	emms-lastfm-password "sorr0w"
+	emms-lastfm-password "very-secret"
 	emms-last-played-format-alist
 	'(((emms-last-played-seconds-today) . "%a %H:%M")
 	  (604800 . "%a %H:%M") ; this week
@@ -1424,7 +1436,20 @@ If not a file, attach current directory."
 	'my-emms-track-description-function)
 
   (emms-lastfm 1)
-  (global-set-key [XF86AudioStop] 'emms-pause))
+
+  (when (require-maybe 'emms-player-mpd)
+    (add-to-list 'emms-info-functions 'emms-info-mpd)
+    (push 'emms-player-mpd emms-player-list)
+    (setq emms-player-mpd-music-directory
+	  emms-source-file-default-directory)
+    (ignore-errors (emms-player-mpd-connect)))
+
+  (global-set-key [XF86AudioStop] 'emms-pause)
+  (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+    (cond ((equal ergo-layout "colemak")
+	   (global-set-key (kbd "s-p") 'emms-pause))
+	  ((equal ergo-layout "en")
+	   (global-set-key (kbd "s-r") 'emms-pause)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1437,6 +1462,31 @@ If not a file, attach current directory."
 	      (require-maybe 'cygwin-mount))
      (cygwin-mount-activate)
      (setq w32shell-cygwin-bin cygwin-dir)))
+
+;;; Global tags
+ (when (require-maybe 'gtags)
+   (defun gtags-create-or-update ()
+     "Create or update the gnu global tag file."
+     (interactive)
+     (or (= 0 (call-process "global" nil nil nil " -p"))
+	 (let ((olddir default-directory)
+	       (topdir (read-directory-name
+			"gtags: top of source tree:"
+			default-directory)))
+	   (cd topdir)
+	   (shell-command "gtags && echo 'created tagfile'")
+	   (cd olddir))		 ; restore
+	 ;;  tagfile already exists; update it
+	 (shell-command "global -u && echo 'updated tagfile'")))
+
+   (add-hook 'gtags-mode-hook (lambda ()
+				(local-set-key "\M-." 'gtags-find-tag)
+				(local-set-key "\M-,"
+					       'gtags-find-rtag)))
+   (add-hook 'c-mode-common-hook (lambda ()
+				   (gtags-mode t)
+				   ;;(gtags-create-or-update)
+				   )))
 
 ;;; w3m
  (when (require-maybe 'w3m-load)
