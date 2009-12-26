@@ -27,22 +27,23 @@
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
 ;;   ParEdit http://www.emacswiki.org/emacs/ParEdit
 ;;   Redshank http://www.foldr.org/~michaelw/emacs/redshank
+;;  networking:
+;;   emacs-w3m http://emacs-w3m.namazu.org
+;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
+;;   Wanderlust http://www.gohome.org/wl
+;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
 ;;  misc:
 ;;   ELPA http://tromey.com/elpa
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
-;;   LaTeX-beamer http://latex-beamer.sourceforge.net
 ;;   Ditaa http://ditaa.sourceforge.net
+;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   gtags http://www.gnu.org/software/global
 ;;   traverselisp http://mercurial.intuxication.org/hg/traverselisp
-;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
-;;   emacs-w3m http://emacs-w3m.namazu.org
-;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
-;;   Wanderlust http://www.gohome.org/wl
+;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   EMMS http://www.gnu.org/software/emms
-;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
 
 ;;; Code:
 ;; do some OS recognition and set main parameters
@@ -148,8 +149,8 @@ KEYS is alternating list of key-value."
 (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
 				   &optional do-always)
   "Create a one-argument interactive function FUN with COMMENT.
- ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
- DO-ALWAYS is always executed beforehand."
+ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
+DO-ALWAYS is always executed beforehand."
   `(defun ,fun (arg)
      ,comment
      (interactive "P")
@@ -177,28 +178,11 @@ With prefix arg, skip executing BODY over current."
   `(defun activate-lisp-minor-modes ()
      "Activate some convenient minor modes for editing s-exp"
      (pretty-lambdas)
-;;; Highlight s-expressions and parenthesis
-     ,(when (require-maybe 'hl-sexp) '(hl-sexp-mode +1))
-     ,(when (require-maybe 'highlight-parentheses)
+     ,(when (locate-library "hl-sexp")
+	'(hl-sexp-mode +1))
+     ,(when (locate-library "highlight-parentheses")
 	'(highlight-parentheses-mode +1))
-;;; Paredit
-     ,(when (require-maybe 'paredit)
-	(when (boundp 'ergoemacs-mode)
-	  (define-keys paredit-mode-map
-	    ergoemacs-comment-dwim-key 'paredit-comment-dwim
-	    ergoemacs-isearch-forward-key 'isearch-forward
-	    ergoemacs-backward-kill-word-key
-	    'paredit-backward-kill-word
-	    ergoemacs-kill-word-key 'paredit-forward-kill-word
-	    ergoemacs-delete-backward-char-key
-	    'paredit-backward-delete
-	    ergoemacs-delete-char-key 'paredit-forward-delete
-	    ergoemacs-kill-line-key 'paredit-kill
-	    ergoemacs-recenter-key 'recenter-top-bottom
-	    "\M-R" 'paredit-raise-sexp)
-	  (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-	    (define-key paredit-mode-map "\M-r"
-	      'paredit-splice-sexp)))
+     ,(when (locate-library "paredit")
 	'(paredit-mode +1))))
 
 (defmacro opacity-modify (&optional dec)
@@ -224,18 +208,19 @@ otherwise increase it in 5%-steps"
 
 (defmacro my-non-fullscreen ()
   "Exit fullscreen."
-  `(if (fboundp 'w32-send-sys-command)
-       ;; WM_SYSCOMMAND restore #xf120
-       (w32-send-sys-command 61728)
-     (set-frame-parameter nil 'width +width+)
-     (set-frame-parameter nil 'fullscreen 'fullheight)))
+  (if (fboundp 'w32-send-sys-command)
+      ;; WM_SYSCOMMAND restore #xf120
+      `(w32-send-sys-command 61728)
+    `(progn
+       (set-frame-parameter nil 'width +width+)
+       (set-frame-parameter nil 'fullscreen 'fullheight))))
 
 (defmacro my-fullscreen ()
   "Go fullscreen."
-  `(if (fboundp 'w32-send-sys-command)
-       ;; WM_SYSCOMMAND maximize #xf030
-       (w32-send-sys-command 61488)
-     (set-frame-parameter nil 'fullscreen 'fullboth)))
+  (if (fboundp 'w32-send-sys-command)
+      ;; WM_SYSCOMMAND maximize #xf030
+      `(w32-send-sys-command 61488)
+    `(set-frame-parameter nil 'fullscreen 'fullboth)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -413,7 +398,7 @@ If LIGHT is `:dark', let it be darkness, otherwise light."
     (set-frame-height frame 40)))
 
 (defun switch-faces (light)
-  "Set dark faces.  With prefix, light."
+  "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
   (faces-fix (or light :dark))
   (faces-generic))
@@ -557,7 +542,8 @@ Remove hook when done."
  '(query-replace-highlight t)
  '(require-final-newline t)
  '(tool-bar-mode nil)
- '(menu-bar-mode nil))
+ '(menu-bar-mode nil)
+ '(transient-mark-mode t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -628,9 +614,12 @@ Remove hook when done."
       browse-url-galeon-new-window-is-tab t
       browse-url-netscape-new-window-is-tab t)
 
+;; (eval-after-load "gnus"
+;;   (add-to-list 'gnus-secondary-select-methods
+;; 	       '(nntp "news.gmane.org")))
+
 ;; handle window configuration
-(when (fboundp 'winner-mode)
-  (winner-mode 1))
+(when (fboundp 'winner-mode) (winner-mode 1))
 
 ;; gdb
 (setq gdb-many-windows t)
@@ -675,17 +664,15 @@ Remove hook when done."
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(defadvice kill-ring-save (before slick-copy
-				  activate compile)
-  "When called interactively with no active region, copy current line."
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region,copy current line."
   (interactive
    (if mark-active
        (list (region-beginning) (region-end))
      (message "Copied line.")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-(defadvice kill-region (before slick-cut
-			       activate compile)
+(defadvice kill-region (before slick-cut activate compile)
   "When called interactively with no active region, kill current line."
   (interactive
    (if mark-active
@@ -735,16 +722,16 @@ Remove hook when done."
 ;;;; extensions
 
 ;;; ELPA
-(when (require-maybe 'package)
-  (package-initialize))
+(when (load "package" t) (package-initialize))
 
 ;; wget
-(when (file-exists-p (concat +extras-path+ "wget"))
+(when (locate-library "wget")
   (autoload 'wget "wget" "wget interface for Emacs." t)
   (autoload 'wget-web-page "wget"
     "wget interface to download whole web page." t)
 
   (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
+
   (setq
    wget-download-directory-filter 'wget-download-dir-filter-regexp
    wget-download-directory
@@ -754,9 +741,8 @@ Remove hook when done."
   (defun wget-site (uri)
     "Get a whole web-site pointed by URI through Wget.
 Make links point to local files."
-    (interactive
-     (list (read-string "Web Site URI: "
-			(thing-at-point-url-at-point))))
+    (interactive (list (read-string "Web Site URI: "
+				    (thing-at-point-url-at-point))))
     (let ((dir (wget-cd-download-dir t uri)))
       (when dir
 	(if (string= uri "")
@@ -765,7 +751,7 @@ Make links point to local files."
 			      "--no-check-certificate")))))))
 
 ;;; TabBar
-(when (require-maybe 'tabbar)
+(when (load "tabbar" t)
   (tabbar-mode)
 
   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
@@ -788,6 +774,8 @@ If not a file, attach current directory."
      ((memq major-mode '(woman-mode completion-list-mode
 				    slime-fuzzy-completions-mode))
       (setq ad-return-value (list "Help")))
+     ((eq major-mode 'asdf-mode)
+      (setq ad-return-value (list "Lisp")))
      ((string-match "^emms" (symbol-name major-mode))
       (setq ad-return-value (list "EMMS")))
      ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
@@ -825,7 +813,7 @@ If not a file, attach current directory."
   (setq-default mode-line-buffer-identification ""))
 
 ;;; Anything
-(when (require-maybe 'anything-config)
+(when (load "anything-config" t)
   (global-set-key [f5] 'anything)
   (setq anything-sources
 	'(anything-c-source-buffers+
@@ -841,14 +829,14 @@ If not a file, attach current directory."
 	  anything-c-source-bookmarks
 	  anything-c-source-semantic))
 
-  (require-maybe 'anything-match-plugin)
-  (when (require-maybe 'anything-etags)
+  (load "anything-match-plugin" t)
+  (when (load "anything-etags" t)
     (setq anything-sources
 	  (nconc anything-sources
 		 '(anything-c-source-etags-select)))))
 
 ;;; ErgoEmacs minor mode
-(when (file-exists-p (concat +extras-path+ "/ergo"))
+(when (locate-library "ergoemacs-mode")
   (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
   (load "ergoemacs-mode")
 
@@ -875,8 +863,45 @@ If not a file, attach current directory."
 
 ;;;; Lisp goodies
 
+;; Highlight s-expressions
+(autoload 'hl-sexp-mode "hl-sexp"
+  "Highlight s-expressions minor mode." t)
+
+;; Highlight parenthesis
+(autoload 'highlight-parentheses-mode "highlight-parentheses"
+  "Highlight matching parenthesis minor mode." t)
+
+;;; Paredit
+(when (locate-library "paredit")
+  (autoload 'paredit-mode "paredit"
+    "Minor mode for pseudo-structurally editing Lisp code." t)
+
+  (when (boundp 'ergoemacs-mode)
+    (eval-after-load 'paredit
+      '(progn
+	 (define-keys paredit-mode-map
+	   ergoemacs-comment-dwim-key 'paredit-comment-dwim
+	   ergoemacs-isearch-forward-key 'isearch-forward
+	   ergoemacs-backward-kill-word-key
+	   'paredit-backward-kill-word
+	   ergoemacs-kill-word-key 'paredit-forward-kill-word
+	   ergoemacs-delete-backward-char-key 'paredit-backward-delete
+	   ergoemacs-delete-char-key 'paredit-forward-delete
+	   ergoemacs-kill-line-key 'paredit-kill
+	   ergoemacs-recenter-key 'recenter-top-bottom
+	   "\M-R" 'paredit-raise-sexp)
+	 (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
+	   (define-key paredit-mode-map "\M-r"
+	     'paredit-splice-sexp)))))
+
+;;; Redshank
+  (when (load "redshank-loader" t)
+    (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				     inferior-lisp-mode-hook)
+		    t)))
+
 ;; build appropriate `activate-lisp-minor-modes'
-(eval (macroexpand '(active-lisp-modes))) ; ugly but works
+(active-lisp-modes)
 
 ;; Hook convenient s-exp minor modes to some major modes.
 (hook-modes activate-lisp-minor-modes
@@ -884,16 +909,6 @@ If not a file, attach current directory."
 	    lisp-interaction-mode-hook
 	    emacs-lisp-mode-hook ielm-mode-hook
 	    inferior-scheme-mode-hook scheme-mode-hook)
-
-;;; Redshank
-(when (require-maybe
-       'redshank-loader
-       (concat +extras-path+
-	       "p-languages/lisp-modes/redshank/redshank-loader"))
-  (eval-after-load "redshank-loader"
-    `(redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				      inferior-lisp-mode-hook)
-		     t)))
 
 ;;; elisp stuff
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
@@ -903,23 +918,23 @@ If not a file, attach current directory."
 (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
 ;; common lisp hyperspec info look-up
-(require 'info-look)
-(info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
-		      :ignore-case t
-		      :doc-spec '(("(ansicl)Symbol Index"
-				   nil nil nil)))
+(when (require-maybe 'info-look)
+  (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
+			:ignore-case t
+			:doc-spec '(("(ansicl)Symbol Index"
+				     nil nil nil))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Programming extensions
 
 ;;; Clojure
-(when (require-maybe 'clojure-mode)
+(when (locate-library "clojure-mode")	; from ELPA
   (defconst +clojure-dir+ (concat +home-path+ (win-or-nix "bin/" ".")
 				  "clojure")
     "Path to the Clojure directory.")
   (and (file-exists-p +clojure-dir+)
-       (require-maybe 'swank-clojure-autoload)
+       (load "swank-clojure-autoload" t)
        (swank-clojure-config
 	(setq
 	 swank-clojure-jar-path (concat +clojure-dir+ "/clojure.jar")
@@ -934,25 +949,22 @@ If not a file, attach current directory."
   (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
 
 ;;; Set up SLIME
-(when (require-maybe 'slime)
-  (eval-after-load "slime"
-    '(progn
-       (slime-setup (win-or-nix
-		     '(slime-fancy slime-banner slime-indentation
-				   slime-indentation-fu)
-		     '(slime-fancy slime-banner slime-indentation
-				   slime-indentation-fu slime-asdf)))
-       (slime-autodoc-mode)
-       (setq slime-complete-symbol*-fancy t
-	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	     common-lisp-hyperspec-root
-	     (concat "file://" +home-path+ (win-or-nix "docs"
-						       "Documents")
-		     "/HyperSpec/")
-	     slime-net-coding-system
-	     (find-if 'slime-find-coding-system
-		      '(utf-8-unix iso-latin-1-unix
-				   iso-8859-1-unix binary)))))
+(when (load "slime" t)
+  (slime-setup (win-or-nix
+		'(slime-fancy slime-banner slime-indentation
+			      slime-indentation-fu)
+		'(slime-fancy slime-banner slime-indentation
+			      slime-indentation-fu slime-asdf)))
+  (slime-autodoc-mode)
+  (setq slime-complete-symbol*-fancy t
+	slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+	common-lisp-hyperspec-root
+	(concat "file://" +home-path+ (win-or-nix "docs" "Documents")
+		"/HyperSpec/")
+	slime-net-coding-system
+	(find-if 'slime-find-coding-system
+		 '(utf-8-unix iso-latin-1-unix
+			      iso-8859-1-unix binary)))
 
   (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
   (define-key slime-mode-map "\M-g" 'slime-complete-symbol)
@@ -1064,34 +1076,36 @@ If not a file, attach current directory."
 		  "/usr/local/bin/sbcl"))
 
 ;;; Scheme
-(when (file-exists-p (concat +extras-path+
-			     "p-languages/lisp-modes/quack.el"))
+(when (locate-library "quack")
   (setq quack-global-menu-p nil)
-  (require-maybe 'quack))
+  (when (load "quack" t)
+    (setq quack-default-program "gsi"
+	  quack-pltcollect-dirs (win-or-nix
+				 (concat +home-path+ "docs/plt")
+				 "/usr/share/plt/doc"))))
 
 ;;; CLIPS
-(when (require-maybe 'inf-clips)
+(when (load "inf-clips" t)
   (push '("\.clp$" . clips-mode) auto-mode-alist)
   (setq inferior-clips-program
 	(win-or-nix (concat +win-path+
 			    "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 		    "clips"))
 
-  (hook-modes (activate-lisp-minor-modes (setq indent-region-function
-					       nil))
+  (hook-modes (activate-lisp-minor-modes
+	       (setq indent-region-function nil))
 	      clips-mode-hook inferior-clips-mode-hook))
 
-;;; Caml
-(when (require-maybe 'tuareg)
-  (autoload 'tuareg-mode "tuareg"
-    "Major mode for editing Caml code" t)
-  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
-  (setq auto-mode-alist (cons '("\\.ml\\w?" . tuareg-mode)
-			      auto-mode-alist)))
+;;; Prolog, here's a hassle with emacs's prolog, no autoloads
+(when (load "p-languages/prolog" t)
+  (setq prolog-program-name "pl"
+	prolog-system 'swi
+	auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
+				 ("\\.m$" . mercury-mode))
+			       auto-mode-alist)))
 
 ;;; Haskell
-(when (file-exists-p (concat +extras-path+ "p-languages/haskell"))
-  (load "haskell-site-file")
+(when (load "haskell-site-file" t)
   (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indentation)
 	      haskell-mode-hook)
 
@@ -1108,34 +1122,29 @@ If not a file, attach current directory."
 	      'inferior-haskell-fix-repeated-input nil t)
     (set (make-local-variable 'comint-process-echoes) nil)))
 
-;;; Prolog
-(when (require-maybe 'prolog)
-  (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
-  (autoload 'prolog-mode
-    "prolog" "Major mode for editing Prolog programs." t)
-  (autoload 'mercury-mode "prolog"
-    "Major mode for editing Mercury programs." t)
-  (setq prolog-program-name "pl"
-	prolog-system 'swi
-	auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
-				 ("\\.m$" . mercury-mode))
-			       auto-mode-alist)))
+;;; Caml
+(when (locate-library "tuareg")
+  (autoload 'tuareg-mode "tuareg"
+    "Major mode for editing Caml code" t)
+  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
+  (setq auto-mode-alist (cons '("\\.ml\\w?" . tuareg-mode)
+			      auto-mode-alist)))
 
 ;;; Python
-(when (require-maybe 'python-mode)
+(when (locate-library "python-mode")
+  (autoload 'python-mode "python-mode" "Python editing mode." t)
   (push '("\\.py$" . python-mode) auto-mode-alist)
-  (push '("python" . python-mode) interpreter-mode-alist)
-  (autoload 'python-mode "python-mode" "Python editing mode." t))
+  (push '("python" . python-mode) interpreter-mode-alist))
 
 ;;; VB
-(when (require-maybe 'visual-basic-mode)
+(when (locate-library "visual-basic-mode")
   (autoload 'visual-basic-mode "visual-basic-mode"
     "Visual Basic mode." t)
   (push '("\\.\\(frm\\|bas\\|cls\\)$" . visual-basic-mode)
 	auto-mode-alist))
 
 ;;; C#
-(when (require-maybe 'csharp-mode)
+(when (locate-library "csharp-mode")
   (autoload 'csharp-mode "csharp-mode"
     "Major mode for editing C# code." t)
   (push '("\\.cs$" . csharp-mode) auto-mode-alist))
@@ -1151,8 +1160,7 @@ If not a file, attach current directory."
 ;;;; Auxiliary extensions
 
 ;;; AUCTeX
-(when (file-exists-p (concat +extras-path+ "tex"))
-  (load "auctex" nil t)
+(when (load "auctex" t)
   (load "preview-latex" nil t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
   (add-hook 'TeX-mode-hook
@@ -1168,17 +1176,17 @@ If not a file, attach current directory."
 (add-to-list 'org-export-latex-classes
 	     '("beamer"
 	       "\\documentclass[11pt]{beamer}\n
-      \\mode<presentation>\n
-      \\usetheme{Antibes}\n
-      \\usecolortheme{lily}\n
-      \\beamertemplateballitem\n
-      \\setbeameroption{show notes}
-      \\usepackage[utf8]{inputenc}\n
-      \\usepackage[bulgarian]{babel}\n
-      \\usepackage{hyperref}\n
-      \\usepackage{color}
-      \\usepackage{listings}
-      \\lstset{numbers=none,language=[ISO]C++,tabsize=4,
+\\mode<presentation>\n
+\\usetheme{Antibes}\n
+\\usecolortheme{lily}\n
+\\beamertemplateballitem\n
+\\setbeameroption{show notes}
+\\usepackage[utf8]{inputenc}\n
+\\usepackage[bulgarian]{babel}\n
+\\usepackage{hyperref}\n
+\\usepackage{color}
+\\usepackage{listings}
+\\lstset{numbers=none,language=[ISO]C++,tabsize=4,
   frame=single,
   basicstyle=\\small,
   showspaces=false,showstringspaces=false,
@@ -1186,11 +1194,10 @@ If not a file, attach current directory."
   keywordstyle=\\color{blue}\\bfseries,
   commentstyle=\\color{red},
   }\n
-      \\usepackage{verbatim}\n
-      \\institute{Sofia University, FMI}\n
-      \\subject{RMRF}\n"
+\\usepackage{verbatim}\n
+\\institute{Sofia University, FMI}\n
+\\subject{RMRF}\n"
 	       ("\\section{%s}" . "\\section*{%s}")
-
 	       ("\\begin{frame}[fragile]\\frametitle{%s}"
 		"\\end{frame}"
 		"\\begin{frame}[fragile]\\frametitle{%s}"
@@ -1208,16 +1215,16 @@ If not a file, attach current directory."
 			     buffer-file-name)))))
 
 ;;; CompletionUI
-(when (require-maybe 'completion-ui)
+(when (load "completion-ui" t)
   (global-set-key "\M-G" 'complete-dabbrev)
   (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
 
 ;;; Auto Install
-(when (require-maybe 'auto-install)
+(when (load "auto-install" t)
   (setq auto-install-directory (concat +extras-path+
 				       "auto-install-dir/"))
   (and (require-maybe 'anything)
-       (require-maybe 'anything-auto-install)
+       (load "anything-auto-install" t)
 
        (defun anything-toggle-auto-install ()
 	 "Toggle anything-c-source-auto-installs in anything sources."
@@ -1245,10 +1252,10 @@ If not a file, attach current directory."
 (require-maybe 'vc-git)
 
 ;;; Traverse
-(require-maybe 'traverselisp)
+(load "traverselisp" t)
 
 ;;; Wanderlust
-(when (and (require-maybe 'wl) (require-maybe 'wl-draft))
+(when (locate-library "wl")
   (autoload 'wl "wl" "Wanderlust" t)
   (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
   (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
@@ -1352,12 +1359,12 @@ If not a file, attach current directory."
 	      wl-mail-send-pre-hook))
 
 ;;; mldonkey
-(when (require-maybe 'mldonkey)
+(when (load "mldonkey" t)
   (setq mldonkey-host "localhost"
 	mldonkey-port 4000))
 
 ;;; emms
-(when (require-maybe 'emms-setup)
+(when (load "emms-setup" t)
   (when (require-maybe 'emms-info-libtag)
     (add-to-list 'emms-info-functions 'emms-info-libtag))
   (require-maybe 'emms-mark)
@@ -1379,7 +1386,7 @@ If not a file, attach current directory."
   (add-hook 'emms-player-started-hook 'emms-show)
 
   (defun my-emms-track-description-function (track)
-    "Return a description of the current track."
+    "Return a description of the current TRACK."
     (let ((type (emms-track-type track))
 	  (name (emms-track-name track)))
       (cond
@@ -1418,22 +1425,44 @@ If not a file, attach current directory."
 				 0))
 	   ")")))))
 
+  (defun my-emms-covers (dir type)
+    "Choose album cover in DIR deppending on TYPE.
+File should be smaller than 120000 bytes."
+    (flet ((size (file-descr)
+		 (car (cddddr (cddddr file-descr)))))
+      (let* ((pics (sort (directory-files-and-attributes
+			  dir t "\\.\\(jpg\\|jpeg\\|png\\)$" t)
+			 (lambda (p1 p2)
+			   (< (size p1)
+			      (size p2)))))
+	     (small (car pics)))
+	(when (<= (or (size small) 200000) 120000)
+	  (let ((medium (cadr pics)))
+	    (car
+	     (case type
+	       ('small small)
+	       ('medium (if (<= (or (size medium) 200000) 120000)
+			    medium
+			  small))
+	       ('large (or (caddr pics) medium small)))))))))
+
   (setq emms-show-format "EMMS: %s"
-	emms-mode-line-format " %s "
+	emms-mode-line-format "%s"
 	emms-info-asynchronously t
 	later-do-interval 0.0001
  	emms-source-file-default-directory (concat +home-path+
 						   "Music/")
 	emms-lastfm-username "m00natic"
-	emms-lastfm-password "very-secret"
+	emms-lastfm-password "sorr0w"
 	emms-last-played-format-alist
 	'(((emms-last-played-seconds-today) . "%a %H:%M")
-	  (604800 . "%a %H:%M") ; this week
+	  (604800 . "%a %H:%M")		; this week
 	  ((emms-last-played-seconds-month) . "%d")
 	  ((emms-last-played-seconds-year) . "%m/%d")
 	  (t . "%Y/%m/%d"))
 	emms-track-description-function
-	'my-emms-track-description-function)
+	'my-emms-track-description-function
+	emms-browser-covers 'my-emms-covers)
 
   (emms-lastfm 1)
 
@@ -1451,6 +1480,11 @@ If not a file, attach current directory."
 	  ((equal ergo-layout "en")
 	   (global-set-key (kbd "s-r") 'emms-pause)))))
 
+;;; chess
+(when (locate-library "chess")		; from ELPA
+  ;;(autoload 'chess "chess" "Play a game of chess" t)
+  (setq chess-sound-play-function nil))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Specific OS extensions
@@ -1459,12 +1493,15 @@ If not a file, attach current directory."
 ;;; Cygwin
  (let ((cygwin-dir (concat +win-path+ "cygwin/bin")))
    (when (and (file-exists-p cygwin-dir)
-	      (require-maybe 'cygwin-mount))
+	      (load "cygwin-mount" t))
      (cygwin-mount-activate)
      (setq w32shell-cygwin-bin cygwin-dir)))
 
 ;;; Global tags
- (when (require-maybe 'gtags)
+ (when (locate-library "gtags")
+   (autoload 'gtags-mode "gtags"
+     "Minor mode for utilizing global tags." t)
+
    (defun gtags-create-or-update ()
      "Create or update the gnu global tag file."
      (interactive)
@@ -1489,9 +1526,9 @@ If not a file, attach current directory."
 				   )))
 
 ;;; w3m
- (when (require-maybe 'w3m-load)
-   (require-maybe 'mime-w3m)	     ; for integration with Wanderlust
-   (require-maybe 'w3m-wget)	     ; integration with Wget
+ (when (load "w3m-load" t)
+   (require-maybe 'mime-w3m)		; integration with Wanderlust
+   (require-maybe 'w3m-wget)		; integration with Wget
 
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))
@@ -1499,14 +1536,30 @@ If not a file, attach current directory."
        (switch-to-buffer-other-window (w3m-get-buffer-create "*w3m*"))
        (w3m-browse-url url)))
 
+   (defun dired-w3m-find-file ()
+     (interactive)
+     (let ((file (dired-get-filename)))
+       (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
+			     (file-name-nondirectory file)))
+	   (w3m-find-file file))))
+
+   (eval-after-load "dired"
+     '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file))
+
    (define-keys w3m-mode-map
      "i" 'w3m-save-image
      "l" 'w3m-horizontal-recenter)
+
    (setq w3m-home-page (concat "file://" +home-path+
 			       ".w3m/bookmark.html")
-	 w3m-use-toolbar nil
-	 ;; w3m-use-mule-ucs t
+	 w3m-use-toolbar t
 	 w3m-use-cookies t
+	 w3m-antenna-sites
+	 '(("http://symphonic.sourceforge.net/news.php"
+	    "JSymphonic" nil)
+	   ("http://lbook-bg.com/" "LBook eReader" nil)
+	   ("http://www.ourcomments.org/cgi-bin/emacsw32-dl-latest.pl"
+	    "EmacsW32" nil))
 	 ;; detect w3m command, if present,
 	 ;; make it default for most URLs
 	 browse-url-browser-function
