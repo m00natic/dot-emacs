@@ -85,7 +85,9 @@ NIX forms are executed on all other platforms."
        (push +extras-path+ load-path)
        (normal-top-level-add-subdirs-to-load-path)))
 
-(add-to-list 'exec-path (concat +extras-path+ "bin"))
+(let ((bin-path (concat +extras-path+ "bin")))
+  (when (file-exists-p bin-path)
+    (add-to-list 'exec-path bin-path)))
 
 ;; set default directory for `*scratch*' and some info
 (setq default-directory +home-path+
@@ -96,13 +98,6 @@ NIX forms are executed on all other platforms."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent macros
-
-;;; `require-maybe' (http://www.emacswiki.org/cgi-bin/wiki/LocateLibrary)
-;; this is useful when this .emacs is used in an env where not all of
-;; the other stuff is available
-(defmacro require-maybe (feature &optional file)
-  "Try to require FEATURE in FILE but don't signal an error on fail."
-  `(require ,feature ,file 'noerror))
 
 (defmacro hook-modes (functions &rest modes)
   "Hook a list of FUNCTIONS \(or atom\) to MODES.
@@ -146,19 +141,6 @@ KEYS is alternating list of key-value."
 	    (setq keys (cddr keys)))
 	  (nreverse res))))
 
-(defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
-				   &optional do-always)
-  "Create a one-argument interactive function FUN with COMMENT.
-ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
-DO-ALWAYS is always executed beforehand."
-  `(defun ,fun (arg)
-     ,comment
-     (interactive "P")
-     ,do-always
-     (if (null arg)
-	 ,on-no-prefix
-       ,on-prefix)))
-
 (defmacro do-buffers (buf &rest body)
   "Execute action over all buffers with BUF as iterator.
 With prefix arg, skip executing BODY over current."
@@ -174,15 +156,49 @@ With prefix arg, skip executing BODY over current."
        ,@body)))
 
 (defmacro active-lisp-modes ()
-  "Build a function for activating existing convenient minor modes for s-exp."
+  "Build a function for activating convenient minor modes for s-exp.
+Activate only extensions that are present and load/autoload them."
   `(defun activate-lisp-minor-modes ()
      "Activate some convenient minor modes for editing s-exp"
      (pretty-lambdas)
+
      ,(when (locate-library "hl-sexp")
+	(autoload 'hl-sexp-mode "hl-sexp"
+	  "Highlight s-expressions minor mode." t)
 	'(hl-sexp-mode +1))
-     ,(when (locate-library "highlight-parentheses")
+
+     ,(when (locate-library "highlight-parentheses") ; from ELPA
+	;; (autoload 'highlight-parentheses-mode "highlight-parentheses"
+	;;   "Highlight matching parenthesis minor mode." t)
 	'(highlight-parentheses-mode +1))
-     ,(when (locate-library "paredit")
+
+     ,(when (locate-library "paredit")	; from ELPA
+	;; (autoload 'paredit-mode "paredit"
+	;;   "Minor mode for pseudo-structurally editing Lisp code." t)
+	(when (boundp 'ergoemacs-mode)
+	  (eval-after-load 'paredit
+	    '(progn
+	       (define-keys paredit-mode-map
+		 ergoemacs-comment-dwim-key 'paredit-comment-dwim
+		 ergoemacs-isearch-forward-key 'isearch-forward
+		 ergoemacs-backward-kill-word-key
+		 'paredit-backward-kill-word
+		 ergoemacs-kill-word-key 'paredit-forward-kill-word
+		 ergoemacs-delete-backward-char-key
+		 'paredit-backward-delete
+		 ergoemacs-delete-char-key 'paredit-forward-delete
+		 ergoemacs-kill-line-key 'paredit-kill
+		 ergoemacs-recenter-key 'recenter-top-bottom
+		 "\M-R" 'paredit-raise-sexp)
+	       (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT")
+			    "colemak")
+		 (define-key paredit-mode-map "\M-r"
+		   'paredit-splice-sexp)))))
+;;; Redshank
+	(when (load "redshank-loader" t)
+	  (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+					   inferior-lisp-mode-hook)
+			  t))
 	'(paredit-mode +1))))
 
 (defmacro opacity-modify (&optional dec)
@@ -349,13 +365,13 @@ With prefix arg, leave current."
 		 :background "green" :foreground "black")
 		(t :inverse-video t)))
    '(region ((((class color) (min-colors 88) (background dark))
-	      :background "DarkSlateGray" :foreground nil)
+	      :background "#333" :foreground nil)
 	     (((class color) (min-colors 88) (background light))
-	      :background "lightgoldenrod2")
+	      :background "lightgoldenrod2" :foreground nil)
 	     (((class color) (min-colors 16) (background dark))
-	      :background "blue3")
+	      :background "blue3" :foreground nil)
 	     (((class color) (min-colors 16) (background light))
-	      :background "lightgoldenrod2")
+	      :background "lightgoldenrod2" :foreground nil)
 	     (((class color) (min-colors 8))
 	      :background "cyan" :foreground "white")
 	     (((type tty) (class mono)) :inverse-video t)
@@ -615,8 +631,8 @@ Remove hook when done."
       browse-url-netscape-new-window-is-tab t)
 
 ;; (eval-after-load "gnus"
-;;   (add-to-list 'gnus-secondary-select-methods
-;; 	       '(nntp "news.gmane.org")))
+;;   '(add-to-list 'gnus-secondary-select-methods
+;; 	        '(nntp "news.gmane.org")))
 
 ;; handle window configuration
 (when (fboundp 'winner-mode) (winner-mode 1))
@@ -628,7 +644,7 @@ Remove hook when done."
 (global-set-key (kbd "C-`") 'imenu)
 
 ;; don't count on same named files, rather show path difference
-(when (require-maybe 'uniquify)
+(when (require 'uniquify nil t)
   (setq uniquify-buffer-name-style 'post-forward
 	uniquify-separator ":"))
 
@@ -673,7 +689,7 @@ Remove hook when done."
      (list (line-beginning-position) (line-beginning-position 2)))))
 
 (defadvice kill-region (before slick-cut activate compile)
-  "When called interactively with no active region, kill current line."
+  "When called interactively with no active region,kill current line."
   (interactive
    (if mark-active
        (list (region-beginning) (region-end))
@@ -681,7 +697,7 @@ Remove hook when done."
      (list (line-beginning-position) (line-beginning-position 2)))))
 
 ;;; recentf
-(when (require-maybe 'recentf)		; save recently used files
+(when (require 'recentf nil t)		; save recently used files
   (setq recentf-max-saved-items 100	; max save 100
 	recentf-save-file (concat +home-path+ ".emacs.d/recentf")
 	recentf-max-menu-items 15)	       ; max 15 in menu
@@ -788,6 +804,19 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
+  (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
+				     &optional do-always)
+    "Create a one-argument interactive function FUN with COMMENT.
+ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
+DO-ALWAYS is always executed beforehand."
+    `(defun ,fun (arg)
+       ,comment
+       (interactive "P")
+       ,do-always
+       (if (null arg)
+	   ,on-no-prefix
+	 ,on-prefix)))
+
   (def-interactive-arg tabbar-move-next
     "Go to next tab. With prefix, next group."
     (tabbar-forward-tab) (tabbar-forward-group))
@@ -850,7 +879,7 @@ If not a file, attach current directory."
     "\M-#" 'move-cursor-next-pane)
 
   ;; workaround arrows not active in terminal with ErgoEmacs active
-  (when (require-maybe 'anything)
+  (when (require 'anything nil t)
     (define-keys anything-map
       "\C-d" 'anything-next-line
       "\C-u" 'anything-previous-line
@@ -863,45 +892,8 @@ If not a file, attach current directory."
 
 ;;;; Lisp goodies
 
-;; Highlight s-expressions
-(autoload 'hl-sexp-mode "hl-sexp"
-  "Highlight s-expressions minor mode." t)
-
-;; Highlight parenthesis
-(autoload 'highlight-parentheses-mode "highlight-parentheses"
-  "Highlight matching parenthesis minor mode." t)
-
-;;; Paredit
-(when (locate-library "paredit")
-  (autoload 'paredit-mode "paredit"
-    "Minor mode for pseudo-structurally editing Lisp code." t)
-
-  (when (boundp 'ergoemacs-mode)
-    (eval-after-load 'paredit
-      '(progn
-	 (define-keys paredit-mode-map
-	   ergoemacs-comment-dwim-key 'paredit-comment-dwim
-	   ergoemacs-isearch-forward-key 'isearch-forward
-	   ergoemacs-backward-kill-word-key
-	   'paredit-backward-kill-word
-	   ergoemacs-kill-word-key 'paredit-forward-kill-word
-	   ergoemacs-delete-backward-char-key 'paredit-backward-delete
-	   ergoemacs-delete-char-key 'paredit-forward-delete
-	   ergoemacs-kill-line-key 'paredit-kill
-	   ergoemacs-recenter-key 'recenter-top-bottom
-	   "\M-R" 'paredit-raise-sexp)
-	 (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT") "colemak")
-	   (define-key paredit-mode-map "\M-r"
-	     'paredit-splice-sexp)))))
-
-;;; Redshank
-  (when (load "redshank-loader" t)
-    (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				     inferior-lisp-mode-hook)
-		    t)))
-
 ;; build appropriate `activate-lisp-minor-modes'
-(active-lisp-modes)
+(eval (macroexpand '(active-lisp-modes)))
 
 ;; Hook convenient s-exp minor modes to some major modes.
 (hook-modes activate-lisp-minor-modes
@@ -918,7 +910,7 @@ If not a file, attach current directory."
 (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
 ;; common lisp hyperspec info look-up
-(when (require-maybe 'info-look)
+(when (require 'info-look nil t)
   (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
 			:ignore-case t
 			:doc-spec '(("(ansicl)Symbol Index"
@@ -930,146 +922,145 @@ If not a file, attach current directory."
 
 ;;; Clojure
 (when (locate-library "clojure-mode")	; from ELPA
-  (defconst +clojure-dir+ (concat +home-path+ (win-or-nix "bin/" ".")
-				  "clojure")
-    "Path to the Clojure directory.")
-  (and (file-exists-p +clojure-dir+)
-       (load "swank-clojure-autoload" t)
-       (swank-clojure-config
-	(setq
-	 swank-clojure-jar-path (concat +clojure-dir+ "/clojure.jar")
-	 swank-clojure-extra-classpaths
-	 (cons (concat +extras-path+
-		       "/clojure/swank-clojure/src/swank/")
-	       (directory-files +clojure-dir+ t ".\\(jar\\|clj\\)$"))
-	 swank-clojure-extra-vm-args
-	 '("-server" "-Xdebug"
-	   "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"))))
+  (when (locate-library "swank-clojure")
+    (setq swank-clojure-jar-path
+	  (concat +home-path+ ".swank-clojure/swank-clojure.jar")
+	  ;; swank-clojure-extra-vm-args
+	  ;;  '("-server" "-Xdebug"
+	  ;;    "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
+	  ))
 
-  (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
+  (eval-after-load "clojure-mode"
+    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)))
 
 ;;; Set up SLIME
 (when (load "slime" t)
-  (slime-setup (win-or-nix
-		'(slime-fancy slime-banner slime-indentation
-			      slime-indentation-fu)
-		'(slime-fancy slime-banner slime-indentation
-			      slime-indentation-fu slime-asdf)))
-  (slime-autodoc-mode)
-  (setq slime-complete-symbol*-fancy t
-	slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	common-lisp-hyperspec-root
-	(concat "file://" +home-path+ (win-or-nix "docs" "Documents")
-		"/HyperSpec/")
-	slime-net-coding-system
-	(find-if 'slime-find-coding-system
-		 '(utf-8-unix iso-latin-1-unix
-			      iso-8859-1-unix binary)))
+  ;;(locate-library "slime")
+  (eval-after-load "slime"
+    '(progn
+       (slime-setup (win-or-nix
+		     '(slime-fancy slime-banner slime-indentation
+				   slime-indentation-fu)
+		     '(slime-fancy slime-banner slime-indentation
+				   slime-indentation-fu slime-asdf)))
 
-  (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-  (define-key slime-mode-map "\M-g" 'slime-complete-symbol)
+       (slime-autodoc-mode)
+       (setq slime-complete-symbol*-fancy t
+	     slime-complete-symbol-function
+	     'slime-fuzzy-complete-symbol
+	     common-lisp-hyperspec-root
+	     (concat "file://" +home-path+ (win-or-nix "docs"
+						       "Documents")
+		     "/HyperSpec/")
+	     slime-net-coding-system
+	     (find-if 'slime-find-coding-system
+		      '(utf-8-unix iso-latin-1-unix
+				   iso-8859-1-unix binary)))
 
-  (when (boundp 'ergoemacs-mode)	; fix some shortcuts
-    (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
-      (cond ((equal ergo-layout "colemak")
-	     (define-keys slime-mode-map
-	       "\M-k" 'slime-next-note
-	       "\M-K" 'slime-previous-note
-	       "\M-n" nil
-	       "\M-p" nil))
-	    ((equal ergo-layout "en")
-	     (define-keys slime-mode-map
-	       "\M-N" 'slime-previous-note
-	       "\M-p" nil)))))
+       (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
+       (define-key slime-mode-map "\M-g" 'slime-complete-symbol)
 
+       (when (boundp 'ergoemacs-mode)	; fix some shortcuts
+	 (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+	   (cond ((equal ergo-layout "colemak")
+		  (define-keys slime-mode-map
+		    "\M-k" 'slime-next-note
+		    "\M-K" 'slime-previous-note
+		    "\M-n" nil
+		    "\M-p" nil))
+		 ((equal ergo-layout "en")
+		  (define-keys slime-mode-map
+		    "\M-N" 'slime-previous-note
+		    "\M-p" nil)))))
+
+       (when (locate-library "swank-clojure")
 ;;; Online JavaDoc to Slime
-  (defun slime-java-describe (symbol-name)
-    "Get details on Java class/instance at point SYMBOL-NAME."
-    (interactive (list (slime-read-symbol-name
-			"Java Class/instance: ")))
-    (or symbol-name (error "No symbol given"))
-    (with-current-buffer (slime-output-buffer)
-      (or (eq (current-buffer) (window-buffer))
-	  (pop-to-buffer (current-buffer) t))
-      (goto-char (point-max))
-      (insert (concat "(show " symbol-name ")"))
-      (when symbol-name
-	(slime-repl-return)
-	(other-window 1))))
+	 (defun slime-java-describe (symbol-name)
+	   "Get details on Java class/instance at point SYMBOL-NAME."
+	   (interactive (list (slime-read-symbol-name
+			       "Java Class/instance: ")))
+	   (or symbol-name (error "No symbol given"))
+	   (with-current-buffer (slime-output-buffer)
+	     (or (eq (current-buffer) (window-buffer))
+		 (pop-to-buffer (current-buffer) t))
+	     (goto-char (point-max))
+	     (insert (concat "(show " symbol-name ")"))
+	     (when symbol-name
+	       (slime-repl-return)
+	       (other-window 1))))
 
-  (defun slime-javadoc (symbol-name)
-    "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
-    (interactive (list (slime-read-symbol-name "JavaDoc info for: ")))
-    (or symbol-name (error "No symbol given"))
-    (set-buffer (slime-output-buffer))
-    (or (eq (current-buffer) (window-buffer))
-	(pop-to-buffer (current-buffer) t))
-    (goto-char (point-max))
-    (insert (concat "(javadoc " symbol-name ")"))
-    (when symbol-name
-      (slime-repl-return)
-      (other-window 1)))
-
-  (add-hook 'slime-connected-hook
-	    (lambda () (interactive)
-	      (slime-redirect-inferior-output)
-	      (define-keys slime-mode-map
-		"\C-cd" 'slime-java-describe
-		"\C-cD" 'slime-javadoc)
-	      (define-keys slime-repl-mode-map
-		"\C-cd"	'slime-java-describe
-		"\C-cD" 'slime-javadoc)))
+	 (defun slime-javadoc (symbol-name)
+	   "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
+	   (interactive (list (slime-read-symbol-name
+			       "JavaDoc info for: ")))
+	   (or symbol-name (error "No symbol given"))
+	   (set-buffer (slime-output-buffer))
+	   (or (eq (current-buffer) (window-buffer))
+	       (pop-to-buffer (current-buffer) t))
+	   (goto-char (point-max))
+	   (insert (concat "(javadoc " symbol-name ")"))
+	   (when symbol-name
+	     (slime-repl-return)
+	     (other-window 1)))
 
 ;;; Local JavaDoc to Slime
-  (setq slime-browse-local-javadoc-root
-	(concat (win-or-nix (concat +home-path+ "docs")
-			    "/usr/share")
-		"/javadoc/java-1.6.0-openjdk"))
+	 (setq slime-browse-local-javadoc-root
+	       (concat (win-or-nix (concat +home-path+ "docs")
+				   "/usr/share")
+		       "/javadoc/java-1.6.0-openjdk"))
 
-  (defun slime-browse-local-javadoc (ci-name)
-    "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
-    (interactive
-     (list (slime-read-symbol-name "Class/Interface name: ")))
-    (or ci-name	(error "No name given"))
-    (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-	  (path (concat (expand-file-name
-			 slime-browse-local-javadoc-root)
-			"/api/")))
-      (with-temp-buffer
-	(insert-file-contents (concat path "allclasses-noframe.html"))
-	(let ((l (delq nil
-		       (mapcar (lambda (rgx)
-				 (let* ((r (concat
-					    "\\.?\\(" rgx
-					    "[^./]+\\)[^.]*\\.?$"))
-					(n (if (string-match r name)
-					       (match-string 1 name)
-					     name)))
-				   (if (re-search-forward
-					(concat "<A HREF=\"\\(.+\\)\" +.*>"
-						n "<.*/A>")
-					nil t)
-				       (match-string 1)
-				     nil)))
-			       '("[^.]+\\." "")))))
-	  (if l
-	      (browse-url (concat "file://" path (car l)))
-	    (error (concat "Not found: " ci-name)))))))
+	 (defun slime-browse-local-javadoc (ci-name)
+	   "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
+	   (interactive
+	    (list (slime-read-symbol-name "Class/Interface name: ")))
+	   (or ci-name	(error "No name given"))
+	   (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+		 (path (concat (expand-file-name
+				slime-browse-local-javadoc-root)
+			       "/api/")))
+	     (with-temp-buffer
+	       (insert-file-contents
+		(concat path "allclasses-noframe.html"))
+	       (let ((l (delq nil
+			      (mapcar (lambda (rgx)
+					(let* ((r (concat
+						   "\\.?\\(" rgx
+						   "[^./]+\\)[^.]*\\.?$"))
+					       (n (if (string-match r name)
+						      (match-string 1 name)
+						    name)))
+					  (if (re-search-forward
+					       (concat "<A HREF=\"\\(.+\\)\" +.*>"
+						       n "<.*/A>")
+					       nil t)
+					      (match-string 1)
+					    nil)))
+				      '("[^.]+\\." "")))))
+		 (if l
+		     (browse-url (concat "file://" path (car l)))
+		   (error (concat "Not found: " ci-name))))))))
 
-  (add-hook 'slime-connected-hook (lambda ()
-				    (define-key slime-mode-map "\C-cb"
-				      'slime-browse-local-javadoc)
-				    (define-key slime-repl-mode-map
-				      "\C-cb"
-				      'slime-browse-local-javadoc)))
+       (when (locate-library "swank-clojure")
+	 (add-hook 'slime-connected-hook
+	 	   (lambda ()
+	 	     (slime-redirect-inferior-output)
+	 	     (define-keys slime-mode-map
+	 	       "\C-cd" 'slime-java-describe
+	 	       "\C-cD" 'slime-javadoc)
+	 	     (define-keys slime-repl-mode-map
+	 	       "\C-cd" 'slime-java-describe
+	 	       "\C-cD" 'slime-javadoc)
+	 	     (define-key slime-mode-map "\C-cb"
+	 	       'slime-browse-local-javadoc)
+	 	     (define-key slime-repl-mode-map "\C-cb"
+	 	       'slime-browse-local-javadoc))))
 
-;;; (or CLisp SBCL)
-  (add-to-list 'slime-lisp-implementations
-	       (win-or-nix (list 'clisp (list
-					 (concat +home-path+
-						 "bin/clisp/clisp.exe")
-					 "-K" "full"))
-			   '(sbcl ("/usr/local/bin/sbcl")))))
+       (add-to-list 'slime-lisp-implementations
+		    (win-or-nix (list 'clisp (list
+					      (concat +home-path+
+						      "bin/clisp/clisp.exe")
+					      "-K" "full"))
+				'(sbcl ("/usr/local/bin/sbcl")))))))
 
 (setq inferior-lisp-program
       (win-or-nix (concat +home-path+ "bin/clisp/clisp.exe -K full")
@@ -1096,39 +1087,37 @@ If not a file, attach current directory."
 	       (setq indent-region-function nil))
 	      clips-mode-hook inferior-clips-mode-hook))
 
-;;; Prolog, here's a hassle with emacs's prolog, no autoloads
-(when (load "p-languages/prolog" t)
-  (setq prolog-program-name "pl"
-	prolog-system 'swi
-	auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
-				 ("\\.m$" . mercury-mode))
-			       auto-mode-alist)))
+;;; Prolog, if there is built-in mode, no autoloads
+(if (symbol-file 'prolog-mode)
+    (when (load "prog/prolog" t)
+      (setq prolog-program-name "pl"
+	    prolog-system 'swi
+	    auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
+				     ("\\.m$" . mercury-mode))
+				   auto-mode-alist)))
+  (when (locate-library "prolog")
+    (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
+    (autoload 'prolog-mode "prolog"
+      "Major mode for editing Prolog programs." t)
+    (autoload 'mercury-mode "prolog"
+      "Major mode for editing Mercury programs." t)
+    (setq prolog-program-name "pl"
+	  prolog-system 'swi
+	  auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
+				   ("\\.m$" . mercury-mode))
+				 auto-mode-alist))))
 
 ;;; Haskell
 (when (load "haskell-site-file" t)
   (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indentation)
-	      haskell-mode-hook)
-
-  ;; fixes the repeating input and ^J issues that have been occurring
-  (defun inferior-haskell-fix-repeated-input (output)
-    (let ((start (string-match "\\^J" output)))
-      (if start
-	  (substring output (+ 2 start))
-	output)))
-
-  (defadvice inferior-haskell-mode (before
-				    inferior-haskell-mode-input-fix)
-    (add-hook 'comint-preoutput-filter-functions
-	      'inferior-haskell-fix-repeated-input nil t)
-    (set (make-local-variable 'comint-process-echoes) nil)))
+	      haskell-mode-hook))
 
 ;;; Caml
 (when (locate-library "tuareg")
   (autoload 'tuareg-mode "tuareg"
     "Major mode for editing Caml code" t)
   (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
-  (setq auto-mode-alist (cons '("\\.ml\\w?" . tuareg-mode)
-			      auto-mode-alist)))
+  (push '("\\.ml\\w?" . tuareg-mode) auto-mode-alist))
 
 ;;; Python
 (when (locate-library "python-mode")
@@ -1150,10 +1139,9 @@ If not a file, attach current directory."
   (push '("\\.cs$" . csharp-mode) auto-mode-alist))
 
 ;;; cc-mode - hide functions
-(add-hook 'c-mode-common-hook (lambda ()
-				(hs-minor-mode 1)
-				(local-set-key (kbd "C-c C-c")
-					       'hs-toggle-hiding)))
+(add-hook 'c-mode-common-hook
+	  (lambda () (hs-minor-mode 1)
+	    (local-set-key [backtab] 'hs-toggle-hiding)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1223,7 +1211,7 @@ If not a file, attach current directory."
 (when (load "auto-install" t)
   (setq auto-install-directory (concat +extras-path+
 				       "auto-install-dir/"))
-  (and (require-maybe 'anything)
+  (and (require 'anything nil t)
        (load "anything-auto-install" t)
 
        (defun anything-toggle-auto-install ()
@@ -1249,7 +1237,7 @@ If not a file, attach current directory."
 	   (message "Auto-install added to anything sources.")))))
 
 ;;; Git
-(require-maybe 'vc-git)
+(require 'vc-git nil t)
 
 ;;; Traverse
 (load "traverselisp" t)
@@ -1318,7 +1306,7 @@ If not a file, attach current directory."
      ("Reply-To" ("Reply-To") ("To" "Cc" "From") ("Newsgroups"))
      ("From" ("From") ("To" "Cc") ("Newsgroups"))))
 
-  ;; (when (require-maybe 'wl-spam)
+  ;; (when (require 'wl-spam nil t)
   ;;   (wl-spam-setup)
   ;;   (setq elmo-spam-scheme 'sa))
 
@@ -1365,9 +1353,10 @@ If not a file, attach current directory."
 
 ;;; emms
 (when (load "emms-setup" t)
-  (when (require-maybe 'emms-info-libtag)
+  ;; (locate-library "emms-setup")		; from ELPA
+  (when (require 'emms-info-libtag nil t)
     (add-to-list 'emms-info-functions 'emms-info-libtag))
-  (require-maybe 'emms-mark)
+  (require 'emms-mark nil t)
 
   (emms-devel)
   (emms-default-players)
@@ -1453,7 +1442,7 @@ File should be smaller than 120000 bytes."
  	emms-source-file-default-directory (concat +home-path+
 						   "Music/")
 	emms-lastfm-username "m00natic"
-	emms-lastfm-password "sorr0w"
+	emms-lastfm-password "very-secret"
 	emms-last-played-format-alist
 	'(((emms-last-played-seconds-today) . "%a %H:%M")
 	  (604800 . "%a %H:%M")		; this week
@@ -1466,7 +1455,7 @@ File should be smaller than 120000 bytes."
 
   (emms-lastfm 1)
 
-  (when (require-maybe 'emms-player-mpd)
+  (when (require 'emms-player-mpd nil t)
     (add-to-list 'emms-info-functions 'emms-info-mpd)
     (push 'emms-player-mpd emms-player-list)
     (setq emms-player-mpd-music-directory
@@ -1527,8 +1516,8 @@ File should be smaller than 120000 bytes."
 
 ;;; w3m
  (when (load "w3m-load" t)
-   (require-maybe 'mime-w3m)		; integration with Wanderlust
-   (require-maybe 'w3m-wget)		; integration with Wget
+   (require 'mime-w3m nil t)		; integration with Wanderlust
+   (require 'w3m-wget nil t)		; integration with Wget
 
    (defun w3m-browse-url-other-window (url &optional newwin)
      (interactive (browse-url-interactive-arg "w3m URL: "))
@@ -1554,12 +1543,6 @@ File should be smaller than 120000 bytes."
 			       ".w3m/bookmark.html")
 	 w3m-use-toolbar t
 	 w3m-use-cookies t
-	 w3m-antenna-sites
-	 '(("http://symphonic.sourceforge.net/news.php"
-	    "JSymphonic" nil)
-	   ("http://lbook-bg.com/" "LBook eReader" nil)
-	   ("http://www.ourcomments.org/cgi-bin/emacsw32-dl-latest.pl"
-	    "EmacsW32" nil))
 	 ;; detect w3m command, if present,
 	 ;; make it default for most URLs
 	 browse-url-browser-function
