@@ -100,7 +100,7 @@ NIX forms are executed on all other platforms."
 ;;;; extension independent macros
 
 (defmacro hook-modes (functions &rest modes)
-  "Hook a list of FUNCTIONS \(or atom\) to MODES.
+  "Hook a list of FUNCTIONS (or atom) to MODES.
 Each function may be an atom or a list with parameters."
   (cons 'progn
 	(if (consp functions)
@@ -140,20 +140,6 @@ KEYS is alternating list of key-value."
 	    (push `(define-key ,mode ,(car keys) ,(cadr keys)) res)
 	    (setq keys (cddr keys)))
 	  (nreverse res))))
-
-(defmacro do-buffers (buf &rest body)
-  "Execute action over all buffers with BUF as iterator.
-With prefix arg, skip executing BODY over current."
-  `(if current-prefix-arg
-       (let ((curr (current-buffer)))
-	 (dolist (,buf (buffer-list))
-	   (,(if (cdr body)
-		 'unless
-	       'or)
-	    (eq ,buf curr)
-	    ,@body)))
-     (dolist (,buf (buffer-list))
-       ,@body)))
 
 (defmacro active-lisp-modes ()
   "Build a function for activating convenient minor modes for s-exp.
@@ -248,25 +234,6 @@ otherwise increase it in 5%-steps"
   (if (setq *fullscreen-p* (not *fullscreen-p*))
       (my-fullscreen)
     (my-non-fullscreen)))
-
-(defun nuke-buffers (reg-ex)
-  "Kill buffers whose name is matched by REG-EX.
-With prefix arg, leave current."
-  (interactive (list (read-regexp "Buffer names to kill?" ".*")))
-  (do-buffers buf
-	      (when (string-match-p reg-ex (or (buffer-name buf) ""))
-		(kill-buffer buf)))
-  (when (string-equal reg-ex ".*") (delete-other-windows)))
-
-(defun nuke-modes (reg-ex)
-  "Kill buffers whose major mode name is matched by REG-EX.
-With prefix arg, leave current."
-  (interactive (list (read-regexp "Major modes to kill?"
-				  (symbol-name major-mode))))
-  (do-buffers buf
-	      (with-current-buffer buf
-		(when (string-match-p reg-ex (symbol-name major-mode))
-		  (kill-buffer buf)))))
 
 ;;; themes
 (defun faces-generic ()
@@ -446,17 +413,6 @@ Remove hook when done."
 				   (match-beginning 1) (match-end 1)
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
-
-(defun su-mode-line-function ()
-  "Change modeline when root."
-  (when (string-match "^/su\\(do\\)?:" default-directory)
-    (make-local-variable 'mode-line-buffer-identification)
-    (setq mode-line-buffer-identification
-	  (cons
-	   (propertize
-	    (concat "su" (match-string 1 default-directory) ": ")
-	    'face 'font-lock-warning-face)
-	   (default-value 'mode-line-buffer-identification)))))
 
 (defconst +apropos-url-alist+
   '(("^gw?:? +\\(.*\\)" .		; Google Web
@@ -719,10 +675,6 @@ Remove hook when done."
  bookmark-default-file (concat +home-path+ ".emacs.d/bookmarks")
  bookmark-save-flag 1)			; autosave each change
 
-;;; tramp-ing as root
-(hook-modes su-mode-line-function
-	    find-file-hooks dired-mode-hook)
-
 (mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
 (icomplete-mode t)		  ; completion in minibuffer
 (partial-completion-mode t)	  ; be smart with completion
@@ -733,9 +685,45 @@ Remove hook when done."
 (when (fboundp 'file-name-shadow-mode)	; emacs22+
   (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
 
+;;; tramp-ing
+(when (locate-library "tramp")
+  (defun tramping-mode-line ()
+    "Change modeline when root or remote."
+    (let ((host-name (when (file-remote-p default-directory)
+		       (tramp-file-name-host
+			(tramp-dissect-file-name
+			 default-directory)))))
+      (when host-name
+	(setq host-name
+	      (concat (if (string-match "^[^0-9][^.]*\\(\\..*\\)"
+					host-name)
+			  (substring host-name 0 (match-beginning 1))
+			host-name)
+		      ":")))
+      (if (string-match "^/su\\(do\\)?:" default-directory)
+	  (progn
+	    (make-local-variable 'mode-line-buffer-identification)
+	    (setq mode-line-buffer-identification
+		  (cons
+		   (propertize
+		    (concat (or host-name "") "su"
+			    (match-string 1 default-directory) ": ")
+		    'face 'font-lock-warning-face)
+		   (default-value 'mode-line-buffer-identification))))
+	(when host-name
+	  (make-local-variable 'mode-line-buffer-identification)
+	  (setq mode-line-buffer-identification
+		(cons
+		 (propertize host-name 'face 'font-lock-warning-face)
+		 (default-value
+		   'mode-line-buffer-identification)))))))
+
+  (hook-modes tramping-mode-line
+	      find-file-hooks dired-mode-hook))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; extensions
+;;;; external extensions
 
 ;;; ELPA
 (when (load "package" t) (package-initialize))
@@ -787,6 +775,8 @@ If not a file, attach current directory."
 					  activate compile)
     "Add some rules for grouping tabs to run before original."
     (cond
+     ((string-match "^*tramp" (buffer-name))
+      (setq ad-return-value (list "Tramp")))
      ((memq major-mode '(woman-mode completion-list-mode
 				    slime-fuzzy-completions-mode))
       (setq ad-return-value (list "Help")))
@@ -845,9 +835,9 @@ DO-ALWAYS is always executed beforehand."
 (when (load "anything-config" t)
   (global-set-key [f5] 'anything)
   (setq anything-sources
-	'(anything-c-source-buffers+
-	  anything-c-source-recentf
+	'(anything-c-source-bookmarks
 	  anything-c-source-files-in-current-dir+
+	  anything-c-source-recentf
 	  anything-c-source-ffap-guesser
 	  anything-c-source-locate
 	  anything-c-source-emacs-functions-with-abbrevs
@@ -855,7 +845,6 @@ DO-ALWAYS is always executed beforehand."
 	  anything-c-source-info-elisp
 	  anything-c-source-info-pages
 	  anything-c-source-man-pages
-	  anything-c-source-bookmarks
 	  anything-c-source-semantic))
 
   (load "anything-match-plugin" t)
@@ -939,10 +928,9 @@ DO-ALWAYS is always executed beforehand."
   (eval-after-load "slime"
     '(progn
        (slime-setup (win-or-nix
+		     '(slime-fancy slime-banner slime-indentation)
 		     '(slime-fancy slime-banner slime-indentation
-				   slime-indentation-fu)
-		     '(slime-fancy slime-banner slime-indentation
-				   slime-indentation-fu slime-asdf)))
+				   slime-asdf)))
 
        (slime-autodoc-mode)
        (setq slime-complete-symbol*-fancy t
@@ -1071,9 +1059,9 @@ DO-ALWAYS is always executed beforehand."
   (setq quack-global-menu-p nil)
   (when (load "quack" t)
     (setq quack-default-program "gsi"
-	  quack-pltcollect-dirs (win-or-nix
-				 (concat +home-path+ "docs/plt")
-				 "/usr/share/plt/doc"))))
+	  quack-pltcollect-dirs (list (win-or-nix
+				       (concat +home-path+ "docs/plt")
+				       "/usr/share/plt/doc")))))
 
 ;;; CLIPS
 (when (load "inf-clips" t)
@@ -1106,6 +1094,9 @@ DO-ALWAYS is always executed beforehand."
 	  auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				   ("\\.m$" . mercury-mode))
 				 auto-mode-alist))))
+
+;;; Oz
+(load "oz" t)
 
 ;;; Haskell
 (when (load "haskell-site-file" t)
@@ -1235,9 +1226,6 @@ DO-ALWAYS is always executed beforehand."
 	   (ignore-errors
 	     (auto-install-update-emacswiki-package-name t))
 	   (message "Auto-install added to anything sources.")))))
-
-;;; Git
-(require 'vc-git nil t)
 
 ;;; Traverse
 (load "traverselisp" t)
@@ -1473,6 +1461,9 @@ File should be smaller than 120000 bytes."
 (when (locate-library "chess")		; from ELPA
   ;;(autoload 'chess "chess" "Play a game of chess" t)
   (setq chess-sound-play-function nil))
+
+;;; sudoku
+(load "sudoku" t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
