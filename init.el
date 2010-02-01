@@ -7,8 +7,9 @@
 ;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
 ;;   fuzzy-match http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion
-;;  AutoInstall related: http://www.emacswiki.org/emacs/AutoInstall
-;;   auto-install
+;;  Packages related:
+;;   ELPA http://tromey.com/elpa
+;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   anything-auto-install
 ;;  Programming languages related:
 ;;   SLIME http://common-lisp.net/project/slime
@@ -20,6 +21,7 @@
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
 ;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
 ;;   oz-mode http://www.mozart-oz.org
+;;   qi-mode
 ;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
@@ -31,11 +33,10 @@
 ;;  networking:
 ;;   emacs-w3m http://emacs-w3m.namazu.org
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
-;;   Wanderlust http://www.gohome.org/wl
 ;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
+;;   Wanderlust http://www.gohome.org/wl
 ;;   Gnus http://www.gnus.org
 ;;  misc:
-;;   ELPA http://tromey.com/elpa
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
@@ -103,6 +104,8 @@ NIX forms are executed on all other platforms."
 ;;;; extension independent macros
 
 (defmacro when-library (library &rest body)
+  "When LIBRARY is in `load-path' leave BODY.
+If LIBRARY is a list, check whether every element is in `load-path'."
   (if (consp library)
       (let ((loadp t))
 	(dolist (lib library)
@@ -259,9 +262,12 @@ otherwise increase it in 5%-steps"
        :foreground "red1")
       (t :weight bold :slant italic)))
    '(mode-line
-     ((default :foreground "black" :box (:line-width 1 :style "none")
+     ((default :box (:line-width 1 :style "none")
 	:width condensed :height 90 :family "neep")
-      (((class color) (min-colors 88)) :background "DarkSlateGray")
+      (((class color) (min-colors 88) (background dark))
+       :foreground "black" :background "DarkSlateGray")
+      (((class color) (min-colors 88) (background light))
+       :foreground "white" :background "DarkSlateGray")
       (t :background "green")))
    '(mode-line-inactive
      ((default :box (:line-width 1 :style "none")
@@ -397,7 +403,7 @@ Reset some faces which --daemon doesn't quite set.
 Remove hook when done."
   (select-frame frame)
   (cond ((window-system frame)
-	 (faces-fix :dark)		; start dark
+	 (faces-fix t)			; start light
 	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
@@ -489,6 +495,8 @@ Remove hook when done."
     (?\" _ ?\")) "List of pair symbols.")
 
 (defun autopairs-ret (arg)
+  "Eclectic newline before closing brackets.
+If ARG, stay on the original line."
   (interactive "P")
   (dolist (pair skeleton-pair-alist)
     (when (eq (char-after) (car (last pair)))
@@ -545,10 +553,14 @@ Remove hook when done."
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
 (if (window-system)
-    (faces-fix :dark)
+    (faces-fix t)
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
   (add-hook 'after-make-frame-functions 'reset-frame-faces))
+
+;;; CUA rectangle action
+(setq cua-enable-cua-keys nil)		; only for rectangles
+(cua-mode t)
 
 (faces-generic)
 
@@ -670,10 +682,6 @@ Remove hook when done."
      (message "Killed line.")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-;;; CUA
-(setq cua-enable-cua-keys nil) ;; only for rectangles
-(cua-mode t)
-
 ;;; recentf
 (when-library "recentf"
 	      (when (require 'recentf nil t) ; save recently used files
@@ -702,9 +710,6 @@ Remove hook when done."
 (mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
 (when-library "icomplete" (icomplete-mode t)) ; completion in minibuffer
 (partial-completion-mode t)	  ; be smart with completion
-
-(when (fboundp 'set-fringe-mode)	; emacs22+
-  (set-fringe-mode 1))			; space left of col1 in pixels
 
 (when (fboundp 'file-name-shadow-mode)	; emacs22+
   (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
@@ -815,12 +820,13 @@ Remove hook when done."
 Make links point to local files."
    (interactive (list (read-string "Web Site URI: "
 				   (thing-at-point-url-at-point))))
-   (let ((dir (wget-cd-download-dir t uri)))
-     (when dir
-       (if (string= uri "")
-	   (error "There is no uri")
-	 (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
-			     "--no-check-certificate")))))))
+   (when (require 'wget nil t)
+     (let ((dir (wget-cd-download-dir t uri)))
+       (when dir
+	 (if (string= uri "")
+	     (error "There is no uri")
+	   (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
+			       "--no-check-certificate"))))))))
 
 ;;; TabBar
 (when-library
@@ -954,42 +960,63 @@ DO-ALWAYS is always executed beforehand."
 		   (kbd "C-M-d") 'anything-next-source
 		   (kbd "C-M-u") 'anything-previous-source)))
 
- (when-library
-  "paredit"
-  (eval-after-load 'paredit
-    '(progn
-       (define-keys paredit-mode-map
-	 ergoemacs-comment-dwim-key 'paredit-comment-dwim
-	 ergoemacs-isearch-forward-key 'isearch-forward
-	 ergoemacs-backward-kill-word-key
-	 'paredit-backward-kill-word
-	 ergoemacs-kill-word-key	'paredit-forward-kill-word
-	 ergoemacs-delete-backward-char-key
-	 'paredit-backward-delete
-	 ergoemacs-delete-char-key 'paredit-forward-delete
-	 ergoemacs-kill-line-key 'paredit-kill
-	 ergoemacs-recenter-key 'recenter-top-bottom
-	 "\M-R" 'paredit-raise-sexp)
-       (when (equal (getenv "ERGOEMACS_KEYBOARD_LAYOUT")
-		    "colemak")
-	 (define-key paredit-mode-map "\M-r"
-	   'paredit-splice-sexp)))))
+ (defun ergoemacs-fix ()
+   "Fix some keybindings when using ErgoEmacs."
+   (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+     (when-library
+      "paredit"
+      (eval-after-load 'paredit
+	`(progn
+	   (define-keys paredit-mode-map
+	     ergoemacs-comment-dwim-key 'paredit-comment-dwim
+	     ergoemacs-isearch-forward-key 'isearch-forward
+	     ergoemacs-backward-kill-word-key
+	     'paredit-backward-kill-word
+	     ergoemacs-kill-word-key 'paredit-forward-kill-word
+	     ergoemacs-delete-backward-char-key
+	     'paredit-backward-delete
+	     ergoemacs-delete-char-key 'paredit-forward-delete
+	     ergoemacs-kill-line-key 'paredit-kill
+	     ergoemacs-recenter-key 'recenter-top-bottom
+	     "\M-R" 'paredit-raise-sexp)
+	   ,(when (equal ergo-layout "colemak")
+	      '(define-key paredit-mode-map "\M-r"
+		 'paredit-splice-sexp)))))
 
- (when-library
-  "slime"
-  (eval-after-load "slime"
-    '(let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
-       (cond ((equal ergo-layout "colemak")
-	      (define-keys slime-mode-map
-		"\M-k" 'slime-next-note
-		"\M-K" 'slime-previous-note
-		"\M-n" nil
-		"\M-p" nil))
-	     ((equal ergo-layout "en")
-	      (define-keys slime-mode-map
-		"\M-N" 'slime-previous-note
-		"\M-p" nil))))))
+     (when-library
+      "slime"
+      (eval-after-load "slime"
+	(cond ((equal ergo-layout "colemak")
+	       '(define-keys slime-mode-map
+		  "\M-k" 'slime-next-note
+		  "\M-K" 'slime-previous-note
+		  "\M-n" nil
+		  "\M-p" nil))
+	      ((equal ergo-layout "en")
+	       '(define-keys slime-mode-map
+		  "\M-N" 'slime-previous-note
+		  "\M-p" nil)))))
 
+     (when-library
+      "emms"
+      (cond ((equal ergo-layout "colemak")
+	     (global-set-key (kbd "s-p") 'emms-pause))
+	    ((equal ergo-layout "en")
+	     (global-set-key (kbd "s-r") 'emms-pause))))))
+
+ (defun ergoemacs-change-keyboard (layout)
+   "Change ErgoEmacs keyboard bindings according to LAYOUT."
+   (interactive (list (read-string "Enter layout (default us): "
+				   nil nil "us")))
+   (unless (equal layout ergoemacs-keyboard-layout)
+     (ergoemacs-mode 0)
+     (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
+     (setq ergoemacs-keyboard-layout layout)
+     (load "ergoemacs-mode")
+     (ergoemacs-fix)
+     (ergoemacs-mode 1)))
+
+ (ergoemacs-fix)
  (ergoemacs-mode 1))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1029,6 +1056,26 @@ DO-ALWAYS is always executed beforehand."
 
 ;;;; Programming extensions
 
+;;; Lisp
+(setq inferior-lisp-program
+      (win-or-nix (concat +home-path+ "bin/clisp/clisp.exe -K full")
+		  "/usr/local/bin/sbcl"))
+
+;;; Qi
+(when-library
+ "qi-mode"
+ (when (load "qi-mode" t)
+   (setq inferior-qi-program
+	 (win-or-nix
+	  (concat inferior-lisp-program
+		  " -M " +home-path+
+		  "bin/Qi.mem -q")
+	  (concat inferior-lisp-program
+		  " --core " +home-path+
+		  "Programs/Qi/Qi.core")))
+   (hook-modes activate-lisp-minor-modes
+	       qi-mode-hook inferior-qi-mode-hook)))
+
 ;;; Clojure
 (when-library
  "clojure-mode"		; from ELPA
@@ -1051,19 +1098,19 @@ DO-ALWAYS is always executed beforehand."
    ;;(locate-library "slime")
    (eval-after-load "slime"
      `(progn
-	(slime-setup (win-or-nix
-		      '(slime-fancy slime-banner slime-indentation)
-		      '(slime-fancy slime-banner slime-indentation
-				    slime-asdf)))
+	(slime-setup ',(win-or-nix
+			'(slime-fancy slime-banner slime-indentation)
+			'(slime-fancy slime-banner slime-indentation
+				      slime-asdf)))
 
 	(slime-autodoc-mode)
 	(setq slime-complete-symbol*-fancy t
 	      slime-complete-symbol-function
 	      'slime-fuzzy-complete-symbol
 	      common-lisp-hyperspec-root
-	      (concat "file://" +home-path+ (win-or-nix "docs"
-							"Documents")
-		      "/HyperSpec/")
+	      ,(concat "file://" +home-path+ (win-or-nix "docs"
+							 "Documents")
+		       "/HyperSpec/")
 	      slime-net-coding-system
 	      (find-if 'slime-find-coding-system
 		       '(utf-8-unix iso-latin-1-unix
@@ -1075,98 +1122,92 @@ DO-ALWAYS is always executed beforehand."
 	,(when-library
 	  "swank-clojure"
 ;;; Online JavaDoc to Slime
-	  (defun slime-java-describe (symbol-name)
-	    "Get details on Java class/instance at point SYMBOL-NAME."
-	    (interactive (list (slime-read-symbol-name
-				"Java Class/instance: ")))
-	    (or symbol-name (error "No symbol given"))
-	    (with-current-buffer (slime-output-buffer)
-	      (or (eq (current-buffer) (window-buffer))
-		  (pop-to-buffer (current-buffer) t))
-	      (goto-char (point-max))
-	      (insert (concat "(show " symbol-name ")"))
-	      (when symbol-name
-		(slime-repl-return)
-		(other-window 1))))
+	  '(defun slime-java-describe (symbol-name)
+	     "Get details on Java class/instance at point SYMBOL-NAME."
+	     (interactive (list (slime-read-symbol-name
+				 "Java Class/instance: ")))
+	     (or symbol-name (error "No symbol given"))
+	     (with-current-buffer (slime-output-buffer)
+	       (or (eq (current-buffer) (window-buffer))
+		   (pop-to-buffer (current-buffer) t))
+	       (goto-char (point-max))
+	       (insert (concat "(show " symbol-name ")"))
+	       (when symbol-name
+		 (slime-repl-return)
+		 (other-window 1))))
 
-	  (defun slime-javadoc (symbol-name)
-	    "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
-	    (interactive (list (slime-read-symbol-name
-				"JavaDoc info for: ")))
-	    (or symbol-name (error "No symbol given"))
-	    (set-buffer (slime-output-buffer))
-	    (or (eq (current-buffer) (window-buffer))
-		(pop-to-buffer (current-buffer) t))
-	    (goto-char (point-max))
-	    (insert (concat "(javadoc " symbol-name ")"))
-	    (when symbol-name
-	      (slime-repl-return)
-	      (other-window 1)))
+	  '(defun slime-javadoc (symbol-name)
+	     "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
+	     (interactive (list (slime-read-symbol-name
+				 "JavaDoc info for: ")))
+	     (or symbol-name (error "No symbol given"))
+	     (set-buffer (slime-output-buffer))
+	     (or (eq (current-buffer) (window-buffer))
+		 (pop-to-buffer (current-buffer) t))
+	     (goto-char (point-max))
+	     (insert (concat "(javadoc " symbol-name ")"))
+	     (when symbol-name
+	       (slime-repl-return)
+	       (other-window 1)))
 
 ;;; Local JavaDoc to Slime
-	  (setq slime-browse-local-javadoc-root
-		(concat (win-or-nix (concat +home-path+ "docs")
-				    "/usr/share")
-			"/javadoc/java-1.6.0-openjdk"))
+	  `(setq slime-browse-local-javadoc-root
+		 ,(concat (win-or-nix (concat +home-path+ "docs")
+				      "/usr/share")
+			  "/javadoc/java-1.6.0-openjdk"))
 
-	  (defun slime-browse-local-javadoc (ci-name)
-	    "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
-	    (interactive
-	     (list (slime-read-symbol-name "Class/Interface name: ")))
-	    (or ci-name	(error "No name given"))
-	    (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-		  (path (concat (expand-file-name
-				 slime-browse-local-javadoc-root)
-				"/api/")))
-	      (with-temp-buffer
-		(insert-file-contents
-		 (concat path "allclasses-noframe.html"))
-		(let ((l (delq nil
-			       (mapcar (lambda (rgx)
-					 (let* ((r (concat
-						    "\\.?\\(" rgx
-						    "[^./]+\\)[^.]*\\.?$"))
-						(n (if (string-match r name)
-						       (match-string 1 name)
-						     name)))
-					   (if (re-search-forward
-						(concat "<A HREF=\"\\(.+\\)\" +.*>"
-							n "<.*/A>")
-						nil t)
-					       (match-string 1)
-					     nil)))
-				       '("[^.]+\\." "")))))
-		  (if l
-		      (browse-url (concat "file://" path (car l)))
-		    (error (concat "Not found: " ci-name))))))))
+	  '(defun slime-browse-local-javadoc (ci-name)
+	     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
+	     (interactive
+	      (list (slime-read-symbol-name "Class/Interface name: ")))
+	     (or ci-name (error "No name given"))
+	     (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+		   (path (concat (expand-file-name
+				  slime-browse-local-javadoc-root)
+				 "/api/")))
+	       (with-temp-buffer
+		 (insert-file-contents
+		  (concat path "allclasses-noframe.html"))
+		 (let ((l (delq nil
+				(mapcar (lambda (rgx)
+					  (let* ((r (concat
+						     "\\.?\\(" rgx
+						     "[^./]+\\)[^.]*\\.?$"))
+						 (n (if (string-match r name)
+							(match-string 1 name)
+						      name)))
+					    (if (re-search-forward
+						 (concat "<A HREF=\"\\(.+\\)\" +.*>"
+							 n "<.*/A>")
+						 nil t)
+						(match-string 1)
+					      nil)))
+					'("[^.]+\\." "")))))
+		   (if l
+		       (browse-url (concat "file://" path (car l)))
+		     (error (concat "Not found: " ci-name))))))))
 
-	(when-library
-	 "swank-clojure"
-	 (add-hook 'slime-connected-hook
-		   (lambda ()
-		     (slime-redirect-inferior-output)
-		     (define-keys slime-mode-map
-		       "\C-cd" 'slime-java-describe
-		       "\C-cD" 'slime-javadoc)
-		     (define-keys slime-repl-mode-map
-		       "\C-cd" 'slime-java-describe
-		       "\C-cD" 'slime-javadoc)
-		     (define-key slime-mode-map "\C-cb"
-		       'slime-browse-local-javadoc)
-		     (define-key slime-repl-mode-map "\C-cb"
-		       'slime-browse-local-javadoc))))
+	,(when-library
+	  "swank-clojure"
+	  '(add-hook 'slime-connected-hook
+		     (lambda ()
+		       (slime-redirect-inferior-output)
+		       (define-keys slime-mode-map
+			 "\C-cd" 'slime-java-describe
+			 "\C-cD" 'slime-javadoc)
+		       (define-keys slime-repl-mode-map
+			 "\C-cd" 'slime-java-describe
+			 "\C-cD" 'slime-javadoc)
+		       (define-key slime-mode-map "\C-cb"
+			 'slime-browse-local-javadoc)
+		       (define-key slime-repl-mode-map "\C-cb"
+			 'slime-browse-local-javadoc))))
 
-	(add-to-list 'slime-lisp-implementations
-		     (win-or-nix
-		      (list 'clisp (list
-				    (concat +home-path+
-					    "bin/clisp/clisp.exe")
-				    "-K" "full"))
-		      '(sbcl ("/usr/local/bin/sbcl"))))))))
+	(push '(,(win-or-nix 'clisp 'sbcl)
+		,(split-string inferior-lisp-program " +"))
+	      slime-lisp-implementations)
 
-(setq inferior-lisp-program
-      (win-or-nix (concat +home-path+ "bin/clisp/clisp.exe -K full")
-		  "/usr/local/bin/sbcl"))
+	(setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl))))))
 
 ;;; Scheme
 (when-library
@@ -1217,11 +1258,11 @@ DO-ALWAYS is always executed beforehand."
 (when-library "oz" (load "oz" t))
 
 ;;; Haskell
-(when-library
- "haskell-site-file"
- (when (load "haskell-site-file" t)
-   (hook-modes (turn-on-haskell-doc-mode turn-on-haskell-indentation)
-	       haskell-mode-hook)))
+(when-library "haskell-site-file"
+	      (when (load "haskell-site-file" t)
+		(hook-modes (turn-on-haskell-doc-mode
+			     turn-on-haskell-indentation)
+			    haskell-mode-hook)))
 
 ;;; Caml
 (when-library
@@ -1261,16 +1302,15 @@ DO-ALWAYS is always executed beforehand."
 ;;;; Auxiliary extensions
 
 ;;; AUCTeX
-(when-library
- "auctex"
- (when (load "auctex" t)
-   (when-library "preview-latex"
-		 (load "preview-latex" nil t))
+(when-library "auctex"
+	      (when (load "auctex" t)
+		(when-library "preview-latex"
+			      (load "preview-latex" nil t))
 
-   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-   (add-hook 'TeX-mode-hook
-	     (lambda () (define-key TeX-mode-map "\M-g"
-			  'TeX-complete-symbol)))))
+		(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+		(add-hook 'TeX-mode-hook
+			  (lambda () (define-key TeX-mode-map "\M-g"
+				       'TeX-complete-symbol)))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
@@ -1485,7 +1525,7 @@ DO-ALWAYS is always executed beforehand."
    (when-library "emms-mark"
 		 (require 'emms-mark nil t))
 
-   (emms-devel)
+   (emms-all)
    (emms-default-players)
 
    ;; swap time and other track info
@@ -1521,15 +1561,12 @@ DO-ALWAYS is always executed beforehand."
 		 (concat
 		  artist " - "
 		  (if tracknumber
-		      (format "%02d. "
-			      (string-to-number tracknumber))
+		      (format "%02d. " (string-to-number tracknumber))
 		    "")
-		  title " 《" (if year (concat year " - ") "")
-		  (or (emms-track-get track 'info-album)
-		      "unknown")
-		  "》 (" (number-to-string
-			  (or (emms-track-get track 'play-count)
-			      0))
+		  title " <" (if year (concat year " - ") "")
+		  (or (emms-track-get track 'info-album) "unknown")
+		  "> (" (number-to-string
+			 (or (emms-track-get track 'play-count) 0))
 		  ", " (emms-last-played-format-date last-played)
 		  ")"))
 	     name)))
@@ -1554,13 +1591,12 @@ File should be smaller than 120000 bytes."
 	      (small (car pics)))
 	 (when (<= (or (size small) 200000) 120000)
 	   (let ((medium (cadr pics)))
-	     (car
-	      (case type
-		('small small)
-		('medium (if (<= (or (size medium) 200000) 120000)
-			     medium
-			   small))
-		('large (or (caddr pics) medium small)))))))))
+	     (car (case type
+		    ('small small)
+		    ('medium (if (<= (or (size medium) 200000) 120000)
+				 medium
+			       small))
+		    ('large (or (caddr pics) medium small)))))))))
 
    (setq emms-show-format "EMMS: %s"
 	 emms-mode-line-format "%s"
@@ -1569,7 +1605,7 @@ File should be smaller than 120000 bytes."
 	 emms-source-file-default-directory (concat +home-path+
 						    "Music/")
 	 emms-lastfm-username "m00natic"
-	 emms-lastfm-password "very-secret"
+	 emms-lastfm-password "sorr0w"
 	 emms-last-played-format-alist
 	 '(((emms-last-played-seconds-today) . "%a %H:%M")
 	   (604800 . "%a %H:%M")	; this week
@@ -1589,12 +1625,7 @@ File should be smaller than 120000 bytes."
 	   emms-source-file-default-directory)
      (ignore-errors (emms-player-mpd-connect)))
 
-   (global-set-key [XF86AudioStop] 'emms-pause)
-   (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
-     (cond ((equal ergo-layout "colemak")
-	    (global-set-key (kbd "s-p") 'emms-pause))
-	   ((equal ergo-layout "en")
-	    (global-set-key (kbd "s-r") 'emms-pause))))))
+   (global-set-key [XF86AudioStop] 'emms-pause)))
 
 ;;; chess
 (when-library "chess"			; from ELPA
@@ -1602,7 +1633,8 @@ File should be smaller than 120000 bytes."
 	      (setq chess-sound-play-function nil))
 
 ;;; sudoku
-(when-library "sudoku" (load "sudoku" t))
+(when-library "sudoku"
+	      (when (load "sudoku" t) (setq sudoku-level "evil")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
