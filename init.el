@@ -20,8 +20,8 @@
 ;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
 ;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
-;;   oz-mode http://www.mozart-oz.org
-;;   qi-mode
+;;   Oz-mode http://www.mozart-oz.org
+;;   Qi-mode http://code.google.com/p/qilang
 ;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
@@ -475,7 +475,9 @@ Remove hook when done."
 
 (defun browse-apropos-url (text &optional new-window)
   "Search for TEXT by some search engine in NEW-WINDOW if needed."
-  (interactive (browse-url-interactive-arg "Location: "))
+  (interactive (if (require 'browse-url nil t)
+		   (browse-url-interactive-arg "Location: ")
+		 (read-string "Location: ")))
   (let ((text (replace-regexp-in-string
 	       "^ *\\| *$" ""
 	       (replace-regexp-in-string "[ \t\n]+" " " text)))
@@ -917,7 +919,6 @@ DO-ALWAYS is always executed beforehand."
 		      '(anything-c-source-bookmarks
 			anything-c-source-files-in-current-dir+
 			anything-c-source-recentf
-			anything-c-source-ffap-guesser
 			anything-c-source-locate
 			anything-c-source-emacs-functions-with-abbrevs
 			anything-c-source-emacs-variables
@@ -940,84 +941,84 @@ DO-ALWAYS is always executed beforehand."
 (when-library
  "ergoemacs-mode"
  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
- (load "ergoemacs-mode")
+ (when (load "ergoemacs-mode" t)
 
- (define-key isearch-mode-map ergoemacs-recenter-key
-   'recenter-top-bottom)
- (when (fboundp 'recenter-top-bottom)
-   (define-key ergoemacs-keymap ergoemacs-recenter-key
-     'recenter-top-bottom))
- (define-keys ergoemacs-keymap
-   "\M-3" 'move-cursor-previous-pane
-   "\M-#" 'move-cursor-next-pane)
+   (define-key isearch-mode-map ergoemacs-recenter-key
+     'recenter-top-bottom)
+   (when (fboundp 'recenter-top-bottom)
+     (define-key ergoemacs-keymap ergoemacs-recenter-key
+       'recenter-top-bottom))
+   (define-keys ergoemacs-keymap
+     "\M-3" 'move-cursor-previous-pane
+     "\M-#" 'move-cursor-next-pane)
 
- ;; workaround arrows not active in terminal with ErgoEmacs active
- (when-library "anything"
-	       (when (require 'anything nil t)
-		 (define-keys anything-map
-		   "\C-d" 'anything-next-line
-		   "\C-u" 'anything-previous-line
-		   (kbd "C-M-d") 'anything-next-source
-		   (kbd "C-M-u") 'anything-previous-source)))
+   ;; workaround arrows not active in terminal with ErgoEmacs active
+   (when-library "anything"
+		 (when (require 'anything nil t)
+		   (define-keys anything-map
+		     "\C-d" 'anything-next-line
+		     "\C-u" 'anything-previous-line
+		     (kbd "C-M-d") 'anything-next-source
+		     (kbd "C-M-u") 'anything-previous-source)))
 
- (defun ergoemacs-fix ()
-   "Fix some keybindings when using ErgoEmacs."
-   (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
-     (when-library
-      "paredit"
-      (eval-after-load 'paredit
-	`(progn
-	   (define-keys paredit-mode-map
-	     ergoemacs-comment-dwim-key 'paredit-comment-dwim
-	     ergoemacs-isearch-forward-key 'isearch-forward
-	     ergoemacs-backward-kill-word-key
-	     'paredit-backward-kill-word
-	     ergoemacs-kill-word-key 'paredit-forward-kill-word
-	     ergoemacs-delete-backward-char-key
-	     'paredit-backward-delete
-	     ergoemacs-delete-char-key 'paredit-forward-delete
-	     ergoemacs-kill-line-key 'paredit-kill
-	     ergoemacs-recenter-key 'recenter-top-bottom
-	     "\M-R" 'paredit-raise-sexp)
-	   ,(when (equal ergo-layout "colemak")
-	      '(define-key paredit-mode-map "\M-r"
-		 'paredit-splice-sexp)))))
+   (defun ergoemacs-fix ()
+     "Fix some keybindings when using ErgoEmacs."
+     (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+       (when-library
+	"paredit"
+	(eval-after-load 'paredit
+	  `(progn
+	     (define-keys paredit-mode-map
+	       ergoemacs-comment-dwim-key 'paredit-comment-dwim
+	       ergoemacs-isearch-forward-key 'isearch-forward
+	       ergoemacs-backward-kill-word-key
+	       'paredit-backward-kill-word
+	       ergoemacs-kill-word-key 'paredit-forward-kill-word
+	       ergoemacs-delete-backward-char-key
+	       'paredit-backward-delete
+	       ergoemacs-delete-char-key 'paredit-forward-delete
+	       ergoemacs-kill-line-key 'paredit-kill
+	       ergoemacs-recenter-key 'recenter-top-bottom
+	       "\M-R" 'paredit-raise-sexp)
+	     ,(when (equal ergo-layout "colemak")
+		'(define-key paredit-mode-map "\M-r"
+		   'paredit-splice-sexp)))))
 
-     (when-library
-      "slime"
-      (eval-after-load "slime"
+       (when-library
+	"slime"
+	(eval-after-load "slime"
+	  (cond ((equal ergo-layout "colemak")
+		 '(define-keys slime-mode-map
+		    "\M-k" 'slime-next-note
+		    "\M-K" 'slime-previous-note
+		    "\M-n" nil
+		    "\M-p" nil))
+		((equal ergo-layout "en")
+		 '(define-keys slime-mode-map
+		    "\M-N" 'slime-previous-note
+		    "\M-p" nil)))))
+
+       (when-library
+	"emms"
 	(cond ((equal ergo-layout "colemak")
-	       '(define-keys slime-mode-map
-		  "\M-k" 'slime-next-note
-		  "\M-K" 'slime-previous-note
-		  "\M-n" nil
-		  "\M-p" nil))
+	       (global-set-key (kbd "s-p") 'emms-pause))
 	      ((equal ergo-layout "en")
-	       '(define-keys slime-mode-map
-		  "\M-N" 'slime-previous-note
-		  "\M-p" nil)))))
+	       (global-set-key (kbd "s-r") 'emms-pause))))))
 
-     (when-library
-      "emms"
-      (cond ((equal ergo-layout "colemak")
-	     (global-set-key (kbd "s-p") 'emms-pause))
-	    ((equal ergo-layout "en")
-	     (global-set-key (kbd "s-r") 'emms-pause))))))
+   (defun ergoemacs-change-keyboard (layout)
+     "Change ErgoEmacs keyboard bindings according to LAYOUT."
+     (interactive (list (read-string "Enter layout (default us): "
+				     nil nil "us")))
+     (unless (equal layout ergoemacs-keyboard-layout)
+       (ergoemacs-mode 0)
+       (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
+       (setq ergoemacs-keyboard-layout layout)
+       (load "ergoemacs-mode")
+       (ergoemacs-fix)
+       (ergoemacs-mode 1)))
 
- (defun ergoemacs-change-keyboard (layout)
-   "Change ErgoEmacs keyboard bindings according to LAYOUT."
-   (interactive (list (read-string "Enter layout (default us): "
-				   nil nil "us")))
-   (unless (equal layout ergoemacs-keyboard-layout)
-     (ergoemacs-mode 0)
-     (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
-     (setq ergoemacs-keyboard-layout layout)
-     (load "ergoemacs-mode")
-     (ergoemacs-fix)
-     (ergoemacs-mode 1)))
-
- (ergoemacs-fix)
- (ergoemacs-mode 1))
+   (ergoemacs-fix)
+   (ergoemacs-mode 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1108,9 +1109,8 @@ DO-ALWAYS is always executed beforehand."
 	      slime-complete-symbol-function
 	      'slime-fuzzy-complete-symbol
 	      common-lisp-hyperspec-root
-	      ,(concat "file://" +home-path+ (win-or-nix "docs"
-							 "Documents")
-		       "/HyperSpec/")
+	      ,(concat "file://" +home-path+
+		       (win-or-nix "docs" "Documents") "/HyperSpec/")
 	      slime-net-coding-system
 	      (find-if 'slime-find-coding-system
 		       '(utf-8-unix iso-latin-1-unix
@@ -1151,10 +1151,11 @@ DO-ALWAYS is always executed beforehand."
 	       (other-window 1)))
 
 ;;; Local JavaDoc to Slime
-	  `(setq slime-browse-local-javadoc-root
-		 ,(concat (win-or-nix (concat +home-path+ "docs")
-				      "/usr/share")
-			  "/javadoc/java-1.6.0-openjdk"))
+	  `(defconst +slime-browse-local-javadoc-root+
+	     ,(concat (win-or-nix (concat +home-path+ "docs")
+				  "/usr/share")
+		      "/javadoc/java-1.6.0-openjdk")
+	     "Path to javadoc.")
 
 	  '(defun slime-browse-local-javadoc (ci-name)
 	     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
@@ -1163,7 +1164,7 @@ DO-ALWAYS is always executed beforehand."
 	     (or ci-name (error "No name given"))
 	     (let ((name (replace-regexp-in-string "\\$" "." ci-name))
 		   (path (concat (expand-file-name
-				  slime-browse-local-javadoc-root)
+				  +slime-browse-local-javadoc-root+)
 				 "/api/")))
 	       (with-temp-buffer
 		 (insert-file-contents
@@ -1283,7 +1284,8 @@ DO-ALWAYS is always executed beforehand."
 (when-library "visual-basic-mode"
 	      (autoload 'visual-basic-mode "visual-basic-mode"
 		"Visual Basic mode." t)
-	      (push '("\\.\\(frm\\|bas\\|cls\\)$" . visual-basic-mode)
+	      (push '("\\.\\(frm\\|bas\\|cls\\|rvb\\)$"
+		      . visual-basic-mode)
 		    auto-mode-alist))
 
 ;;; C#
@@ -1305,7 +1307,7 @@ DO-ALWAYS is always executed beforehand."
 (when-library "auctex"
 	      (when (load "auctex" t)
 		(when-library "preview-latex"
-			      (load "preview-latex" nil t))
+			      (load "preview-latex" t))
 
 		(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 		(add-hook 'TeX-mode-hook
@@ -1525,7 +1527,7 @@ DO-ALWAYS is always executed beforehand."
    (when-library "emms-mark"
 		 (require 'emms-mark nil t))
 
-   (emms-all)
+   (emms-devel)
    (emms-default-players)
 
    ;; swap time and other track info
