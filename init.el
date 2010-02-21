@@ -40,6 +40,7 @@
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
+;;   Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
@@ -490,17 +491,15 @@ Remove hook when done."
       (browse-url (replace-regexp-in-string apropo-reg url text)
       		  new-window))))
 
-(defconst skeleton-pair-alist
-  '((?\( _ ?\))
-    (?[  _ ?])
-    (?{  _ ?})
-    (?\" _ ?\")) "List of pair symbols.")
+(defconst +skeleton-pair-alist+
+  '((?\( _ ?\)) (?[  _ ?]) (?{  _ ?}) (?\" _ ?\"))
+  "List of pair symbols.")
 
 (defun autopairs-ret (arg)
   "Eclectic newline before closing brackets.
 If ARG, stay on the original line."
   (interactive "P")
-  (dolist (pair skeleton-pair-alist)
+  (dolist (pair +skeleton-pair-alist+)
     (when (eq (char-after) (car (last pair)))
       (save-excursion (newline-and-indent))))
   (newline arg)
@@ -627,6 +626,36 @@ If ARG, stay on the original line."
 
 ;; Imenu
 (when-library "imenu" (global-set-key (kbd "C-`") 'imenu))
+
+;; ido
+(when-library
+ "ido"
+ (when (require 'ido nil t)
+   (ido-mode t)
+   (setq ido-enable-flex-matching t)
+
+   (defvar *ido-enable-replace-completing-read* t
+     "If t, use ido-completing-read instead of completing-read if possible.
+Set it to nil using let in around-advice for functions where the
+original completing-read is required.  For example, if a function
+foo absolutely must use the original completing-read, define some
+advice like this:
+ (defadvice foo (around original-completing-read-only activate)
+   (let (ido-enable-replace-completing-read) ad-do-it))")
+
+   ;; Replace completing-read wherever possible,
+   ;; unless directed otherwise
+   (defadvice completing-read (around use-ido-when-possible activate)
+     (if (or (not *ido-enable-replace-completing-read*)
+	     (boundp 'ido-cur-list)) ; Avoid infinite loop
+	 ad-do-it		     ; from ido calling this
+       (let ((allcomp (all-completions "" collection predicate)))
+	 (if allcomp
+	     (setq ad-return-value
+		   (ido-completing-read prompt allcomp nil
+					require-match initial-input
+					hist def))
+	   ad-do-it))))))
 
 ;; don't count on same named files, rather show path difference
 (when-library "uniquify"
@@ -942,11 +971,10 @@ DO-ALWAYS is always executed beforehand."
  "ergoemacs-mode"
  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
  (when (load "ergoemacs-mode" t)
-
-   (define-key isearch-mode-map ergoemacs-recenter-key
-     'recenter-top-bottom)
    (when (fboundp 'recenter-top-bottom)
      (define-key ergoemacs-keymap ergoemacs-recenter-key
+       'recenter-top-bottom)
+     (define-key isearch-mode-map ergoemacs-recenter-key
        'recenter-top-bottom))
    (define-keys ergoemacs-keymap
      "\M-3" 'move-cursor-previous-pane
@@ -1078,16 +1106,14 @@ DO-ALWAYS is always executed beforehand."
 	       qi-mode-hook inferior-qi-mode-hook)))
 
 ;;; Clojure
-(when-library
- "clojure-mode"		; from ELPA
- (when-library
-  "swank-clojure"
-  (setq swank-clojure-jar-path
-	(concat +home-path+ ".swank-clojure/swank-clojure.jar")
-	;; swank-clojure-extra-vm-args
-	;;  '("-server" "-Xdebug"
-	;;    "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
-	))
+(when-library				; clojure-mode from ELPA
+ ("clojure-mode" "swank-clojure")
+ (setq swank-clojure-jar-path
+       (concat +home-path+ ".swank-clojure/swank-clojure.jar")
+       ;; swank-clojure-extra-vm-args
+       ;;  '("-server" "-Xdebug"
+       ;;    "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
+       )
 
  (eval-after-load "clojure-mode"
    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)))
@@ -1095,8 +1121,7 @@ DO-ALWAYS is always executed beforehand."
 ;;; Set up SLIME
 (when-library
  "slime"
- (when (load "slime" t)
-   ;;(locate-library "slime")
+ (when (load "slime" t)			; (locate-library "slime")
    (eval-after-load "slime"
      `(progn
 	(slime-setup ',(win-or-nix
@@ -1312,7 +1337,7 @@ DO-ALWAYS is always executed beforehand."
 		(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 		(add-hook 'TeX-mode-hook
 			  (lambda () (define-key TeX-mode-map "\M-g"
-				       'TeX-complete-symbol)))))
+				  'TeX-complete-symbol)))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
@@ -1582,7 +1607,7 @@ DO-ALWAYS is always executed beforehand."
 
    (defun my-emms-covers (dir type)
      "Choose album cover in DIR deppending on TYPE.
-File should be smaller than 120000 bytes."
+File should be less than 120000 bytes."
      (flet ((size (file-descr)
 		  (car (cddddr (cddddr file-descr)))))
        (let* ((pics (sort (directory-files-and-attributes
@@ -1607,7 +1632,7 @@ File should be smaller than 120000 bytes."
 	 emms-source-file-default-directory (concat +home-path+
 						    "Music/")
 	 emms-lastfm-username "m00natic"
-	 emms-lastfm-password "sorr0w"
+	 emms-lastfm-password "very-secret"
 	 emms-last-played-format-alist
 	 '(((emms-last-played-seconds-today) . "%a %H:%M")
 	   (604800 . "%a %H:%M")	; this week
