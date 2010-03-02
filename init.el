@@ -42,12 +42,14 @@
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
+;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   gtags http://www.gnu.org/software/global
 ;;   traverselisp http://mercurial.intuxication.org/hg/traverselisp
-;;   Emacs Chess http://github.com/jwiegley/emacs-chess
+;;   Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 ;;   EMMS http://www.gnu.org/software/emms
+;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   sudoku http://www.columbia.edu/~jr2075/elisp/index.html
 
 ;;; Code:
@@ -428,27 +430,29 @@ Remove hook when done."
 
 (defconst +apropos-url-alist+
   '(("^gw?:? +\\(.*\\)" .		; Google Web
-     "http://www.google.bg/search?q=\\1")
+     "http://www.google.com/search?q=\\1")
+    ("^gs:? +\\(.*\\)" .		; Google Scholar
+     "http://scholar.google.com/scholar?q=\\1")
     ("^g!:? +\\(.*\\)" .		; Google Lucky
-     "http://www.google.bg/search?btnI=I%27m+Feeling+Lucky&q=\\1")
+     "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
     ("^gl:? +\\(.*\\)" .		; Google Linux
-     "http://www.google.bg/linux?q=\\1")
+     "http://www.google.com/linux?q=\\1")
     ("^gi:? +\\(.*\\)" .		; Google Images
-     "http://images.google.bg/images?sa=N&tab=wi&q=\\1")
+     "http://images.google.com/images?sa=N&tab=wi&q=\\1")
     ("^gv:? +\\(.*\\)" .		; Google Video
-     "http://video.google.bg/videosearch?q=\\1")
+     "http://video.google.com/videosearch?q=\\1")
     ("^gg:? +\\(.*\\)" .		; Google Groups
-     "http://groups.google.bg/groups?q=\\1")
+     "http://groups.google.com/groups?q=\\1")
     ("^gdir:? +\\(.*\\)" .		; Google Directory
-     "http://www.google.bg/search?&sa=N&cat=gwd/Top&tab=gd&q=\\1")
+     "http://www.google.com/search?&sa=N&cat=gwd/Top&tab=gd&q=\\1")
     ("^gn:? +\\(.*\\)" .		; Google News
-     "http://news.google.bg/news?sa=N&tab=dn&q=\\1")
+     "http://news.google.com/news?sa=N&tab=dn&q=\\1")
     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Google Translate URL
-     "http://translate.google.bg/translate?langpair=\\1|\\2&u=\\3")
+     "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Translate Text
-     "http://translate.google.bg/translate_t?langpair=\\1|\\2&text=\\3")
+     "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
     ("^gd:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
-     "http://www.google.bg/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
+     "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
     ("^w:? +\\(.*\\)" .			; Wikipedia en
      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
     ("^yt:? +\\(.*\\)" .		; YouTube
@@ -462,12 +466,12 @@ Remove hook when done."
     ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
      "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
     ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
-     "http://www.google.bg/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
+     "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
     ("^hayoo:? +\\(.*\\)" .		; Hayoo
      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
-     "http://www.google.bg/search?q=\\1&as_sitesearch=metal-archives.com")
+     "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
     ("^aur:? +\\(.*\\)" .	 ; Search in Arch Linux's Aur packages
      "http://aur.archlinux.org/packages.php?&K=\\1")
     ("^fp:? +\\(.*\\)" .	       ; FreeBSD's FreshPorts
@@ -643,9 +647,8 @@ advice like this:
  (defadvice foo (around original-completing-read-only activate)
    (let (ido-enable-replace-completing-read) ad-do-it))")
 
-   ;; Replace completing-read wherever possible,
-   ;; unless directed otherwise
    (defadvice completing-read (around use-ido-when-possible activate)
+     "Replace completing-read wherever possible, unless directed otherwise."
      (if (or (not *ido-enable-replace-completing-read*)
 	     (boundp 'ido-cur-list)) ; Avoid infinite loop
 	 ad-do-it		     ; from ido calling this
@@ -795,28 +798,93 @@ advice like this:
 ;;; Gnus
 (when-library
  "gnus"
+ (defvar *gnus-new-mail-count* "" "Unread messages count.")
+ (setq global-mode-string (append global-mode-string
+				  (list '*gnus-new-mail-count*)))
+
  (eval-after-load "gnus"
-   '(setq gnus-select-method '(nntp "news.gmane.org")
-	  gnus-secondary-select-methods
-	  `((nnimap "gmail" (nnimap-address "imap.gmail.com")
-		    (nnimap-server-port 993) (nnimap-stream ssl)
-		    (nnimap-authinfo-file ,(concat +home-path+
-						   ".authinfo.gpg")))
-	    (nnml "yahoo"))
-	  gnus-ignored-newsgroups
-	  "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
-	  message-send-mail-function 'smtpmail-send-it
-	  smtpmail-starttls-credentials '(("smtp.gmail.com"
-					   587 nil nil))
-	  smtpmail-auth-credentials '(("smtp.gmail.com" 587
-				       "m00naticus@gmail.com" nil))
-	  smtpmail-default-smtp-server "smtp.gmail.com"
-	  smtpmail-smtp-server "smtp.gmail.com"
-	  smtpmail-smtp-service 587
-	  mail-sources '((pop :server "pop.mail.yahoo.co.uk"
-			      :port 995 :stream ssl
-			      :user "m00natic@yahoo.co.uk"))
-	  epa-file-cache-passphrase-for-symmetric-encryption t))
+   '(progn
+      (setq gnus-select-method '(nntp "news.gmane.org")
+	    gnus-secondary-select-methods
+	    `((nnimap "gmail" (nnimap-address "imap.gmail.com")
+		      (nnimap-server-port 993) (nnimap-stream ssl)
+		      (nnimap-authinfo-file ,(concat +home-path+
+						     ".authinfo.gpg")))
+	      (nnml "yahoo"))
+	    gnus-ignored-newsgroups
+	    "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
+	    message-send-mail-function 'smtpmail-send-it
+	    smtpmail-starttls-credentials '(("smtp.gmail.com"
+					     587 nil nil))
+	    smtpmail-auth-credentials '(("smtp.gmail.com" 587
+					 "m00naticus@gmail.com" nil))
+	    smtpmail-default-smtp-server "smtp.gmail.com"
+	    smtpmail-smtp-server "smtp.gmail.com"
+	    smtpmail-smtp-service 587
+	    mail-sources '((pop :server "pop.mail.yahoo.co.uk"
+				:port 995 :stream ssl
+				:user "m00natic@yahoo.co.uk"))
+	    epa-file-cache-passphrase-for-symmetric-encryption t)
+
+      (defun my-gnus-demon-scan-mail ()
+	"Rescan just mail and notify on new messages."
+	(save-excursion
+	  ;; fetch new messages
+	  (let ((nnmail-fetched-sources (list t)))
+	    (dolist (server-status gnus-opened-servers)
+	      (let* ((server (car server-status))
+		     (backend (car server)))
+		(and (not (eq backend 'nnshimbun))
+		     (gnus-check-backend-function
+		      'request-scan backend)
+		     (or (gnus-server-opened server)
+			 (gnus-open-server server))
+		     (gnus-request-scan nil server)))))
+	  ;; scan for new mail
+	  (let ((unread-count 0)
+		unread-groups)
+	    (dolist (group '("nnml+yahoo:mail.misc"
+			     "nnimap+gmail:INBOX"))
+	      (gnus-group-remove-mark group)
+	      (let ((method (gnus-find-method-for-group group)))
+		;; Bypass any previous denials from the server.
+		(gnus-remove-denial method)
+		(when (gnus-activate-group group 'scan nil method)
+		  (let ((info (gnus-get-info group))
+			(active (gnus-active group)))
+		    (when info (gnus-request-update-info info method))
+		    (gnus-get-unread-articles-in-group info active)
+		    (unless (gnus-virtual-group-p group)
+		      (gnus-close-group group))
+		    (when gnus-agent
+		      (gnus-agent-save-group-info
+		       method (gnus-group-real-name group) active))
+		    (gnus-group-update-group group))
+		  (let ((unread (gnus-group-unread group)))
+		    (when (and (numberp unread) (> unread 0))
+		      (setq unread-count (+ unread-count unread)
+			    unread-groups (concat unread-groups
+						  ", " group)))))))
+	    ;; show popup on new mail and change mode line
+	    (setq *gnus-new-mail-count*
+		  (if (null unread-groups) ""
+		    (win-or-nix
+		     nil
+		     (when-library
+		      ("dbus" "notify")
+		      (notify "Gnus"
+			      (format
+			       (concat "%d new mail%s in "
+				       (substring unread-groups 2))
+			       unread-count
+			       (if (= unread-count 1) "" "s")))))
+		    (put '*gnus-new-mail-count*
+			 'risky-local-variable t)
+		    (propertize (format "%d" unread-count)
+				'face 'font-lock-warning-face))))))
+
+      ;; run (gnus-demon-init) to track emails
+      (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)))
 
  (when-library "shimbun"
 	       (eval-after-load "gnus-group"
@@ -858,7 +926,6 @@ Make links point to local files."
 	     (error "There is no uri")
 	   (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
 			       "--no-check-certificate"))))))))
-
 ;;; TabBar
 (when-library
  "tabbar"
@@ -978,7 +1045,8 @@ DO-ALWAYS is always executed beforehand."
        'recenter-top-bottom))
    (define-keys ergoemacs-keymap
      "\M-3" 'move-cursor-previous-pane
-     "\M-#" 'move-cursor-next-pane)
+     "\M-#" 'move-cursor-next-pane
+     "\C-f" 'search-forward-regexp)
 
    ;; workaround arrows not active in terminal with ErgoEmacs active
    (when-library "anything"
@@ -1337,7 +1405,7 @@ DO-ALWAYS is always executed beforehand."
 		(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 		(add-hook 'TeX-mode-hook
 			  (lambda () (define-key TeX-mode-map "\M-g"
-				  'TeX-complete-symbol)))))
+				       'TeX-complete-symbol)))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
@@ -1590,9 +1658,9 @@ DO-ALWAYS is always executed beforehand."
 		  (if tracknumber
 		      (format "%02d. " (string-to-number tracknumber))
 		    "")
-		  title " <" (if year (concat year " - ") "")
+		  title " [" (if year (concat year " - ") "")
 		  (or (emms-track-get track 'info-album) "unknown")
-		  "> (" (number-to-string
+		  "] (" (number-to-string
 			 (or (emms-track-get track 'play-count) 0))
 		  ", " (emms-last-played-format-date last-played)
 		  ")"))
@@ -1650,9 +1718,32 @@ File should be less than 120000 bytes."
      (push 'emms-player-mpd emms-player-list)
      (setq emms-player-mpd-music-directory
 	   emms-source-file-default-directory)
-     (ignore-errors (emms-player-mpd-connect)))
 
-   (global-set-key [XF86AudioStop] 'emms-pause)))
+     (win-or-nix
+      nil
+      (when-library
+       ("dbus" "notify")
+       (defadvice emms-player-started (after emms-player-mpd-notify
+					     (player) activate compile)
+	 "Notify new track for MPD."
+	 (when (eq player 'emms-player-mpd)
+	   (notify "EMMS" (substring (emms-show) 6)))))))
+
+   (global-set-key [XF86AudioStop] 'emms-pause)
+
+   (win-or-nix
+    nil
+    (when-library ("dbus" "notify")
+		  (defun my-emms-notify ()
+		    "Notify on new track."
+		    (emms-next-noerror)
+		    (notify "EMMS" (substring (emms-show) 6)))
+
+		  (setq emms-player-next-function 'my-emms-notify)))))
+
+;;; Dictionary
+(when-library "dictionary"
+	      (global-set-key (kbd "C-s-w") 'dictionary-search))
 
 ;;; chess
 (when-library "chess"			; from ELPA
@@ -1675,6 +1766,17 @@ File should be less than 120000 bytes."
 			    (load "cygwin-mount" t))
 		   (cygwin-mount-activate)
 		   (setq w32shell-cygwin-bin cygwin-dir))))
+
+ ;;; Notify
+ (when-library
+  "notify"
+  (and (require 'dbus nil t)
+       (load "notify" t)
+       (setq notify-defaults
+	     (list :app "Emacs"
+		   :icon "/usr/local/share/icons/hicolor/48x48/apps/emacs.png"
+		   :timeout 5000 :urgency "low"
+		   :category "emacs.event"))))
 
 ;;; Global tags
  (when-library

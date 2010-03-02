@@ -59,11 +59,13 @@ ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
 Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
+TabBar http://www.emacswiki.org/emacs/TabBarMode
+notify http://www.emacswiki.org/emacs/notify.el
 CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 gtags http://www.gnu.org/software/global
 traverselisp http://mercurial.intuxication.org/hg/traverselisp
-TabBar http://www.emacswiki.org/emacs/TabBarMode
-Emacs Chess http://github.com/jwiegley/emacs-chess
+Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 EMMS http://www.gnu.org/software/emms
+Emacs Chess http://github.com/jwiegley/emacs-chess
 sudoku http://www.columbia.edu/~jr2075/elisp/index.html
