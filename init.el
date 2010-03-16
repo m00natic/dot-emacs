@@ -631,7 +631,10 @@ If ARG, stay on the original line."
 ;; Imenu
 (when-library "imenu" (global-set-key (kbd "C-`") 'imenu))
 
-;; ido
+;; Proced
+(when-library "proced" (global-set-key (kbd "C-M-`") 'proced))
+
+;; Ido
 (when-library
  "ido"
  (when (require 'ido nil t)
@@ -1675,20 +1678,19 @@ DO-ALWAYS is always executed beforehand."
 
    (defun my-emms-covers (dir type)
      "Choose album cover in DIR deppending on TYPE.
-File should be less than 120000 bytes."
+File should be less than 100000 bytes."
      (flet ((size (file-descr)
 		  (car (cddddr (cddddr file-descr)))))
        (let* ((pics (sort (directory-files-and-attributes
 			   dir t "\\.\\(jpg\\|jpeg\\|png\\)$" t)
 			  (lambda (p1 p2)
-			    (< (size p1)
-			       (size p2)))))
+			    (< (size p1) (size p2)))))
 	      (small (car pics)))
-	 (when (<= (or (size small) 200000) 120000)
+	 (when (<= (or (size small) 200000) 100000)
 	   (let ((medium (cadr pics)))
 	     (car (case type
 		    ('small small)
-		    ('medium (if (<= (or (size medium) 200000) 120000)
+		    ('medium (if (<= (or (size medium) 200000) 100000)
 				 medium
 			       small))
 		    ('large (or (caddr pics) medium small)))))))))
@@ -1699,19 +1701,20 @@ File should be less than 120000 bytes."
 	 later-do-interval 0.0001
 	 emms-source-file-default-directory (concat +home-path+
 						    "Music/")
-	 emms-lastfm-username "m00natic"
-	 emms-lastfm-password "very-secret"
 	 emms-last-played-format-alist
 	 '(((emms-last-played-seconds-today) . "%a %H:%M")
 	   (604800 . "%a %H:%M")	; this week
 	   ((emms-last-played-seconds-month) . "%d")
-	   ((emms-last-played-seconds-year) . "%m/%d")
-	   (t . "%Y/%m/%d"))
+	   ((emms-last-played-seconds-year) . "%d/%m")
+	   (t . "%d/%m/%Y"))
 	 emms-track-description-function
 	 'my-emms-track-description-function
 	 emms-browser-covers 'my-emms-covers)
 
-   (emms-lastfm 1)
+   (when-library "emms-lastfm"
+		 (setq emms-lastfm-username "m00natic"
+		       emms-lastfm-password "very-secret")
+		 (emms-lastfm 1))
 
    (when (require 'emms-player-mpd nil t)
      (add-to-list 'emms-info-functions 'emms-info-mpd)
@@ -1726,7 +1729,7 @@ File should be less than 120000 bytes."
        (defadvice emms-player-started (after emms-player-mpd-notify
 					     (player) activate compile)
 	 "Notify new track for MPD."
-	 (when (eq player 'emms-player-mpd)
+	 (when (eq emms-player-playing-p 'emms-player-mpd)
 	   (notify "EMMS" (substring (emms-show) 6)))))))
 
    (global-set-key [XF86AudioStop] 'emms-pause)
@@ -1737,7 +1740,8 @@ File should be less than 120000 bytes."
 		  (defun my-emms-notify ()
 		    "Notify on new track."
 		    (emms-next-noerror)
-		    (notify "EMMS" (substring (emms-show) 6)))
+		    (when emms-player-playing-p
+		      (notify "EMMS" (substring (emms-show) 6))))
 
 		  (setq emms-player-next-function 'my-emms-notify)))))
 
