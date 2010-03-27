@@ -15,7 +15,7 @@
 ;;   SLIME http://common-lisp.net/project/slime
 ;;   Quack http://www.neilvandyke.org/quack
 ;;   clojure-mode http://github.com/technomancy/clojure-mode
-;;   swank-clojure http://github.com/jochu/swank-clojure
+;;   swank-clojure http://github.com/technomancy/swank-clojure
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
@@ -42,6 +42,7 @@
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
+;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 ;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
@@ -266,7 +267,7 @@ otherwise increase it in 5%-steps"
       (t :weight bold :slant italic)))
    '(mode-line
      ((default :box (:line-width 1 :style "none")
-	:width condensed :height 90 :family "neep")
+  	:width condensed :height 90 :family "neep")
       (((class color) (min-colors 88) (background dark))
        :foreground "black" :background "DarkSlateGray")
       (((class color) (min-colors 88) (background light))
@@ -274,7 +275,7 @@ otherwise increase it in 5%-steps"
       (t :background "green")))
    '(mode-line-inactive
      ((default :box (:line-width 1 :style "none")
-	:width condensed :height 80 :family "neep")
+  	:width condensed :height 80 :family "neep")
       (((class color) (min-colors 88))
        :foreground "DarkSlateGray" :background "honeydew4")
       (t :foreground "white" :background "black")))
@@ -283,96 +284,92 @@ otherwise increase it in 5%-steps"
       (((class color) (min-colors 88))
        :background "CadetBlue" :weight extrabold)
       (t :background "green" :weight normal)))
-   '(tabbar-default ((default :inherit variable-pitch)
-		     (((background dark))
-		      :background "#111" :foreground "#0c0")
-		     (t :background "LightGray" :foreground "black")))
-   '(tabbar-selected
-     ((default :inherit tabbar-default)
-      (((class color) (min-colors 88) (background dark))
-       :background "black" :box (:line-width 2 :color "black")
-       :foreground "DeepSkyBlue")
-      (((background dark)) :background "black" :foreground "white"
-       :box (:line-width 2 :color "black"))
-      (t :background "white" :box (:line-width 2 :color "LightGray")
-	 :foreground "DeepSkyBlue")))
-   '(tabbar-unselected
-     ((default :inherit tabbar-default)
-      (((class color) (min-colors 88) (background dark))
-       :background "#222" :foreground "DarkCyan"
-       :box (:line-width 2 :color "#090909"))
-      (((background dark))
-       :background "gray" :foreground "cyan"
-       :box (:line-width 2 :color "gray"))
-      (((class color) (min-colors 88) (background light))
-       :background "gray" :foreground "black"
-       :box (:line-width 2 :color "white"))
-      (t :background "black" :foreground "white"
-	 :box (:line-width 2 :color "white"))))
-   '(tabbar-button
-     ((default (:inherit tabbar-default))
-      (((background dark)) :background "black" :foreground "#0c0"
-       :box (:line-width 2 :color "black"))
-      (t :background "white" :foreground "black"
-	 :box (:line-width 2 :color "LightGray"))))
-   '(tabbar-button-face
-     ((default (:inherit tabbar-default-face))
-      (((background dark)) :background "black" :foreground "#0c0"
-       :box (:line-width 2 :color "black"))
-      (t :background "white" :foreground "black"
-	 :box (:line-width 2 :color "LightGray"))))
-   '(tabbar-selected-face
-     ((t :inherit tabbar-default-face :background "black"
-	 :foreground "SpringGreen"
-	 :box (:line-width 2 :color "black"))))
-   '(tabbar-separator ((t :foreground "#0c0" :background "#111")))
-   '(tabbar-separator-face ((t :foreground "#0c0"
-			       :background "#111")))
    '(highlight-changes ((((class color) (min-colors 88))
-			 :background "#382f2f")
-			(t :background "orange")))
+  			 :background "#382f2f")
+  			(t :background "orange")))
    '(highlight-changes-delete ((((class color) (min-colors 88))
-				:background "#916868")
-			       (t :background "red")))
+  				:background "#916868")
+  			       (t :background "red")))
    '(highlight ((((class color) (min-colors 88) (background light))
-		 :background "darkseagreen2")
-		(((class color) (min-colors 88) (background dark))
-		 :background "SeaGreen")
-		(((class color) (min-colors 16) (background light))
-		 :background "darkseagreen2")
-		(((class color) (min-colors 16) (background dark))
-		 :background "darkolivegreen")
-		(((class color) (min-colors 8))
-		 :background "green" :foreground "black")
-		(t :inverse-video t)))
+  		 :background "darkseagreen2")
+  		(((class color) (min-colors 88) (background dark))
+  		 :background "SeaGreen")
+  		(((class color) (min-colors 16) (background light))
+  		 :background "darkseagreen2")
+  		(((class color) (min-colors 16) (background dark))
+  		 :background "darkolivegreen")
+  		(((class color) (min-colors 8))
+  		 :background "green" :foreground "black")
+  		(t :inverse-video t)))
    '(region ((((class color) (min-colors 88) (background dark))
-	      :background "#333" :foreground nil)
-	     (((class color) (min-colors 88) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 16) (background dark))
-	      :background "blue3" :foreground nil)
-	     (((class color) (min-colors 16) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 8))
-	      :background "cyan" :foreground "white")
-	     (((type tty) (class mono)) :inverse-video t)
-	     (t :background "gray")))
+  	      :background "#333" :foreground nil)
+  	     (((class color) (min-colors 88) (background light))
+  	      :background "lightgoldenrod2" :foreground nil)
+  	     (((class color) (min-colors 16) (background dark))
+  	      :background "blue3" :foreground nil)
+  	     (((class color) (min-colors 16) (background light))
+  	      :background "lightgoldenrod2" :foreground nil)
+  	     (((class color) (min-colors 8))
+  	      :background "cyan" :foreground "white")
+  	     (((type tty) (class mono)) :inverse-video t)
+  	     (t :background "gray")))
    '(hl-line ((((class color) (min-colors 88) (background light))
-	       :background "darkseagreen2")
-	      (((class color) (min-colors 88) (background dark))
-	       :background "#123")
-	      (((class color) (min-colors 16) (background light))
-	       :background "darkseagreen2")
-	      (((background dark)) :background "blue")
-	      (t :inherit highlight)))
+  	       :background "darkseagreen2")
+  	      (((class color) (min-colors 88) (background dark))
+  	       :background "#123")
+  	      (((class color) (min-colors 16) (background light))
+  	       :background "darkseagreen2")
+  	      (((background dark)) :background "blue")
+  	      (t :inherit highlight)))
    '(cursor ((((class color)) :background "DeepSkyBlue")
-	     (((background light)) :background "black")
-	     (t :background "white")))
+  	     (((background light)) :background "black")
+  	     (t :background "white")))
    '(show-paren-match-face
      ((((class color) (background dark)) :background "DarkRed")
       (((class color) (background light)) :background "red")
       (((background dark)) :background "grey50")
-      (t :background "gray")))))
+      (t :background "gray"))))
+  (when-library
+   "tabbar"
+   (custom-set-faces
+    '(tabbar-default ((t :inherit variable-pitch)))
+    '(tabbar-selected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background light))
+  	:background "white" :foreground "DeepSkyblue"
+  	:box (:line-width 1 :color "LightGray"))
+       (((class color) (min-colors 88) (background dark))
+  	:background "black" :foreground "DeepSkyBlue"
+  	:box (:line-width 1 :color "black"))
+       (((background dark)) :background "black" :foreground "white")
+       (t :background "white" :foreground "cyan")))
+    '(tabbar-unselected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background light))
+  	:background "gray" :foreground "DarkSlateGray"
+  	:box (:line-width 2 :color "white"))
+       (((class color) (min-colors 88) (background dark))
+  	:background "#222" :foreground "DarkCyan"
+  	:box (:line-width 2 :color "#090909"))
+       (((background dark)) :background "white" :foreground "black")
+       (t :background "black" :foreground "cyan")))
+    '(tabbar-button
+      ((default (:inherit tabbar-default))
+       (((background dark)) :background "black" :foreground "#0c0"
+  	:box (:line-width 2 :color "black"))
+       (t :background "white" :foreground "black"
+  	  :box (:line-width 2 :color "LightGray"))))
+    '(tabbar-separator ((t :background "#111")))))
+  (when-library
+   "sml-modeline"
+   (custom-set-faces
+    '(sml-modeline-vis-face ((default (:inherit hl-line))
+  			     (((class color) (min-colors 88))
+  			      :foreground "green"
+  			      :box (:line-width 1))
+  			     (t :foreground "SeaGreen")))
+    '(sml-modeline-end-face ((t :inherit default
+  				:box (:line-width 1)))))) )
 
 (defun faces-fix (&optional light)
   "Set some important faces.  If LIGHT is not given, look current.
@@ -400,14 +397,38 @@ If LIGHT is `:dark', let it be darkness, otherwise light."
   (faces-fix (or light :dark))
   (faces-generic))
 
+(defun my-colours-set (&optional frame)
+  "Set colors of new FRAME according to time of day."
+  (when (and calendar-latitude calendar-longitude calendar-time-zone)
+    (let ((solar-info (solar-sunrise-sunset
+		       (calendar-current-date))))
+      (let ((sunrise-string (apply 'solar-time-string
+				   (car solar-info)))
+	    (sunset-string (apply 'solar-time-string
+				  (cadr solar-info)))
+	    (current-time-string (format-time-string "%H:%M")))
+	(if (or (string-lessp current-time-string sunrise-string)
+		(string-lessp sunset-string current-time-string))
+	    (switch-faces nil)
+	  (switch-faces t))
+	(and (boundp 'my-sunset-timer) (timerp my-sunset-timer)
+	     (cancel-timer my-sunset-timer))
+	(and (boundp 'my-sunrise-timer) (timerp my-sunrise-timer)
+	     (cancel-timer my-sunrise-timer))
+	(setq my-sunset-timer (run-at-time sunset-string 86400
+					   'switch-faces nil)
+	      my-sunrise-timer (run-at-time sunrise-string 86400
+					    'switch-faces t))))))
+
 (defun reset-frame-faces (frame)
   "Execute once in the first graphical new FRAME.
 Reset some faces which --daemon doesn't quite set.
-Remove hook when done."
+Remove hook when done and add `my-colours-set' instead."
   (select-frame frame)
   (cond ((window-system frame)
-	 (faces-fix t)			; start light
-	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
+	 (my-colours-set)
+	 (remove-hook 'after-make-frame-functions 'reset-frame-faces)
+	 (add-hook 'after-make-frame-functions 'my-colours-set))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
 	 (set-face-foreground 'default "white" frame))))
@@ -427,6 +448,12 @@ Remove hook when done."
 				   (match-beginning 1) (match-end 1)
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
+
+(defun program-availability (command output)
+  "Check if shell COMMAND gives OUTPUT."
+  (equal (substring (shell-command-to-string command)
+		    0 (length output))
+	 output))
 
 (defconst +apropos-url-alist+
   '(("^gw?:? +\\(.*\\)" .		; Google Web
@@ -557,17 +584,19 @@ If ARG, stay on the original line."
 (add-to-list 'default-frame-alist (cons 'width +width+))
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
+;; set new frame faces according to time of day
+(when-library "solar"			; Sofia coordinates
+	      (when (load "solar" t)
+		(setq calendar-latitude +42.68
+		      calendar-longitude +23.31)))
+
 (if (window-system)
-    (faces-fix t)
+    (progn (my-colours-set)
+	   (add-hook 'after-make-frame-functions 'my-colours-set))
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
-  (add-hook 'after-make-frame-functions 'reset-frame-faces))
-
-;;; CUA rectangle action
-(setq cua-enable-cua-keys nil)		; only for rectangles
-(cua-mode t)
-
-(faces-generic)
+  (add-hook 'after-make-frame-functions 'reset-frame-faces)
+  (faces-generic))
 
 (win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
 
@@ -668,6 +697,10 @@ advice like this:
 	      (when (require 'uniquify nil t)
 		(setq uniquify-buffer-name-style 'post-forward
 		      uniquify-separator ":")))
+
+;;; CUA rectangle action
+(setq cua-enable-cua-keys nil)		; only for rectangles
+(cua-mode t)
 
 ;; highlight current line, turn it on for all modes by default
 (when-library "hl-line" (global-hl-line-mode t))
@@ -902,33 +935,12 @@ advice like this:
 (when-library "package"
 	      (when (load "package" t) (package-initialize)))
 
-;; wget
-(when-library
- "wget"
- (autoload 'wget "wget" "wget interface for Emacs." t)
- (autoload 'wget-web-page "wget"
-   "wget interface to download whole web page." t)
+;;; sml-modeline
+(when-library "sml-modeline"
+	      (when (load "sml-modeline" t)
+		(scroll-bar-mode -1)
+		(sml-modeline-mode 1)))
 
- (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
-
- (setq
-  wget-download-directory-filter 'wget-download-dir-filter-regexp
-  wget-download-directory
-  `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
-    ("." . ,(concat +home-path+ "Downloads"))))
-
- (defun wget-site (uri)
-   "Get a whole web-site pointed by URI through Wget.
-Make links point to local files."
-   (interactive (list (read-string "Web Site URI: "
-				   (thing-at-point-url-at-point))))
-   (when (require 'wget nil t)
-     (let ((dir (wget-cd-download-dir t uri)))
-       (when dir
-	 (if (string= uri "")
-	     (error "There is no uri")
-	   (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
-			       "--no-check-certificate"))))))))
 ;;; TabBar
 (when-library
  "tabbar"
@@ -1009,6 +1021,34 @@ DO-ALWAYS is always executed beforehand."
 
    ;; remove buffer name from modeline as it now becomes redundant
    (setq-default mode-line-buffer-identification "")))
+
+;; Wget
+(when-library
+ "wget"
+ (autoload 'wget "wget" "wget interface for Emacs." t)
+ (autoload 'wget-web-page "wget"
+   "wget interface to download whole web page." t)
+
+ (win-or-nix (setq wget-command "C:/cygwin/bin/wget"))
+
+ (setq
+  wget-download-directory-filter 'wget-download-dir-filter-regexp
+  wget-download-directory
+  `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
+    ("." . ,(concat +home-path+ "Downloads"))))
+
+ (defun wget-site (uri)
+   "Get a whole web-site pointed by URI through Wget.
+Make links point to local files."
+   (interactive (list (read-string "Web Site URI: "
+				   (thing-at-point-url-at-point))))
+   (when (require 'wget nil t)
+     (let ((dir (wget-cd-download-dir t uri)))
+       (when dir
+	 (if (string= uri "")
+	     (error "There is no uri")
+	   (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
+			       "--no-check-certificate"))))))))
 
 ;;; Anything
 (when-library "anything-config"
@@ -1095,14 +1135,7 @@ DO-ALWAYS is always executed beforehand."
 		((equal ergo-layout "en")
 		 '(define-keys slime-mode-map
 		    "\M-N" 'slime-previous-note
-		    "\M-p" nil)))))
-
-       (when-library
-	"emms"
-	(cond ((equal ergo-layout "colemak")
-	       (global-set-key (kbd "s-p") 'emms-pause))
-	      ((equal ergo-layout "en")
-	       (global-set-key (kbd "s-r") 'emms-pause))))))
+		    "\M-p" nil)))))))
 
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -1140,7 +1173,6 @@ DO-ALWAYS is always executed beforehand."
 				      nil nil nil)))))
 
 (eval-after-load "eldoc" '(eldoc-add-command 'autopairs-ret))
-(global-set-key (kbd "RET") 'autopairs-ret)
 
 ;; build appropriate `activate-lisp-minor-modes'
 (eval (macroexpand '(active-lisp-modes)))
@@ -1152,9 +1184,12 @@ DO-ALWAYS is always executed beforehand."
 	    emacs-lisp-mode-hook ielm-mode-hook
 	    inferior-scheme-mode-hook scheme-mode-hook)
 
+;; set eclectic return in lisp modes
+(define-key lisp-mode-shared-map (kbd "RET") 'autopairs-ret)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; Programming extensions
+;;;; extensions
 
 ;;; Lisp
 (setq inferior-lisp-program
@@ -1174,137 +1209,140 @@ DO-ALWAYS is always executed beforehand."
 		  " --core " +home-path+
 		  "Programs/Qi/Qi.core")))
    (hook-modes activate-lisp-minor-modes
-	       qi-mode-hook inferior-qi-mode-hook)))
-
-;;; Clojure
-(when-library				; clojure-mode from ELPA
- ("clojure-mode" "swank-clojure")
- (setq swank-clojure-jar-path
-       (concat +home-path+ ".swank-clojure/swank-clojure.jar")
-       ;; swank-clojure-extra-vm-args
-       ;;  '("-server" "-Xdebug"
-       ;;    "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888")
-       )
-
- (eval-after-load "clojure-mode"
-   '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)))
+	       qi-mode-hook inferior-qi-mode-hook)
+   (define-key qi-mode-map (kbd "RET") 'autopairs-ret)))
 
 ;;; Set up SLIME
+(when (load "slime" t)
+  (slime-setup (win-or-nix
+		'(slime-fancy slime-banner slime-indentation)
+		'(slime-fancy slime-banner slime-indentation
+			      slime-asdf)))
+  (slime-autodoc-mode)
+
+  (push (list (win-or-nix 'clisp 'sbcl)
+	      (split-string inferior-lisp-program " +"))
+	slime-lisp-implementations)
+
+  (setq slime-default-lisp (win-or-nix 'clisp 'sbcl)
+	slime-complete-symbol*-fancy t
+	slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+	common-lisp-hyperspec-root
+	(concat "file://" +home-path+ "Documents/HyperSpec/")
+	slime-net-coding-system
+	(find-if 'slime-find-coding-system
+		 '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+			      binary)))
+
+  (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
+  (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
+  (define-key slime-mode-map "\M-g" 'slime-complete-symbol))
+
+;;; Clojure
 (when-library
- "slime"
- (when (load "slime" t)			; (locate-library "slime")
-   (eval-after-load "slime"
-     `(progn
-	(slime-setup ',(win-or-nix
-			'(slime-fancy slime-banner slime-indentation)
-			'(slime-fancy slime-banner slime-indentation
-				      slime-asdf)))
+ "clojure-mode"				; from ELPA
+ (eval-after-load "clojure-mode"
+   '(progn
+      (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)
+      (define-key clojure-mode-map (kbd "RET") 'autopairs-ret)))
 
-	(slime-autodoc-mode)
-	(setq slime-complete-symbol*-fancy t
-	      slime-complete-symbol-function
-	      'slime-fuzzy-complete-symbol
-	      common-lisp-hyperspec-root
-	      ,(concat "file://" +home-path+
-		       (win-or-nix "docs" "Documents") "/HyperSpec/")
-	      slime-net-coding-system
-	      (find-if 'slime-find-coding-system
-		       '(utf-8-unix iso-latin-1-unix
-				    iso-8859-1-unix binary)))
+ (when-library
+  ("slime" "swank-clojure")
+  (when (load "swank-clojure" t)
+    ;; (autoload 'swank-clojure-init "swank-clojure"
+    ;;   "Initialize clojure for swank")
+    ;; (autoload 'swank-clojure-cmd "swank-clojure"
+    ;;   "Command to start clojure")
+    ;; (autoload 'swank-clojure-slime-mode-hook "swank-clojure"
+    ;;   "Swank to Slime hook")
+    ;; (autoload 'slime-read-interactive-args "swank-clojure"
+    ;;   "Add clojure to slime implementations")
+    ;; (autoload 'swank-clojure-project "swank-clojure"
+    ;;   "Invoke clojure with a project path")
 
-	(add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	(define-key slime-mode-map "\M-g" 'slime-complete-symbol)
+    (setq swank-clojure-extra-vm-args '("-server"))
+    (swank-clojure-reset-implementation)
 
-	,(when-library
-	  "swank-clojure"
 ;;; Online JavaDoc to Slime
-	  '(defun slime-java-describe (symbol-name)
-	     "Get details on Java class/instance at point SYMBOL-NAME."
-	     (interactive (list (slime-read-symbol-name
-				 "Java Class/instance: ")))
-	     (or symbol-name (error "No symbol given"))
-	     (with-current-buffer (slime-output-buffer)
-	       (or (eq (current-buffer) (window-buffer))
-		   (pop-to-buffer (current-buffer) t))
-	       (goto-char (point-max))
-	       (insert (concat "(show " symbol-name ")"))
-	       (when symbol-name
-		 (slime-repl-return)
-		 (other-window 1))))
+    (defun slime-java-describe (symbol-name)
+      "Get details on Java class/instance at point SYMBOL-NAME."
+      (interactive
+       (list (slime-read-symbol-name "Java Class/instance: ")))
+      (or symbol-name (error "No symbol given"))
+      (with-current-buffer (slime-output-buffer)
+	(or (eq (current-buffer) (window-buffer))
+	    (pop-to-buffer (current-buffer) t))
+	(goto-char (point-max))
+	(insert (concat "(show " symbol-name ")"))
+	(when symbol-name
+	  (slime-repl-return)
+	  (other-window 1))))
 
-	  '(defun slime-javadoc (symbol-name)
-	     "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
-	     (interactive (list (slime-read-symbol-name
-				 "JavaDoc info for: ")))
-	     (or symbol-name (error "No symbol given"))
-	     (set-buffer (slime-output-buffer))
-	     (or (eq (current-buffer) (window-buffer))
-		 (pop-to-buffer (current-buffer) t))
-	     (goto-char (point-max))
-	     (insert (concat "(javadoc " symbol-name ")"))
-	     (when symbol-name
-	       (slime-repl-return)
-	       (other-window 1)))
+    (defun slime-javadoc (symbol-name)
+      "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
+      (interactive
+       (list (slime-read-symbol-name "JavaDoc info for: ")))
+      (or symbol-name (error "No symbol given"))
+      (set-buffer (slime-output-buffer))
+      (or (eq (current-buffer) (window-buffer))
+	  (pop-to-buffer (current-buffer) t))
+      (goto-char (point-max))
+      (insert (concat "(javadoc " symbol-name ")"))
+      (when symbol-name
+	(slime-repl-return)
+	(other-window 1)))
 
 ;;; Local JavaDoc to Slime
-	  `(defconst +slime-browse-local-javadoc-root+
-	     ,(concat (win-or-nix (concat +home-path+ "docs")
-				  "/usr/share")
-		      "/javadoc/java-1.6.0-openjdk")
-	     "Path to javadoc.")
+    (defconst +slime-browse-local-javadoc-root+
+      (concat (win-or-nix (concat +home-path+ "Documents")
+			  "/usr/share")
+	      "/javadoc/java-1.6.0-openjdk")
+      "Path to javadoc.")
 
-	  '(defun slime-browse-local-javadoc (ci-name)
-	     "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
-	     (interactive
-	      (list (slime-read-symbol-name "Class/Interface name: ")))
-	     (or ci-name (error "No name given"))
-	     (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-		   (path (concat (expand-file-name
-				  +slime-browse-local-javadoc-root+)
-				 "/api/")))
-	       (with-temp-buffer
-		 (insert-file-contents
-		  (concat path "allclasses-noframe.html"))
-		 (let ((l (delq nil
-				(mapcar (lambda (rgx)
-					  (let* ((r (concat
-						     "\\.?\\(" rgx
-						     "[^./]+\\)[^.]*\\.?$"))
-						 (n (if (string-match r name)
-							(match-string 1 name)
-						      name)))
-					    (if (re-search-forward
-						 (concat "<A HREF=\"\\(.+\\)\" +.*>"
-							 n "<.*/A>")
-						 nil t)
-						(match-string 1)
-					      nil)))
-					'("[^.]+\\." "")))))
-		   (if l
-		       (browse-url (concat "file://" path (car l)))
-		     (error (concat "Not found: " ci-name))))))))
+    (defun slime-browse-local-javadoc (ci-name)
+      "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
+      (interactive
+       (list (slime-read-symbol-name "Class/Interface name: ")))
+      (or ci-name (error "No name given"))
+      (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+	    (path (concat (expand-file-name
+			   +slime-browse-local-javadoc-root+)
+			  "/api/")))
+	(with-temp-buffer
+	  (insert-file-contents
+	   (concat path "allclasses-noframe.html"))
+	  (let ((l (delq nil
+			 (mapcar (lambda (rgx)
+				   (let* ((r (concat
+					      "\\.?\\(" rgx
+					      "[^./]+\\)[^.]*\\.?$"))
+					  (n (if (string-match r name)
+						 (match-string 1 name)
+					       name)))
+				     (if (re-search-forward
+					  (concat "<A HREF=\"\\(.+\\)\" +.*>"
+						  n "<.*/A>")
+					  nil t)
+					 (match-string 1)
+				       nil)))
+				 '("[^.]+\\." "")))))
+	    (if l
+		(browse-url (concat "file://" path (car l)))
+	      (error (concat "Not found: " ci-name)))))))
 
-	,(when-library
-	  "swank-clojure"
-	  '(add-hook 'slime-connected-hook
-		     (lambda ()
-		       (slime-redirect-inferior-output)
-		       (define-keys slime-mode-map
-			 "\C-cd" 'slime-java-describe
-			 "\C-cD" 'slime-javadoc)
-		       (define-keys slime-repl-mode-map
-			 "\C-cd" 'slime-java-describe
-			 "\C-cD" 'slime-javadoc)
-		       (define-key slime-mode-map "\C-cb"
-			 'slime-browse-local-javadoc)
-		       (define-key slime-repl-mode-map "\C-cb"
-			 'slime-browse-local-javadoc))))
-
-	(push '(,(win-or-nix 'clisp 'sbcl)
-		,(split-string inferior-lisp-program " +"))
-	      slime-lisp-implementations)
-
-	(setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl))))))
+    (add-hook 'slime-connected-hook
+	      (lambda ()
+		(slime-redirect-inferior-output)
+		(define-keys slime-mode-map
+		  "\C-cd" 'slime-java-describe
+		  "\C-cD" 'slime-javadoc)
+		(define-keys slime-repl-mode-map
+		  "\C-cd" 'slime-java-describe
+		  "\C-cD" 'slime-javadoc)
+		(define-key slime-mode-map "\C-cb"
+		  'slime-browse-local-javadoc)
+		(define-key slime-repl-mode-map "\C-cb"
+		  'slime-browse-local-javadoc))))))
 
 ;;; Scheme
 (when-library
@@ -1313,7 +1351,8 @@ DO-ALWAYS is always executed beforehand."
  (when (load "quack" t)
    (setq quack-default-program "gsi"
 	 quack-pltcollect-dirs (list (win-or-nix
-				      (concat +home-path+ "docs/plt")
+				      (concat +home-path+
+					      "Documents/plt")
 				      "/usr/share/plt/doc")))))
 
 ;;; CLIPS
@@ -1328,7 +1367,8 @@ DO-ALWAYS is always executed beforehand."
 
    (hook-modes (activate-lisp-minor-modes
 		(setq indent-region-function nil))
-	       clips-mode-hook inferior-clips-mode-hook)))
+	       clips-mode-hook inferior-clips-mode-hook)
+   (define-key clips-mode-map (kbd "RET") 'autopairs-ret)))
 
 ;;; Prolog, if there is built-in mode, no autoloads
 (when-library
@@ -1380,7 +1420,7 @@ DO-ALWAYS is always executed beforehand."
 (when-library "visual-basic-mode"
 	      (autoload 'visual-basic-mode "visual-basic-mode"
 		"Visual Basic mode." t)
-	      (push '("\\.\\(frm\\|bas\\|cls\\|rvb\\)$"
+	      (push '("\\.\\(frm\\|bas\\|cls\\|rvb\\|vbs\\)$"
 		      . visual-basic-mode)
 		    auto-mode-alist))
 
@@ -1408,7 +1448,7 @@ DO-ALWAYS is always executed beforehand."
 		(add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
 		(add-hook 'TeX-mode-hook
 			  (lambda () (define-key TeX-mode-map "\M-g"
-				       'TeX-complete-symbol)))))
+				  'TeX-complete-symbol)))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
@@ -1496,6 +1536,60 @@ DO-ALWAYS is always executed beforehand."
 	     (ignore-errors
 	       (auto-install-update-emacswiki-package-name t))
 	     (message "Auto-install added to anything sources.")))))))
+
+;;; w3m
+(when-library
+ "w3m-load"
+ (when (and (program-availability "w3m -version" "w3m version")
+	    (load "w3m-load" t))
+   (setq w3m-home-page (concat "file://" +home-path+
+			       ".w3m/bookmark.html")
+	 w3m-use-toolbar t
+	 w3m-use-cookies t
+	 ;; make w3m default for most URLs
+	 browse-url-browser-function
+	 `(("^ftp:/.*" . (lambda (url &optional nf)
+			   (call-interactively
+			    'find-file-at-point url)))
+	   ("video" . ,browse-url-browser-function)
+	   ("\\.tv" . ,browse-url-browser-function)
+	   ("youtube" . ,browse-url-browser-function)
+	   ("." . w3m-browse-url)))
+
+   ;; integration with other packages
+   (when-library "wl" (require 'mime-w3m nil t))
+   (when-library "wget" (require 'w3m-wget nil t))
+   (when-library "gnus" (autoload 'gnus-group-mode-map "nnshimbun"
+			  "Add shimbun group to Gnus." t))
+
+   (defun w3m-browse-url-other-window (url &optional newwin)
+     (interactive (browse-url-interactive-arg "w3m URL: "))
+     (let ((pop-up-frames nil))
+       (switch-to-buffer-other-window (w3m-get-buffer-create "*w3m*"))
+       (w3m-browse-url url)))
+
+   (defun dired-w3m-find-file ()
+     (interactive)
+     (let ((file (dired-get-filename)))
+       (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
+			     (file-name-nondirectory file)))
+	   (w3m-find-file file))))
+
+   (eval-after-load "dired"
+     '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file))
+
+   (define-keys w3m-mode-map
+     "i" 'w3m-save-image
+     "l" 'w3m-horizontal-recenter)))
+
+;;; handle ftp with emacs, if not set above
+(or (consp browse-url-browser-function)
+    (setq browse-url-browser-function
+	  `(("^ftp:/.*" . (lambda (url &optional nf)
+			    (call-interactively
+			     'find-file-at-point url)))
+	    ("." . ,browse-url-browser-function))))
+
 
 ;;; Traverse
 (when-library "traverselisp" (load "traverselisp" t))
@@ -1716,7 +1810,8 @@ File should be less than 100000 bytes."
 		       emms-lastfm-password "very-secret")
 		 (emms-lastfm 1))
 
-   (when (require 'emms-player-mpd nil t)
+   (when (and (program-availability "mpd --version" "mpd (MPD:")
+	      (require 'emms-player-mpd nil t))
      (add-to-list 'emms-info-functions 'emms-info-mpd)
      (push 'emms-player-mpd emms-player-list)
      (setq emms-player-mpd-music-directory
@@ -1733,6 +1828,12 @@ File should be less than 100000 bytes."
 	   (notify "EMMS" (substring (emms-show) 6)))))))
 
    (global-set-key [XF86AudioStop] 'emms-pause)
+
+   (let ((ergo-layout (getenv "ERGOEMACS_KEYBOARD_LAYOUT")))
+     (cond ((or (null ergo-layout) (equal ergo-layout "en"))
+	    (global-set-key (kbd "s-r") 'emms-pause))
+	   ((equal ergo-layout "colemak")
+	    (global-set-key (kbd "s-p") 'emms-pause))))
 
    (win-or-nix
     nil
@@ -1809,68 +1910,7 @@ File should be less than 100000 bytes."
   (add-hook 'c-mode-common-hook (lambda ()
 				  (gtags-mode t)
 				  ;;(gtags-create-or-update)
-				  )))
-
-;;; w3m
- (when-library
-  "w3m-load"
-  (when (load "w3m-load" t)
-    (when-library "wl"			; integration with Wanderlust
-		  (require 'mime-w3m nil t))
-
-    (when-library "wget"		; integration with Wget
-		  (require 'w3m-wget nil t))
-
-    (when-library "gnus"
-		  (autoload 'gnus-group-mode-map "nnshimbun"
-		    "Add shimbun group to Gnus." t))
-
-    (defun w3m-browse-url-other-window (url &optional newwin)
-      (interactive (browse-url-interactive-arg "w3m URL: "))
-      (let ((pop-up-frames nil))
-	(switch-to-buffer-other-window (w3m-get-buffer-create "*w3m*"))
-	(w3m-browse-url url)))
-
-    (defun dired-w3m-find-file ()
-      (interactive)
-      (let ((file (dired-get-filename)))
-	(if (y-or-n-p (format "Use emacs-w3m to browse %s? "
-			      (file-name-nondirectory file)))
-	    (w3m-find-file file))))
-
-    (eval-after-load "dired"
-      '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file))
-
-    (define-keys w3m-mode-map
-      "i" 'w3m-save-image
-      "l" 'w3m-horizontal-recenter)
-
-    (setq w3m-home-page (concat "file://" +home-path+
-				".w3m/bookmark.html")
-	  w3m-use-toolbar t
-	  w3m-use-cookies t
-	  ;; detect w3m command, if present,
-	  ;; make it default for most URLs
-	  browse-url-browser-function
-	  (cons '("^ftp:/.*" . (lambda (url &optional nf)
-				 (call-interactively
-				  'find-file-at-point url)))
-		(if (equal (substring (shell-command-to-string
-				       "w3m -version")
-				      0 11)
-			   "w3m version")
-		    `(("video" . ,browse-url-browser-function)
-		      ("youtube" . ,browse-url-browser-function)
-		      ("." . w3m-browse-url))
-		  `(("." . ,browse-url-browser-function))))))))
-
-;;; handle ftp with emacs, if not set above
-(or (consp browse-url-browser-function)
-    (setq browse-url-browser-function
-	  `(("^ftp:/.*" . (lambda (url &optional nf)
-			    (call-interactively
-			     'find-file-at-point url)))
-	    ("." . ,browse-url-browser-function))))
+				  ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

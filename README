@@ -30,7 +30,7 @@ Programming languages related:
 SLIME http://common-lisp.net/project/slime
 Quack http://www.neilvandyke.org/quack
 clojure-mode http://github.com/technomancy/clojure-mode
-swank-clojure http://github.com/jochu/swank-clojure
+swank-clojure http://github.com/techkomancy/swank-clojure
 clips-mode http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
 haskell-mode http://projects.haskell.org/haskellmode-emacs
@@ -60,6 +60,7 @@ AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
 Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
 TabBar http://www.emacswiki.org/emacs/TabBarMode
+sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 notify http://www.emacswiki.org/emacs/notify.el
 CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
