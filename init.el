@@ -371,64 +371,86 @@ otherwise increase it in 5%-steps"
     '(sml-modeline-end-face ((t :inherit default
   				:box (:line-width 1)))))) )
 
-(defun faces-fix (&optional light)
-  "Set some important faces.  If LIGHT is not given, look current.
-If LIGHT is `:dark', let it be darkness, otherwise light."
-  (if (or (eq light :dark)
-	  (and (not light)
-	       (equal (face-background 'default) "black")))
+(defun switch-faces (light)
+  "Set dark faces.  With prefix, LIGHT."
+  (interactive "P")
+  (if light
       (custom-set-faces
-       '(default ((default (:background "black" :height 80))
-		  (((class color) (min-colors 88))
-		   (:foreground "wheat"))
-		  (t (:foreground "white")))))
+       '(default ((t (:foreground "black" :height 80
+				  :background "cornsilk")))))
     (custom-set-faces
-     '(default ((t (:foreground "black" :height 80
-				:background "cornsilk"))))))
+     '(default ((default (:background "black" :height 80))
+		(((class color) (min-colors 88))
+		 (:foreground "wheat"))
+		(t (:foreground "white"))))))
   (ignore-errors
     (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
   (let ((frame (selected-frame)))
     (modify-frame-parameters frame '((alpha . 99)))
-    (set-frame-height frame 40)))
-
-(defun switch-faces (light)
-  "Set dark faces.  With prefix, LIGHT."
-  (interactive "P")
-  (faces-fix (or light :dark))
+    (set-frame-height frame 50))
   (faces-generic))
 
-(defun my-colours-set (&optional frame)
-  "Set colors of new FRAME according to time of day."
-  (when (and calendar-latitude calendar-longitude calendar-time-zone)
-    (let ((solar-info (solar-sunrise-sunset
-		       (calendar-current-date))))
-      (let ((sunrise-string (apply 'solar-time-string
-				   (car solar-info)))
-	    (sunset-string (apply 'solar-time-string
-				  (cadr solar-info)))
-	    (current-time-string (format-time-string "%H:%M")))
-	(if (or (string-lessp current-time-string sunrise-string)
-		(string-lessp sunset-string current-time-string))
-	    (switch-faces nil)
-	  (switch-faces t))
-	(and (boundp 'my-sunset-timer) (timerp my-sunset-timer)
-	     (cancel-timer my-sunset-timer))
-	(and (boundp 'my-sunrise-timer) (timerp my-sunrise-timer)
-	     (cancel-timer my-sunrise-timer))
-	(setq my-sunset-timer (run-at-time sunset-string 86400
-					   'switch-faces nil)
-	      my-sunrise-timer (run-at-time sunrise-string 86400
-					    'switch-faces t))))))
+(defun my-colours-set ()
+  "Set colors of new FRAME according to time of day.
+Set timer that runs on next sunset or sunrise, whichever sooner."
+  (if (and calendar-latitude calendar-longitude calendar-time-zone)
+      (flet ((solar-time-to-24
+	      (time-str)
+	      (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)"
+				time-str)
+		  (format "%02d:%s"
+			  (if (equal (match-string 3 time-str) "p")
+			      (+ (string-to-number
+				  (match-string 1 time-str))
+				 12)
+			    (string-to-number
+			     (match-string 1 time-str)))
+			  (match-string 2 time-str))
+		time-str)))
+	(let ((solar-info (solar-sunrise-sunset
+			   (calendar-current-date))))
+	  (let ((sunrise-string (solar-time-string
+				 (caar solar-info)
+				 (cadar solar-info)))
+		(sunset-string (solar-time-string
+				(caadr solar-info)
+				(cadadr solar-info)))
+		(current-time-string (format-time-string "%H:%M")))
+	    (cond
+	     ((string-lessp current-time-string ; before dawn
+			    (solar-time-to-24 sunrise-string))
+	      (switch-faces nil)
+	      (run-at-time sunrise-string nil 'my-colours-set))
+	     ((not (string-lessp current-time-string ; evening
+				 (solar-time-to-24 sunset-string)))
+	      (switch-faces nil)
+	      (run-at-time
+	       (let ((tomorrow (calendar-current-date 1)))
+		 (let* ((next-solar-rise (car (solar-sunrise-sunset
+					       tomorrow)))
+			(next-rise (solar-time-to-24
+				    (solar-time-string
+				     (car next-solar-rise)
+				     (cadr next-solar-rise)))))
+		   (encode-time 0 (string-to-number
+				   (substring next-rise 3 5))
+				(string-to-number
+				 (substring next-rise 0 2))
+				(cadr tomorrow) (car tomorrow)
+				(caddr tomorrow))))
+	       nil 'my-colours-set))
+	     (t (switch-faces t)	; daytime
+		(run-at-time sunset-string nil 'my-colours-set))))))
+    (switch-faces t)))
 
 (defun reset-frame-faces (frame)
   "Execute once in the first graphical new FRAME.
-Reset some faces which --daemon doesn't quite set.
+RESET SOME FACES which --daemon doesn't quite set.
 Remove hook when done and add `my-colours-set' instead."
   (select-frame frame)
   (cond ((window-system frame)
 	 (my-colours-set)
-	 (remove-hook 'after-make-frame-functions 'reset-frame-faces)
-	 (add-hook 'after-make-frame-functions 'my-colours-set))
+	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
 	 (set-face-foreground 'default "white" frame))))
@@ -448,12 +470,6 @@ Remove hook when done and add `my-colours-set' instead."
 				   (match-beginning 1) (match-end 1)
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
-
-(defun program-availability (command output)
-  "Check if shell COMMAND gives OUTPUT."
-  (equal (substring (shell-command-to-string command)
-		    0 (length output))
-	 output))
 
 (defconst +apropos-url-alist+
   '(("^gw?:? +\\(.*\\)" .		; Google Web
@@ -527,7 +543,7 @@ Remove hook when done and add `my-colours-set' instead."
   "List of pair symbols.")
 
 (defun autopairs-ret (arg)
-  "Eclectic newline before closing brackets.
+  "Eclectic newline inside closing brackets.
 If ARG, stay on the original line."
   (interactive "P")
   (dolist (pair +skeleton-pair-alist+)
@@ -584,15 +600,14 @@ If ARG, stay on the original line."
 (add-to-list 'default-frame-alist (cons 'width +width+))
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
-;; set new frame faces according to time of day
-(when-library "solar"			; Sofia coordinates
-	      (when (load "solar" t)
+;; Solar info
+(when-library "solar"
+	      (when (load "solar" t)	; Sofia coordinates
 		(setq calendar-latitude +42.68
 		      calendar-longitude +23.31)))
 
 (if (window-system)
-    (progn (my-colours-set)
-	   (add-hook 'after-make-frame-functions 'my-colours-set))
+    (my-colours-set)
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
   (add-hook 'after-make-frame-functions 'reset-frame-faces)
@@ -1158,9 +1173,11 @@ Make links point to local files."
 
 ;;; elisp stuff
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
+(eval-after-load "eldoc" '(eldoc-add-command 'autopairs-ret))
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
+
 (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
 ;; common lisp hyperspec info look-up
@@ -1171,8 +1188,6 @@ Make links point to local files."
 			 :ignore-case t
 			 :doc-spec '(("(ansicl)Symbol Index"
 				      nil nil nil)))))
-
-(eval-after-load "eldoc" '(eldoc-add-command 'autopairs-ret))
 
 ;; build appropriate `activate-lisp-minor-modes'
 (eval (macroexpand '(active-lisp-modes)))
@@ -1375,8 +1390,7 @@ Make links point to local files."
  "prolog"
  (if (symbol-file 'prolog-mode)
      (when (load "prog/prolog" t)
-       (setq prolog-program-name "pl"
-	     prolog-system 'swi
+       (setq prolog-system 'swi
 	     auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				      ("\\.m$" . mercury-mode))
 				    auto-mode-alist)))
@@ -1385,8 +1399,7 @@ Make links point to local files."
      "Major mode for editing Prolog programs." t)
    (autoload 'mercury-mode "prolog"
      "Major mode for editing Mercury programs." t)
-   (setq prolog-program-name "pl"
-	 prolog-system 'swi
+   (setq prolog-system 'swi
 	 auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				  ("\\.m$" . mercury-mode))
 				auto-mode-alist))))
@@ -1540,8 +1553,7 @@ Make links point to local files."
 ;;; w3m
 (when-library
  "w3m-load"
- (when (and (program-availability "w3m -version" "w3m version")
-	    (load "w3m-load" t))
+ (when (and (executable-find "w3m") (load "w3m-load" t))
    (setq w3m-home-page (concat "file://" +home-path+
 			       ".w3m/bookmark.html")
 	 w3m-use-toolbar t
@@ -1714,8 +1726,7 @@ Make links point to local files."
 		   (add-to-list 'emms-info-functions
 				'emms-info-libtag)))
 
-   (when-library "emms-mark"
-		 (require 'emms-mark nil t))
+   (when-library "emms-mark" (require 'emms-mark nil t))
 
    (emms-devel)
    (emms-default-players)
@@ -1735,44 +1746,48 @@ Make links point to local files."
 
    (defun my-emms-track-description-function (track)
      "Return a description of the current TRACK."
-     (let ((type (emms-track-type track))
-	   (name (emms-track-name track)))
-       (cond
-	((eq 'file type)
-	 (let ((artist (emms-track-get track 'info-artist)))
-	   (if artist
-	       (let ((title (or (emms-track-get track 'info-title)
-				(file-name-sans-extension
-				 (file-name-nondirectory name))))
-		     (tracknumber (emms-track-get track
-						  'info-tracknumber))
-		     (year (emms-track-get track 'info-year))
-		     (last-played (or (emms-track-get track
-						      'last-played)
-				      '(0 0 0))))
+     (flet ((default-info ()
+	      (concat
+	       " (" (number-to-string
+		     (or (emms-track-get track 'play-count) 0))
+	       ", " (emms-last-played-format-date
+		     (or (emms-track-get track 'last-played)
+			 '(0 0 0)))
+	       ")"
+	       (let ((time (emms-track-get track 'info-playing-time)))
+		 (if time
+		     (format " %d:%02d" (/ time 60) (mod time 60))
+		   "")))))
+       (let ((type (emms-track-type track)))
+	 (cond
+	  ((eq 'file type)
+	   (let ((artist (emms-track-get track 'info-artist)))
+	     (if artist
 		 (concat
 		  artist " - "
-		  (if tracknumber
-		      (format "%02d. " (string-to-number tracknumber))
-		    "")
-		  title " [" (if year (concat year " - ") "")
+		  (let ((num (emms-track-get track
+					     'info-tracknumber)))
+		    (if num
+			(format "%02d. " (string-to-number num))
+		      ""))
+		  (or (emms-track-get track 'info-title)
+		      (file-name-sans-extension
+		       (file-name-nondirectory
+			(emms-track-name track))))
+		  " [" (let ((year (emms-track-get track 'info-year)))
+			 (if year (concat year " - ") ""))
 		  (or (emms-track-get track 'info-album) "unknown")
-		  "] (" (number-to-string
-			 (or (emms-track-get track 'play-count) 0))
-		  ", " (emms-last-played-format-date last-played)
-		  ")"))
-	     name)))
-	((eq 'url type)
-	 (emms-format-url-track-name name))
-	(t (concat
-	    (symbol-name type) ": " name " ("
-	    (number-to-string (or (emms-track-get track 'play-count)
-				  0))
-	    ")")))))
+		  "]" (default-info))
+	       (concat (emms-track-name track) (default-info)))))
+	  ((eq 'url type)
+	   (emms-format-url-track-name (emms-track-name track)))
+	  (t (concat (symbol-name type) ": " (emms-track-name track)
+		     (default-info)))))))
 
    (defun my-emms-covers (dir type)
      "Choose album cover in DIR deppending on TYPE.
-File should be less than 100000 bytes."
+Small cover should be less than 100000 bytes.
+Medium - less than 120000 bytes."
      (flet ((size (file-descr)
 		  (car (cddddr (cddddr file-descr)))))
        (let* ((pics (sort (directory-files-and-attributes
@@ -1780,11 +1795,11 @@ File should be less than 100000 bytes."
 			  (lambda (p1 p2)
 			    (< (size p1) (size p2)))))
 	      (small (car pics)))
-	 (when (<= (or (size small) 200000) 100000)
+	 (when (<= (or (size small) 100001) 100000)
 	   (let ((medium (cadr pics)))
 	     (car (case type
 		    ('small small)
-		    ('medium (if (<= (or (size medium) 200000) 100000)
+		    ('medium (if (<= (or (size medium) 120001) 120000)
 				 medium
 			       small))
 		    ('large (or (caddr pics) medium small)))))))))
@@ -1806,11 +1821,12 @@ File should be less than 100000 bytes."
 	 emms-browser-covers 'my-emms-covers)
 
    (when-library "emms-lastfm"
-		 (setq emms-lastfm-username "m00natic"
-		       emms-lastfm-password "very-secret")
-		 (emms-lastfm 1))
+		 (when (require 'emms-lastfm nil t)
+		   (setq emms-lastfm-username "m00natic"
+			 emms-lastfm-password "very-secret")
+		   (emms-lastfm 1)))
 
-   (when (and (program-availability "mpd --version" "mpd (MPD:")
+   (when (and (executable-find "mpd")
 	      (require 'emms-player-mpd nil t))
      (add-to-list 'emms-info-functions 'emms-info-mpd)
      (push 'emms-player-mpd emms-player-list)
