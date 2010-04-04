@@ -6,7 +6,6 @@
 ;;   Anything http://www.emacswiki.org/emacs/Anything
 ;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
-;;   fuzzy-match http://www.emacswiki.org/emacs/Icicles_-_Fuzzy_Completion
 ;;  Packages related:
 ;;   ELPA http://tromey.com/elpa
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
@@ -199,6 +198,130 @@ Activate only extensions that are present and load/autoload them."
 			  t)))
        '(paredit-mode +1))))
 
+(defmacro faces-generic ()
+  "My prefered faces which differ from default."
+  `(progn
+     (custom-set-faces
+      '(font-lock-comment-face
+	((((class grayscale) (background light))
+	  :foreground "DimGray" :weight bold :slant italic)
+	 (((class grayscale) (background dark))
+	  :foreground "LightGray" :weight bold :slant italic)
+	 (((class color) (min-colors 88) (background light))
+	  :foreground "Firebrick")
+	 (((class color) (min-colors 88) (background dark))
+	  :foreground "chocolate1")
+	 (((class color) (background light))
+	  :foreground "red")
+	 (((class color) (background dark))
+	  :foreground "red1")
+	 (t :weight bold :slant italic)))
+      '(mode-line
+	((default :box (:line-width 1 :style "none")
+	   :width condensed :height 90 :family "neep")
+	 (((class color) (min-colors 88) (background dark))
+	  :foreground "black" :background "DarkSlateGray")
+	 (((class color) (min-colors 88) (background light))
+	  :foreground "white" :background "DarkSlateGray")
+	 (t :background "green")))
+      '(mode-line-inactive
+	((default :box (:line-width 1 :style "none")
+	   :width condensed :height 80 :family "neep")
+	 (((class color) (min-colors 88))
+	  :foreground "DarkSlateGray" :background "honeydew4")
+	 (t :foreground "white" :background "black")))
+      '(mode-line-buffer-id
+	((default :inherit mode-line :foreground "black")
+	 (((class color) (min-colors 88))
+	  :background "CadetBlue" :weight extrabold)
+	 (t :background "green" :weight normal)))
+      '(highlight-changes ((((class color) (min-colors 88))
+			    :background "#382f2f")
+			   (t :background "orange")))
+      '(highlight-changes-delete ((((class color) (min-colors 88))
+				   :background "#916868")
+				  (t :background "red")))
+      '(highlight ((((class color) (min-colors 88) (background light))
+		    :background "darkseagreen2")
+		   (((class color) (min-colors 88) (background dark))
+		    :background "SeaGreen")
+		   (((class color) (min-colors 16) (background light))
+		    :background "darkseagreen2")
+		   (((class color) (min-colors 16) (background dark))
+		    :background "darkolivegreen")
+		   (((class color) (min-colors 8))
+		    :background "green" :foreground "black")
+		   (t :inverse-video t)))
+      '(region ((((class color) (min-colors 88) (background dark))
+		 :background "#333" :foreground nil)
+		(((class color) (min-colors 88) (background light))
+		 :background "lightgoldenrod2" :foreground nil)
+		(((class color) (min-colors 16) (background dark))
+		 :background "blue3" :foreground nil)
+		(((class color) (min-colors 16) (background light))
+		 :background "lightgoldenrod2" :foreground nil)
+		(((class color) (min-colors 8))
+		 :background "cyan" :foreground "white")
+		(((type tty) (class mono)) :inverse-video t)
+		(t :background "gray")))
+      '(hl-line ((((class color) (min-colors 88) (background light))
+		  :background "darkseagreen2")
+		 (((class color) (min-colors 88) (background dark))
+		  :background "#123")
+		 (((class color) (min-colors 16) (background light))
+		  :background "darkseagreen2")
+		 (((background dark)) :background "blue")
+		 (t :inherit highlight)))
+      '(cursor ((((class color)) :background "DeepSkyBlue")
+		(((background light)) :background "black")
+		(t :background "white")))
+      '(show-paren-match-face
+	((((class color) (background dark)) :background "DarkRed")
+	 (((class color) (background light)) :background "red")
+	 (((background dark)) :background "grey50")
+	 (t :background "gray"))))
+     (when-library
+      "tabbar"
+      (custom-set-faces
+       '(tabbar-default ((t :inherit variable-pitch)))
+       '(tabbar-selected
+	 ((default :inherit tabbar-default)
+	  (((class color) (min-colors 88) (background light))
+	   :background "white" :foreground "DeepSkyblue"
+	   :box (:line-width 1 :color "LightGray"))
+	  (((class color) (min-colors 88) (background dark))
+	   :background "black" :foreground "DeepSkyBlue"
+	   :box (:line-width 1 :color "black"))
+	  (((background dark)) :background "black" :foreground "white")
+	  (t :background "white" :foreground "cyan")))
+       '(tabbar-unselected
+	 ((default :inherit tabbar-default)
+	  (((class color) (min-colors 88) (background light))
+	   :background "gray" :foreground "DarkSlateGray"
+	   :box (:line-width 2 :color "white"))
+	  (((class color) (min-colors 88) (background dark))
+	   :background "#222" :foreground "DarkCyan"
+	   :box (:line-width 2 :color "#090909"))
+	  (((background dark)) :background "white" :foreground "black")
+	  (t :background "black" :foreground "cyan")))
+       '(tabbar-button
+	 ((default (:inherit tabbar-default))
+	  (((background dark)) :background "black" :foreground "#0c0"
+	   :box (:line-width 2 :color "black"))
+	  (t :background "white" :foreground "black"
+	     :box (:line-width 2 :color "LightGray"))))
+       '(tabbar-separator ((t :background "#111")))))
+     (when-library
+      "sml-modeline"
+      (custom-set-faces
+       '(sml-modeline-vis-face ((default (:inherit hl-line))
+				(((class color) (min-colors 88))
+				 :foreground "green"
+				 :box (:line-width 1))
+				(t :foreground "SeaGreen")))
+       '(sml-modeline-end-face ((t :inherit default
+				   :box (:line-width 1))))))))
+
 (defmacro opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
 If DEC is t, decrease transparency;
@@ -248,128 +371,6 @@ otherwise increase it in 5%-steps"
     (my-non-fullscreen)))
 
 ;;; themes
-(defun faces-generic ()
-  "My prefered faces which differ from default."
-  (custom-set-faces
-   '(font-lock-comment-face
-     ((((class grayscale) (background light))
-       :foreground "DimGray" :weight bold :slant italic)
-      (((class grayscale) (background dark))
-       :foreground "LightGray" :weight bold :slant italic)
-      (((class color) (min-colors 88) (background light))
-       :foreground "Firebrick")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "chocolate1")
-      (((class color) (background light))
-       :foreground "red")
-      (((class color) (background dark))
-       :foreground "red1")
-      (t :weight bold :slant italic)))
-   '(mode-line
-     ((default :box (:line-width 1 :style "none")
-  	:width condensed :height 90 :family "neep")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "black" :background "DarkSlateGray")
-      (((class color) (min-colors 88) (background light))
-       :foreground "white" :background "DarkSlateGray")
-      (t :background "green")))
-   '(mode-line-inactive
-     ((default :box (:line-width 1 :style "none")
-  	:width condensed :height 80 :family "neep")
-      (((class color) (min-colors 88))
-       :foreground "DarkSlateGray" :background "honeydew4")
-      (t :foreground "white" :background "black")))
-   '(mode-line-buffer-id
-     ((default :inherit mode-line :foreground "black")
-      (((class color) (min-colors 88))
-       :background "CadetBlue" :weight extrabold)
-      (t :background "green" :weight normal)))
-   '(highlight-changes ((((class color) (min-colors 88))
-  			 :background "#382f2f")
-  			(t :background "orange")))
-   '(highlight-changes-delete ((((class color) (min-colors 88))
-  				:background "#916868")
-  			       (t :background "red")))
-   '(highlight ((((class color) (min-colors 88) (background light))
-  		 :background "darkseagreen2")
-  		(((class color) (min-colors 88) (background dark))
-  		 :background "SeaGreen")
-  		(((class color) (min-colors 16) (background light))
-  		 :background "darkseagreen2")
-  		(((class color) (min-colors 16) (background dark))
-  		 :background "darkolivegreen")
-  		(((class color) (min-colors 8))
-  		 :background "green" :foreground "black")
-  		(t :inverse-video t)))
-   '(region ((((class color) (min-colors 88) (background dark))
-  	      :background "#333" :foreground nil)
-  	     (((class color) (min-colors 88) (background light))
-  	      :background "lightgoldenrod2" :foreground nil)
-  	     (((class color) (min-colors 16) (background dark))
-  	      :background "blue3" :foreground nil)
-  	     (((class color) (min-colors 16) (background light))
-  	      :background "lightgoldenrod2" :foreground nil)
-  	     (((class color) (min-colors 8))
-  	      :background "cyan" :foreground "white")
-  	     (((type tty) (class mono)) :inverse-video t)
-  	     (t :background "gray")))
-   '(hl-line ((((class color) (min-colors 88) (background light))
-  	       :background "darkseagreen2")
-  	      (((class color) (min-colors 88) (background dark))
-  	       :background "#123")
-  	      (((class color) (min-colors 16) (background light))
-  	       :background "darkseagreen2")
-  	      (((background dark)) :background "blue")
-  	      (t :inherit highlight)))
-   '(cursor ((((class color)) :background "DeepSkyBlue")
-  	     (((background light)) :background "black")
-  	     (t :background "white")))
-   '(show-paren-match-face
-     ((((class color) (background dark)) :background "DarkRed")
-      (((class color) (background light)) :background "red")
-      (((background dark)) :background "grey50")
-      (t :background "gray"))))
-  (when-library
-   "tabbar"
-   (custom-set-faces
-    '(tabbar-default ((t :inherit variable-pitch)))
-    '(tabbar-selected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background light))
-  	:background "white" :foreground "DeepSkyblue"
-  	:box (:line-width 1 :color "LightGray"))
-       (((class color) (min-colors 88) (background dark))
-  	:background "black" :foreground "DeepSkyBlue"
-  	:box (:line-width 1 :color "black"))
-       (((background dark)) :background "black" :foreground "white")
-       (t :background "white" :foreground "cyan")))
-    '(tabbar-unselected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background light))
-  	:background "gray" :foreground "DarkSlateGray"
-  	:box (:line-width 2 :color "white"))
-       (((class color) (min-colors 88) (background dark))
-  	:background "#222" :foreground "DarkCyan"
-  	:box (:line-width 2 :color "#090909"))
-       (((background dark)) :background "white" :foreground "black")
-       (t :background "black" :foreground "cyan")))
-    '(tabbar-button
-      ((default (:inherit tabbar-default))
-       (((background dark)) :background "black" :foreground "#0c0"
-  	:box (:line-width 2 :color "black"))
-       (t :background "white" :foreground "black"
-  	  :box (:line-width 2 :color "LightGray"))))
-    '(tabbar-separator ((t :background "#111")))))
-  (when-library
-   "sml-modeline"
-   (custom-set-faces
-    '(sml-modeline-vis-face ((default (:inherit hl-line))
-  			     (((class color) (min-colors 88))
-  			      :foreground "green"
-  			      :box (:line-width 1))
-  			     (t :foreground "SeaGreen")))
-    '(sml-modeline-end-face ((t :inherit default
-  				:box (:line-width 1)))))) )
 
 (defun switch-faces (light)
   "Set dark faces.  With prefix, LIGHT."
@@ -445,7 +446,7 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
 
 (defun reset-frame-faces (frame)
   "Execute once in the first graphical new FRAME.
-RESET SOME FACES which --daemon doesn't quite set.
+Reset some faces which --daemon doesn't quite set.
 Remove hook when done and add `my-colours-set' instead."
   (select-frame frame)
   (cond ((window-system frame)
@@ -1228,30 +1229,33 @@ Make links point to local files."
    (define-key qi-mode-map (kbd "RET") 'autopairs-ret)))
 
 ;;; Set up SLIME
-(when (load "slime" t)
-  (slime-setup (win-or-nix
-		'(slime-fancy slime-banner slime-indentation)
-		'(slime-fancy slime-banner slime-indentation
-			      slime-asdf)))
-  (slime-autodoc-mode)
+(when (load "slime-autoloads" t)
+  (eval-after-load "slime"
+    '(progn
+       (slime-setup (win-or-nix
+		     '(slime-fancy slime-banner slime-indentation)
+		     '(slime-fancy slime-banner slime-indentation
+				   slime-asdf)))
 
-  (push (list (win-or-nix 'clisp 'sbcl)
-	      (split-string inferior-lisp-program " +"))
-	slime-lisp-implementations)
+       (slime-autodoc-mode)
 
-  (setq slime-default-lisp (win-or-nix 'clisp 'sbcl)
-	slime-complete-symbol*-fancy t
-	slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	common-lisp-hyperspec-root
-	(concat "file://" +home-path+ "Documents/HyperSpec/")
-	slime-net-coding-system
-	(find-if 'slime-find-coding-system
-		 '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
-			      binary)))
+       (push (list (win-or-nix 'clisp 'sbcl)
+		   (split-string inferior-lisp-program " +"))
+	     slime-lisp-implementations)
 
-  (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-  (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
-  (define-key slime-mode-map "\M-g" 'slime-complete-symbol))
+       (setq slime-default-lisp (win-or-nix 'clisp 'sbcl)
+	     slime-complete-symbol*-fancy t
+	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
+	     common-lisp-hyperspec-root
+	     (concat "file://" +home-path+ "Documents/HyperSpec/")
+	     slime-net-coding-system
+	     (find-if 'slime-find-coding-system
+		      '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+				   binary)))
+
+       (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
+       (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
+       (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
 
 ;;; Clojure
 (when-library
@@ -1263,101 +1267,109 @@ Make links point to local files."
 
  (when-library
   ("slime" "swank-clojure")
-  (when (load "swank-clojure" t)
-    ;; (autoload 'swank-clojure-init "swank-clojure"
-    ;;   "Initialize clojure for swank")
-    ;; (autoload 'swank-clojure-cmd "swank-clojure"
-    ;;   "Command to start clojure")
-    ;; (autoload 'swank-clojure-slime-mode-hook "swank-clojure"
-    ;;   "Swank to Slime hook")
-    ;; (autoload 'slime-read-interactive-args "swank-clojure"
-    ;;   "Add clojure to slime implementations")
-    ;; (autoload 'swank-clojure-project "swank-clojure"
-    ;;   "Invoke clojure with a project path")
+  (autoload 'swank-clojure-init "swank-clojure"
+    "Initialize clojure for swank")
+  (autoload 'swank-clojure-cmd "swank-clojure"
+    "Command to start clojure")
+  (autoload 'swank-clojure-slime-mode-hook "swank-clojure"
+    "Swank to Slime hook")
+  (autoload 'slime-read-interactive-args "swank-clojure"
+    "Add clojure to slime implementations")
+  (autoload 'swank-clojure-project "swank-clojure"
+    "Invoke clojure with a project path")
 
-    (setq swank-clojure-extra-vm-args '("-server"))
-    (swank-clojure-reset-implementation)
+  (eval-after-load "slime"
+    '(progn
+       (setq
+	swank-clojure-extra-vm-args
+	'("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"
+	  "-server" "-Xdebug"))
+       (aput 'slime-lisp-implementations 'clojure
+	     (list (swank-clojure-cmd) :init 'swank-clojure-init))))
 
+  (eval-after-load "swank-clojure"
+    '(progn
 ;;; Online JavaDoc to Slime
-    (defun slime-java-describe (symbol-name)
-      "Get details on Java class/instance at point SYMBOL-NAME."
-      (interactive
-       (list (slime-read-symbol-name "Java Class/instance: ")))
-      (or symbol-name (error "No symbol given"))
-      (with-current-buffer (slime-output-buffer)
-	(or (eq (current-buffer) (window-buffer))
-	    (pop-to-buffer (current-buffer) t))
-	(goto-char (point-max))
-	(insert (concat "(show " symbol-name ")"))
-	(when symbol-name
-	  (slime-repl-return)
-	  (other-window 1))))
+       (defun slime-java-describe (symbol-name)
+	 "Get details on Java class/instance at point SYMBOL-NAME."
+	 (interactive
+	  (list (slime-read-symbol-name "Java Class/instance: ")))
+	 (or symbol-name (error "No symbol given"))
+	 (with-current-buffer (slime-output-buffer)
+	   (or (eq (current-buffer) (window-buffer))
+	       (pop-to-buffer (current-buffer) t))
+	   (goto-char (point-max))
+	   (insert (concat "(show " symbol-name ")"))
+	   (when symbol-name
+	     (slime-repl-return)
+	     (other-window 1))))
 
-    (defun slime-javadoc (symbol-name)
-      "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
-      (interactive
-       (list (slime-read-symbol-name "JavaDoc info for: ")))
-      (or symbol-name (error "No symbol given"))
-      (set-buffer (slime-output-buffer))
-      (or (eq (current-buffer) (window-buffer))
-	  (pop-to-buffer (current-buffer) t))
-      (goto-char (point-max))
-      (insert (concat "(javadoc " symbol-name ")"))
-      (when symbol-name
-	(slime-repl-return)
-	(other-window 1)))
+       (defun slime-javadoc (symbol-name)
+	 "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
+	 (interactive
+	  (list (slime-read-symbol-name "JavaDoc info for: ")))
+	 (or symbol-name (error "No symbol given"))
+	 (set-buffer (slime-output-buffer))
+	 (or (eq (current-buffer) (window-buffer))
+	     (pop-to-buffer (current-buffer) t))
+	 (goto-char (point-max))
+	 (insert (concat "(javadoc " symbol-name ")"))
+	 (when symbol-name
+	   (slime-repl-return)
+	   (other-window 1)))
 
 ;;; Local JavaDoc to Slime
-    (defconst +slime-browse-local-javadoc-root+
-      (concat (win-or-nix (concat +home-path+ "Documents")
-			  "/usr/share")
-	      "/javadoc/java-1.6.0-openjdk")
-      "Path to javadoc.")
+       (defconst +slime-browse-local-javadoc-root+
+	 (concat (win-or-nix (concat +home-path+ "Documents")
+			     "/usr/share")
+		 "/javadoc/java-1.6.0-openjdk")
+	 "Path to javadoc.")
 
-    (defun slime-browse-local-javadoc (ci-name)
-      "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
-      (interactive
-       (list (slime-read-symbol-name "Class/Interface name: ")))
-      (or ci-name (error "No name given"))
-      (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-	    (path (concat (expand-file-name
-			   +slime-browse-local-javadoc-root+)
-			  "/api/")))
-	(with-temp-buffer
-	  (insert-file-contents
-	   (concat path "allclasses-noframe.html"))
-	  (let ((l (delq nil
-			 (mapcar (lambda (rgx)
-				   (let* ((r (concat
-					      "\\.?\\(" rgx
-					      "[^./]+\\)[^.]*\\.?$"))
-					  (n (if (string-match r name)
-						 (match-string 1 name)
-					       name)))
-				     (if (re-search-forward
-					  (concat "<A HREF=\"\\(.+\\)\" +.*>"
-						  n "<.*/A>")
-					  nil t)
-					 (match-string 1)
-				       nil)))
-				 '("[^.]+\\." "")))))
-	    (if l
-		(browse-url (concat "file://" path (car l)))
-	      (error (concat "Not found: " ci-name)))))))
+       (defun slime-browse-local-javadoc (ci-name)
+	 "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
+	 (interactive
+	  (list (slime-read-symbol-name "Class/Interface name: ")))
+	 (or ci-name (error "No name given"))
+	 (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+	       (path (concat (expand-file-name
+			      +slime-browse-local-javadoc-root+)
+			     "/api/")))
+	   (with-temp-buffer
+	     (insert-file-contents
+	      (concat path "allclasses-noframe.html"))
+	     (let ((l (delq
+		       nil
+		       (mapcar (lambda (rgx)
+				 (let* ((r (concat
+					    "\\.?\\(" rgx
+					    "[^./]+\\)[^.]*\\.?$"))
+					(n (if (string-match r name)
+					       (match-string 1 name)
+					     name)))
+				   (if (re-search-forward
+					(concat
+					 "<A HREF=\"\\(.+\\)\" +.*>"
+					 n "<.*/A>")
+					nil t)
+				       (match-string 1)
+				     nil)))
+			       '("[^.]+\\." "")))))
+	       (if l (browse-url (concat "file://" path (car l)))
+		 (error (concat "Not found: " ci-name)))))))
 
-    (add-hook 'slime-connected-hook
-	      (lambda ()
-		(slime-redirect-inferior-output)
-		(define-keys slime-mode-map
-		  "\C-cd" 'slime-java-describe
-		  "\C-cD" 'slime-javadoc)
-		(define-keys slime-repl-mode-map
-		  "\C-cd" 'slime-java-describe
-		  "\C-cD" 'slime-javadoc)
-		(define-key slime-mode-map "\C-cb"
-		  'slime-browse-local-javadoc)
-		(define-key slime-repl-mode-map "\C-cb"
-		  'slime-browse-local-javadoc))))))
+       (add-hook 'slime-connected-hook
+		 (lambda ()
+		   (slime-redirect-inferior-output)
+		   (define-keys slime-mode-map
+		     "\C-cd" 'slime-java-describe
+		     "\C-cD" 'slime-javadoc)
+		   (define-keys slime-repl-mode-map
+		     "\C-cd" 'slime-java-describe
+		     "\C-cD" 'slime-javadoc)
+		   (define-key slime-mode-map "\C-cb"
+		     'slime-browse-local-javadoc)
+		   (define-key slime-repl-mode-map "\C-cb"
+		     'slime-browse-local-javadoc)))))))
 
 ;;; Scheme
 (when-library
