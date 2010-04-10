@@ -1,5 +1,6 @@
 This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
-windows with GNU/Emacs 23.0.95 onwards.  Most things are shamelessly
+windows with GNU/Emacs 23.0.95 onwards.  Main target is GNU/Linux with
+trunk version of GNU/Emacs though.  Many things are shamelessly
 adopted from other people (thanks emacswiki).  It is compilable (must
 be recompiled after changing the set of mentioned extensions in the
 load-path) and supposed to be tolerant to missing packages without
