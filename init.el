@@ -4,8 +4,8 @@
 ;; Utilized extensions:
 ;;  Anything related:
 ;;   Anything http://www.emacswiki.org/emacs/Anything
-;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
+;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 ;;  Packages related:
 ;;   ELPA http://tromey.com/elpa
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
@@ -24,6 +24,9 @@
 ;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
+;;   Yasnippet http://www.emacswiki.org/emacs/Yasnippet
+;;   gtags http://www.gnu.org/software/global
+;;   ECB http://ecb.sourceforge.net
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
@@ -45,7 +48,6 @@
 ;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-;;   gtags http://www.gnu.org/software/global
 ;;   traverselisp http://mercurial.intuxication.org/hg/traverselisp
 ;;   Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 ;;   EMMS http://www.gnu.org/software/emms
@@ -175,144 +177,15 @@ KEYS is alternating list of key-value."
 			 '(highlight-parentheses-mode +1))
 	  ,(when-library "paredit" '(paredit-mode +1))))
 
-(defmacro faces-generic ()
-  "My prefered faces which differ from default."
-  `(progn
-     (custom-set-faces
-      '(font-lock-comment-face
-	((((class grayscale) (background light))
-	  :foreground "DimGray" :weight bold :slant italic)
-	 (((class grayscale) (background dark))
-	  :foreground "LightGray" :weight bold :slant italic)
-	 (((class color) (min-colors 88) (background light))
-	  :foreground "Firebrick")
-	 (((class color) (min-colors 88) (background dark))
-	  :foreground "chocolate1")
-	 (((class color) (background light)) :foreground "red")
-	 (((class color) (background dark)) :foreground "red1")
-	 (t :weight bold :slant italic)))
-      '(mode-line
-	((default :box (:line-width 1 :style "none")
-	   :width condensed :height 90 :family "neep")
-	 (((class color) (min-colors 88) (background dark))
-	  :foreground "black" :background "DarkSlateGray")
-	 (((class color) (min-colors 88) (background light))
-	  :foreground "white" :background "DarkSlateGray")
-	 (t :background "green")))
-      '(mode-line-inactive
-	((default :box (:line-width 1 :style "none")
-	   :width condensed :height 80 :family "neep")
-	 (((class color) (min-colors 88))
-	  :foreground "DarkSlateGray" :background "honeydew4")
-	 (t :foreground "white" :background "black")))
-      '(mode-line-buffer-id
-	((default :inherit mode-line :foreground "black")
-	 (((class color) (min-colors 88) (background light))
-	  :background "CadetBlue" :weight extrabold)
-	 (((class color) (min-colors 88) (background dark))
-	  :background "honeydew4" :weight extrabold)
-	 (t :background "green" :weight normal)))
-      '(highlight-changes ((((class color) (min-colors 88))
-			    :background "#382f2f")
-			   (t :background "orange")))
-      '(highlight-changes-delete ((((class color) (min-colors 88))
-				   :background "#916868")
-				  (t :background "red")))
-      '(highlight ((((class color) (min-colors 88) (background light))
-		    :background "darkseagreen2")
-		   (((class color) (min-colors 88) (background dark))
-		    :background "SeaGreen")
-		   (((class color) (min-colors 16) (background light))
-		    :background "darkseagreen2")
-		   (((class color) (min-colors 16) (background dark))
-		    :background "darkolivegreen")
-		   (((class color) (min-colors 8))
-		    :background "green" :foreground "black")
-		   (t :inverse-video t)))
-      '(region ((((class color) (min-colors 88) (background dark))
-		 :background "#333" :foreground nil)
-		(((class color) (min-colors 88) (background light))
-		 :background "lightgoldenrod2" :foreground nil)
-		(((class color) (min-colors 16) (background dark))
-		 :background "blue3" :foreground nil)
-		(((class color) (min-colors 16) (background light))
-		 :background "lightgoldenrod2" :foreground nil)
-		(((class color) (min-colors 8))
-		 :background "cyan" :foreground "white")
-		(((type tty) (class mono)) :inverse-video t)
-		(t :background "gray")))
-      '(hl-line ((((class color) (min-colors 88) (background light))
-		  :background "darkseagreen2")
-		 (((class color) (min-colors 88) (background dark))
-		  :background "#123")
-		 (((class color) (min-colors 16) (background light))
-		  :background "darkseagreen2")
-		 (((background dark)) :background "blue")
-		 (t :inherit highlight)))
-      '(cursor ((((class color)) :background "DeepSkyBlue")
-		(((background light)) :background "black")
-		(t :background "white")))
-      '(show-paren-match-face
-	((((class color) (background dark)) :background "DarkRed")
-	 (((class color) (background light)) :background "red")
-	 (((background dark)) :background "grey50")
-	 (t :background "gray"))))
-     ,(when-library
-       "tabbar"
-       '(custom-set-faces
-	 '(tabbar-default ((t :inherit variable-pitch)))
-	 '(tabbar-selected
-	   ((default :inherit tabbar-default)
-	    (((class color) (min-colors 88) (background light))
-	     :background "white" :foreground "DeepSkyblue"
-	     :box (:line-width 1 :color "LightGray"))
-	    (((class color) (min-colors 88) (background dark))
-	     :background "black" :foreground "DeepSkyBlue"
-	     :box (:line-width 1 :color "black"))
-	    (((background dark)) :background "black"
-	     :foreground "white")
-	    (t :background "white" :foreground "cyan")))
-	 '(tabbar-unselected
-	   ((default :inherit tabbar-default)
-	    (((class color) (min-colors 88) (background light))
-	     :background "gray" :foreground "DarkSlateGray"
-	     :box (:line-width 2 :color "white"))
-	    (((class color) (min-colors 88) (background dark))
-	     :background "#222" :foreground "DarkCyan"
-	     :box (:line-width 2 :color "#090909"))
-	    (((background dark)) :background "white"
-	     :foreground "black")
-	    (t :background "black" :foreground "cyan")))
-	 '(tabbar-button
-	   ((default (:inherit tabbar-default))
-	    (((background dark)) :background "black"
-	     :foreground "#0c0"
-	     :box (:line-width 2 :color "black"))
-	    (t :background "white" :foreground "black"
-	       :box (:line-width 2 :color "LightGray"))))
-	 '(tabbar-separator ((t :background "#111")))))
-     ,(when-library
-       "sml-modeline"
-       '(custom-set-faces
-	 '(sml-modeline-vis-face ((default (:inherit hl-line))
-				  (((class color) (min-colors 88))
-				   :foreground "green"
-				   :box (:line-width 1))
-				  (t :foreground "SeaGreen")))
-	 '(sml-modeline-end-face ((t :inherit default
-				     :box (:line-width 1))))))))
-
 (defmacro opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
 If DEC is t, decrease transparency;
 otherwise increase it in 5%-steps"
   `(let* ((oldalpha (or (frame-parameter nil 'alpha) 99))
 	  (newalpha ,(if dec
-			 '(if (<= oldalpha 5)
-			      0
+			 '(if (<= oldalpha 5) 0
 			    (- oldalpha 5))
-		       '(if (>= oldalpha 95)
-			    100
+		       '(if (>= oldalpha 95) 100
 			  (+ oldalpha 5)))))
      (and (>= newalpha frame-alpha-lower-limit)
 	  (<= newalpha 100)
@@ -352,6 +225,132 @@ otherwise increase it in 5%-steps"
 
 ;;; themes
 
+(defun faces-generic ()
+  "My prefered faces which differ from default."
+  (ignore-errors
+   (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
+  (custom-set-faces
+   '(font-lock-comment-face
+     ((((class grayscale) (background light))
+       :foreground "DimGray" :weight bold :slant italic)
+      (((class grayscale) (background dark))
+       :foreground "LightGray" :weight bold :slant italic)
+      (((class color) (min-colors 88) (background light))
+       :foreground "Firebrick")
+      (((class color) (min-colors 88) (background dark))
+       :foreground "chocolate1")
+      (((class color) (background light)) :foreground "red")
+      (((class color) (background dark)) :foreground "red1")
+      (t :weight bold :slant italic)))
+   '(mode-line
+     ((default :box (:line-width 1 :style "none")
+	:width condensed :height 90 :family "neep")
+      (((class color) (min-colors 88) (background dark))
+       :foreground "black" :background "DarkSlateGray")
+      (((class color) (min-colors 88) (background light))
+       :foreground "white" :background "DarkSlateGray")
+      (t :background "green")))
+   '(mode-line-inactive
+     ((default :box (:line-width 1 :style "none")
+	:width condensed :height 80 :family "neep")
+      (((class color) (min-colors 88))
+       :foreground "DarkSlateGray" :background "honeydew4")
+      (t :foreground "white" :background "black")))
+   '(mode-line-buffer-id
+     ((default :inherit mode-line :foreground "black")
+      (((class color) (min-colors 88) (background light))
+       :background "CadetBlue" :weight extrabold)
+      (((class color) (min-colors 88) (background dark))
+       :background "honeydew4" :weight extrabold)
+      (t :background "green" :weight normal)))
+   '(highlight-changes ((((class color) (min-colors 88))
+			 :background "#382f2f")
+			(t :background "orange")))
+   '(highlight-changes-delete ((((class color) (min-colors 88))
+				:background "#916868")
+			       (t :background "red")))
+   '(highlight ((((class color) (min-colors 88) (background light))
+		 :background "darkseagreen2")
+		(((class color) (min-colors 88) (background dark))
+		 :background "SeaGreen")
+		(((class color) (min-colors 16) (background light))
+		 :background "darkseagreen2")
+		(((class color) (min-colors 16) (background dark))
+		 :background "darkolivegreen")
+		(((class color) (min-colors 8))
+		 :background "green" :foreground "black")
+		(t :inverse-video t)))
+   '(region ((((class color) (min-colors 88) (background dark))
+	      :background "#333" :foreground nil)
+	     (((class color) (min-colors 88) (background light))
+	      :background "lightgoldenrod2" :foreground nil)
+	     (((class color) (min-colors 16) (background dark))
+	      :background "blue3" :foreground nil)
+	     (((class color) (min-colors 16) (background light))
+	      :background "lightgoldenrod2" :foreground nil)
+	     (((class color) (min-colors 8))
+	      :background "cyan" :foreground "white")
+	     (((type tty) (class mono)) :inverse-video t)
+	     (t :background "gray")))
+   '(hl-line ((((class color) (min-colors 88) (background light))
+	       :background "darkseagreen2")
+	      (((class color) (min-colors 88) (background dark))
+	       :background "#123")
+	      (((class color) (min-colors 16) (background light))
+	       :background "darkseagreen2")
+	      (((background dark)) :background "blue")
+	      (t :inherit highlight)))
+   '(cursor ((((class color)) :background "DeepSkyBlue")
+	     (((background light)) :background "black")
+	     (t :background "white")))
+   '(show-paren-match-face
+     ((((class color) (background dark)) :background "DarkRed")
+      (((class color) (background light)) :background "red")
+      (((background dark)) :background "grey50")
+      (t :background "gray"))))
+  (when-library
+   "tabbar"
+   (custom-set-faces
+    '(tabbar-default ((t :inherit variable-pitch)))
+    '(tabbar-selected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background light))
+	:background "white" :foreground "DeepSkyblue"
+	:box (:line-width 1 :color "LightGray"))
+       (((class color) (min-colors 88) (background dark))
+	:background "black" :foreground "DeepSkyBlue"
+	:box (:line-width 1 :color "black"))
+       (((background dark)) :background "black"	:foreground "white")
+       (t :background "white" :foreground "cyan")))
+    '(tabbar-unselected
+      ((default :inherit tabbar-default)
+       (((class color) (min-colors 88) (background light))
+	:background "gray" :foreground "DarkSlateGray"
+	:box (:line-width 2 :color "white"))
+       (((class color) (min-colors 88) (background dark))
+	:background "#222" :foreground "DarkCyan"
+	:box (:line-width 2 :color "#090909"))
+       (((background dark)) :background "white" :foreground "black")
+       (t :background "black" :foreground "cyan")))
+    '(tabbar-button
+      ((default (:inherit tabbar-default))
+       (((background dark)) :background "black"
+	:foreground "#0c0"
+	:box (:line-width 2 :color "black"))
+       (t :background "white" :foreground "black"
+	  :box (:line-width 2 :color "LightGray"))))
+    '(tabbar-separator ((t :background "#111")))))
+  (when-library
+   "sml-modeline"
+   (custom-set-faces
+    '(sml-modeline-vis-face ((default (:inherit hl-line))
+			     (((class color) (min-colors 88))
+			      :foreground "green"
+			      :box (:line-width 1))
+			     (t :foreground "SeaGreen")))
+    '(sml-modeline-end-face ((t :inherit default
+				:box (:line-width 1)))))))
+
 (defun switch-faces (light)
   "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
@@ -364,23 +363,29 @@ otherwise increase it in 5%-steps"
 		(((class color) (min-colors 88))
 		 (:foreground "wheat"))
 		(t (:foreground "white"))))))
-  (ignore-errors
-    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
-  (let ((frame (selected-frame)))
-    (modify-frame-parameters frame '((alpha . 99)))
-    (set-frame-height frame 50))
-  (faces-generic))
+  ;; region has to be reset to change right away
+  (custom-set-faces
+   '(region ((((class color) (min-colors 88) (background dark))
+	      :background "#333" :foreground nil)
+	     (((class color) (min-colors 88) (background light))
+	      :background "lightgoldenrod2" :foreground nil)
+	     (((class color) (min-colors 16) (background dark))
+	      :background "blue3" :foreground nil)
+	     (((class color) (min-colors 16) (background light))
+	      :background "lightgoldenrod2" :foreground nil)
+	     (((class color) (min-colors 8))
+	      :background "cyan" :foreground "white")
+	     (((type tty) (class mono)) :inverse-video t)
+	     (t :background "gray")))))
 
 (defun solar-time-to-24 (time-str)
-  (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)"
-		    time-str)
+  "Convert solar type string TIME-STR to 24 hour format."
+  (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)" time-str)
       (format "%02d:%s"
 	      (if (equal (match-string 3 time-str) "p")
-		  (+ (string-to-number
-		      (match-string 1 time-str))
+		  (+ (string-to-number (match-string 1 time-str))
 		     12)
-		(string-to-number
-		 (match-string 1 time-str)))
+		(string-to-number (match-string 1 time-str)))
 	      (match-string 2 time-str))
     time-str))
 
@@ -431,6 +436,10 @@ Remove hook when done and add `my-colours-set' instead."
   (select-frame frame)
   (cond ((window-system frame)
 	 (my-colours-set)
+	 (let ((frame (selected-frame)))
+	   (modify-frame-parameters frame '((alpha . 99)))
+	   (set-frame-height frame 50))
+	 (faces-generic)
 	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
@@ -467,10 +476,6 @@ Remove hook when done and add `my-colours-set' instead."
      "http://video.google.com/videosearch?q=\\1")
     ("^gg:? +\\(.*\\)" .		; Google Groups
      "http://groups.google.com/groups?q=\\1")
-    ("^gdir:? +\\(.*\\)" .		; Google Directory
-     "http://www.google.com/search?&sa=N&cat=gwd/Top&tab=gd&q=\\1")
-    ("^gn:? +\\(.*\\)" .		; Google News
-     "http://news.google.com/news?sa=N&tab=dn&q=\\1")
     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Google Translate URL
      "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Translate Text
@@ -479,6 +484,8 @@ Remove hook when done and add `my-colours-set' instead."
      "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
     ("^w:? +\\(.*\\)" .			; Wikipedia en
      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
+    ("^bgw:? +\\(.*\\)" .		; Wikipedia bg
+     "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
     ("^yt:? +\\(.*\\)" .		; YouTube
      "http://www.youtube.com/results?search_query=\\1")
     ("^/\\.:? +\\(.*\\)" .		; Slashdot search
@@ -502,11 +509,11 @@ Remove hook when done and add `my-colours-set' instead."
      "http://www.FreshPorts.org/search.php?query=\\1&num=20"))
   "Search engines and sites.")
 
-(defun browse-apropos-url (text &optional new-window)
-  "Search for TEXT by some search engine in NEW-WINDOW if needed."
-  (interactive (if (require 'browse-url nil t)
-		   (browse-url-interactive-arg "Location: ")
-		 (read-string "Location: ")))
+(autoload 'browse-url-interactive-arg "browse-url")
+
+(defun browse-apropos-url (text &optional no-new-window)
+  "Search for TEXT by some search engine in new tab if NO-NEW-WINDOW."
+  (interactive (browse-url-interactive-arg "Location: "))
   (let ((text (replace-regexp-in-string
 	       "^ *\\| *$" ""
 	       (replace-regexp-in-string "[ \t\n]+" " " text)))
@@ -517,7 +524,7 @@ Remove hook when done and add `my-colours-set' instead."
 				  (setq apropo-reg a)))
 			      text)))
       (browse-url (replace-regexp-in-string apropo-reg url text)
-      		  new-window))))
+      		  no-new-window))))
 
 (defconst +skeleton-pair-alist+
   '((?\( _ ?\)) (?[  _ ?]) (?{  _ ?}) (?\" _ ?\"))
@@ -542,40 +549,37 @@ If ARG, stay on the original line."
 ;;;; mode a bit emacs
 
 (custom-set-variables
- '(display-time-day-and-date t)
- '(display-time-24hr-format t)
- '(display-time-mode t)
  '(column-number-mode t)
- '(size-indication-mode t)
- '(display-battery-mode t)
- '(initial-major-mode 'org-mode)
- '(default-major-mode 'org-mode)
- '(word-wrap t)
- '(inhibit-startup-screen t)
- '(initial-scratch-message nil)
- '(save-place t nil (saveplace))
- '(show-paren-mode t)
- '(show-paren-delay 0)
- '(show-paren-style 'parenthesis)
- '(transient-mark-mode t)
+ '(completion-ignore-case t t)
  '(delete-selection-mode t)
- '(global-font-lock-mode t)
+ '(display-battery-mode t)
+ '(display-time-24hr-format t)
+ '(display-time-day-and-date t)
+ '(display-time-mode t)
  '(font-lock-maximum-decoration t)
- '(inhibit-startup-message t)
- '(frame-title-format "emacs - %b (%f)") ; Format the title-bar
- '(mouse-wheel-mode t)		   ; Make the mouse wheel scroll Emacs
- '(next-line-add-newlines nil)
- '(global-linum-mode 1)			; show line numbers
- ;;'(visible-bell t)		 ; Flash instead of that annoying bell
- '(icomplete-prospects-height 2)	; don't spam my minibuffer
- '(completion-ignore-case t)
- '(read-file-name-completion-ignore-case t)
- '(search-highlight t)
- '(query-replace-highlight t)
- '(require-final-newline t)
- '(tool-bar-mode nil)
+ '(frame-title-format "emacs - %b (%f)" t)
+ '(global-font-lock-mode t)
+ '(global-linum-mode 1)
+ '(icomplete-prospects-height 2)
+ '(inhibit-startup-screen t)
+ '(initial-major-mode 'org-mode)
+ '(initial-scratch-message nil)
+ '(major-mode 'org-mode)
  '(menu-bar-mode nil)
- '(transient-mark-mode t))
+ '(mouse-wheel-mode t)
+ '(next-line-add-newlines nil)
+ '(query-replace-highlight t)
+ '(read-file-name-completion-ignore-case t)
+ '(require-final-newline t)
+ '(save-place t nil (saveplace))
+ '(search-highlight t)
+ '(show-paren-delay 0)
+ '(show-paren-mode t)
+ '(show-paren-style 'parenthesis)
+ '(size-indication-mode t)
+ '(tool-bar-mode nil)
+ '(transient-mark-mode t)
+ '(word-wrap t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -586,17 +590,17 @@ If ARG, stay on the original line."
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
 ;; Solar info
-(when-library "solar"
-	      (when (load "solar" t)	; Sofia coordinates
-		(setq calendar-latitude +42.68
-		      calendar-longitude +23.31)))
+(when (load "solar" t)			; Sofia coordinates
+  (setq calendar-latitude +42.68
+	calendar-longitude +23.31))
 
 (if (window-system)
     (my-colours-set)
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
-  (add-hook 'after-make-frame-functions 'reset-frame-faces)
-  (faces-generic))
+  (add-hook 'after-make-frame-functions 'reset-frame-faces))
+
+(faces-generic)
 
 (win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
 
@@ -629,8 +633,9 @@ If ARG, stay on the original line."
 (set-selection-coding-system 'utf-8)
 (set-language-environment "UTF-8")
 (prefer-coding-system 'utf-8)
-(global-set-key (kbd "C-s-k")	  ; revert buffer encoding to cyrillic
-		(lambda () (interactive)
+(global-set-key (kbd "C-s-k")
+		(lambda () "Re-open file with cyrillic encoding."
+		  (interactive)
 		  (revert-buffer-with-coding-system 'cp1251)))
 
 ;;; ispell
@@ -664,14 +669,12 @@ If ARG, stay on the original line."
 (when-library "proced" (global-set-key (kbd "C-M-`") 'proced))
 
 ;; Ido
-(when-library
- "ido"
- (when (require 'ido nil t)
-   (ido-mode t)
-   (setq ido-enable-flex-matching t)
+(when (require 'ido nil t)
+  (ido-mode t)
+  (setq ido-enable-flex-matching t)
 
-   (defvar *ido-enable-replace-completing-read* t
-     "If t, use ido-completing-read instead of completing-read if possible.
+  (defvar *ido-enable-replace-completing-read* t
+    "If t, use ido-completing-read instead of completing-read if possible.
 Set it to nil using let in around-advice for functions where the
 original completing-read is required.  For example, if a function
 foo absolutely must use the original completing-read, define some
@@ -679,24 +682,24 @@ advice like this:
  (defadvice foo (around original-completing-read-only activate)
    (let (ido-enable-replace-completing-read) ad-do-it))")
 
-   (defadvice completing-read (around use-ido-when-possible activate)
-     "Replace completing-read wherever possible, unless directed otherwise."
-     (if (or (not *ido-enable-replace-completing-read*)
-	     (boundp 'ido-cur-list)) ; Avoid infinite loop
-	 ad-do-it		     ; from ido calling this
-       (let ((allcomp (all-completions "" collection predicate)))
-	 (if allcomp
-	     (setq ad-return-value
-		   (ido-completing-read prompt allcomp nil
-					require-match initial-input
-					hist def))
-	   ad-do-it))))))
+  (defadvice completing-read (around use-ido-when-possible
+				     activate compile)
+    "Replace completing-read wherever possible, unless directed otherwise."
+    (if (or (not *ido-enable-replace-completing-read*)
+	    (boundp 'ido-cur-list))	; Avoid infinite loop
+	ad-do-it			; from ido calling this
+      (let ((allcomp (all-completions "" collection predicate)))
+	(if allcomp
+	    (setq ad-return-value
+		  (ido-completing-read prompt allcomp nil
+				       require-match initial-input
+				       hist def))
+	  ad-do-it)))))
 
 ;; don't count on same named files, rather show path difference
-(when-library "uniquify"
-	      (when (require 'uniquify nil t)
-		(setq uniquify-buffer-name-style 'post-forward
-		      uniquify-separator ":")))
+(when (require 'uniquify nil t)
+  (setq uniquify-buffer-name-style 'post-forward
+	uniquify-separator ":"))
 
 ;;; CUA rectangle action
 (setq cua-enable-cua-keys nil)		; only for rectangles
@@ -753,13 +756,12 @@ advice like this:
      (list (line-beginning-position) (line-beginning-position 2)))))
 
 ;;; recentf
-(when-library "recentf"
-	      (when (require 'recentf nil t) ; save recently used files
-		(setq recentf-max-saved-items 100 ; max save 100
-		      recentf-save-file (concat +home-path+
-						".emacs.d/recentf")
-		      recentf-max-menu-items 15) ; max 15 in menu
-		(recentf-mode t)))		 ; turn it on
+(when (require 'recentf nil t)		; save recently used files
+  (setq recentf-max-saved-items 100	; max save 100
+	recentf-save-file (concat +home-path+
+				  ".emacs.d/recentf")
+	recentf-max-menu-items 15)	; max 15 in menu
+  (recentf-mode t))			; turn it on
 
 ;;; backups
 (setq make-backup-files t		; do make backups
@@ -779,7 +781,6 @@ advice like this:
 
 (mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
 (when-library "icomplete" (icomplete-mode t)) ; completion in minibuffer
-(partial-completion-mode t)	  ; be smart with completion
 
 (when (fboundp 'file-name-shadow-mode)	; emacs22+
   (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
@@ -924,7 +925,7 @@ advice like this:
       ;; run (gnus-demon-init) to track emails
       (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)))
 
- (when-library "shimbun"
+ (when-library "nnshimbun"
 	       (eval-after-load "gnus-group"
 		 '(define-key gnus-group-mode-map "Gn"
 		    'gnus-group-make-shimbun-group))))
@@ -934,95 +935,91 @@ advice like this:
 ;;;; external extensions
 
 ;;; ELPA
-(when-library "package"
-	      (when (load "package" t) (package-initialize)))
+(when (load "package" t) (package-initialize))
 
 ;;; sml-modeline
-(when-library "sml-modeline"
-	      (when (load "sml-modeline" t)
-		(scroll-bar-mode -1)
-		(sml-modeline-mode 1)))
+(when (load "sml-modeline" t)
+  (scroll-bar-mode -1)
+  (sml-modeline-mode 1))
 
 ;;; TabBar
-(when-library
- "tabbar"
- (when (load "tabbar" t)
-   (tabbar-mode)
+(when (load "tabbar" t)
+  (tabbar-mode)
 
-   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
-					       (tab) activate compile)
-     "Attach full file path to help message.
+  (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
+					      (tab) activate compile)
+    "Attach full file path to help message.
 If not a file, attach current directory."
-     (let* ((tab-buffer (tabbar-tab-value tab))
-	    (full-path (buffer-file-name tab-buffer)))
-       (if full-path
-	   (setq ad-return-value (concat full-path "\n"
-					 ad-return-value))
-	 (with-current-buffer tab-buffer
-	   (setq ad-return-value (concat default-directory "\n"
-					 ad-return-value))))))
+    (let* ((tab-buffer (tabbar-tab-value tab))
+	   (full-path (buffer-file-name tab-buffer)))
+      (if full-path
+	  (setq ad-return-value (concat full-path "\n"
+					ad-return-value))
+	(with-current-buffer tab-buffer
+	  (setq ad-return-value (concat default-directory "\n"
+					ad-return-value))))))
 
-   (defadvice tabbar-buffer-groups (around tabbar-groups-extension
-					   activate compile)
-     "Add some rules for grouping tabs to run before original."
-     (cond
-      ((string-match "^*tramp" (buffer-name))
-       (setq ad-return-value (list "Tramp")))
-      ((memq major-mode '(woman-mode completion-list-mode
-				     slime-fuzzy-completions-mode))
-       (setq ad-return-value (list "Help")))
-      ((eq major-mode 'asdf-mode)
-       (setq ad-return-value (list "Lisp")))
-      ((string-match "^emms" (symbol-name major-mode))
-       (setq ad-return-value (list "EMMS")))
-      ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
-       (setq ad-return-value (list "Mail")))
-      ((string-match "^*inferior" (buffer-name))
-       (setq ad-return-value (list "Process")))
-      ((string-match "^*slime" (buffer-name))
-       (setq ad-return-value (list "Slime")))
-      ((memq major-mode '(fundamental-mode org-mode))
-       (setq ad-return-value (list "Common")))
-      (t ad-do-it)))	      ; if none of above applies, run original
+  (defadvice tabbar-buffer-groups (around tabbar-groups-extension
+					  activate compile)
+    "Add some rules for grouping tabs to run before original."
+    (cond
+     ((string-match "^*tramp" (buffer-name))
+      (setq ad-return-value (list "Tramp")))
+     ((memq major-mode '(woman-mode completion-list-mode
+				    slime-fuzzy-completions-mode))
+      (setq ad-return-value (list "Help")))
+     ((eq major-mode 'asdf-mode)
+      (setq ad-return-value (list "Lisp")))
+     ((string-match "^emms" (symbol-name major-mode))
+      (setq ad-return-value (list "EMMS")))
+     ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
+      (setq ad-return-value (list "Mail")))
+     ((string-match "^*inferior" (buffer-name))
+      (setq ad-return-value (list "Process")))
+     ((string-match "^*slime" (buffer-name))
+      (setq ad-return-value (list "Slime")))
+     ((memq major-mode '(fundamental-mode org-mode))
+      (setq ad-return-value (list "Common")))
+     (t ad-do-it)))	      ; if none of above applies, run original
 
-   (eval-when-compile
-     (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
-					&optional do-always)
-       "Create a one-argument interactive function FUN with COMMENT.
+  (eval-when-compile
+    (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
+				       &optional do-always)
+      "Create a one-argument interactive function FUN with COMMENT.
 ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
 DO-ALWAYS is always executed beforehand."
-       `(defun ,fun (arg)
-	  ,comment
-	  (interactive "P")
-	  ,do-always
-	  (if (null arg)
-	      ,on-no-prefix
-	    ,on-prefix))))
+      `(defun ,fun (arg)
+	 ,comment
+	 (interactive "P")
+	 ,do-always
+	 (if (null arg)
+	     ,on-no-prefix
+	   ,on-prefix))))
 
-   (def-interactive-arg tabbar-move-next
-     "Go to next tab. With prefix, next group."
-     (tabbar-forward-tab) (tabbar-forward-group))
-   (def-interactive-arg tabbar-move-prev
-     "Go to previous tab. With prefix, previous group."
-     (tabbar-backward-tab) (tabbar-backward-group))
+  (def-interactive-arg tabbar-move-next
+    "Go to next tab. With prefix, next group."
+    (tabbar-forward-tab) (tabbar-forward-group))
+  (def-interactive-arg tabbar-move-prev
+    "Go to previous tab. With prefix, previous group."
+    (tabbar-backward-tab) (tabbar-backward-group))
 
-   (global-set-key (kbd "C-<tab>") 'tabbar-move-next)
-   (global-set-key [backtab] 'tabbar-move-prev) ; for terminal
-   (global-set-key (win-or-nix (kbd "C-S-<tab>")
-			       (kbd "<C-S-iso-lefttab>"))
-		   'tabbar-move-prev)
+  (global-set-key (kbd "C-<tab>") 'tabbar-move-next)
+  (global-set-key [backtab] 'tabbar-move-prev) ; for terminal
+  (global-set-key (win-or-nix (kbd "C-S-<tab>")
+			      (kbd "<C-S-iso-lefttab>"))
+		  'tabbar-move-prev)
 
-   (when-library
-    "org"
-    (add-hook 'org-load-hook
-	      (lambda () (define-keys org-mode-map
-		      (kbd "C-<tab>") nil
-		      [backtab] nil
-		      (win-or-nix (kbd "C-S-<tab>")
-				  (kbd "<C-S-iso-lefttab>")) nil))))
+  (when-library
+   "org"
+   (add-hook 'org-load-hook
+	     (lambda () (define-keys org-mode-map
+		     (kbd "C-<tab>") nil
+		     [backtab] nil
+		     (win-or-nix (kbd "C-S-<tab>")
+				 (kbd "<C-S-iso-lefttab>")) nil))))
 
-   ;; remove buffer name from modeline as it now becomes redundant
-   (setq-default mode-line-buffer-identification "")))
+  ;; remove buffer name from modeline as it now becomes redundant
+  (setq-default mode-line-buffer-identification ""))
 
 ;; Wget
 (when-library
@@ -1054,30 +1051,39 @@ Make links point to local files."
 			       "--no-check-certificate"))))))))
 
 ;;; Anything
-(when-library "anything-config"
-	      (when (load "anything-config" t)
-		(global-set-key [f5] 'anything)
-		(setq anything-sources
-		      '(anything-c-source-bookmarks
-			anything-c-source-files-in-current-dir+
-			anything-c-source-recentf
-			anything-c-source-locate
-			anything-c-source-emacs-functions-with-abbrevs
-			anything-c-source-emacs-variables
-			anything-c-source-info-elisp
-			anything-c-source-info-pages
-			anything-c-source-man-pages
-			anything-c-source-semantic))
+(when-library
+ "anything"
+ (autoload 'anything "anything" "Select anything.")
+ (global-set-key (kbd "S-M-<f5>") 'anything)
 
-		(when-library "anything-match-plugin"
-			      (load "anything-match-plugin" t))
+ (when-library
+  "anything-config"
+  (autoload 'anything-for-files "anything-config"
+    "Preconfigured `anything' for opening files.")
+  (autoload 'anything-info-at-point "anything-config"
+    "Preconfigured `anything' for searching info at point.")
 
-		(when-library
-		 "anything-etags"
-		 (when (load "anything-etags" t)
-		   (setq anything-sources
-			 (nconc anything-sources
-				'(anything-c-source-etags-select)))))))
+  (global-set-key [f5] 'anything-for-files)
+  (global-set-key (kbd "M-<f5>") 'anything-info-at-point)
+
+  (eval-after-load "anything"
+    '(when (require 'anything-config nil t)
+       (setq anything-sources
+	     '(anything-c-source-emacs-functions-with-abbrevs
+	       anything-c-source-emacs-variables
+	       anything-c-source-man-pages)))))
+
+ (when-library "anything-match-plugin"
+ 	       (eval-after-load "anything"
+ 		 '(load "anything-match-plugin" t)))
+
+ (when-library
+  "anything-etags"
+  (eval-after-load "anything"
+    '(when (load "anything-etags" t)
+       (setq anything-sources
+	     (nconc anything-sources
+		    '(anything-c-source-etags-select)))))))
 
 ;;; ErgoEmacs minor mode
 (when-library
@@ -1096,12 +1102,12 @@ Make links point to local files."
 
    ;; workaround arrows not active in terminal with ErgoEmacs active
    (when-library "anything"
-		 (when (require 'anything nil t)
-		   (define-keys anything-map
-		     "\C-d" 'anything-next-line
-		     "\C-u" 'anything-previous-line
-		     (kbd "C-M-d") 'anything-next-source
-		     (kbd "C-M-u") 'anything-previous-source)))
+		 (eval-after-load "anything"
+		   '(define-keys anything-map
+		      "\C-d" 'anything-next-line
+		      "\C-u" 'anything-previous-line
+		      (kbd "C-M-d") 'anything-next-source
+		      (kbd "C-M-u") 'anything-previous-source)))
 
    (eval-when-compile
      (defmacro ergoemacs-fix (layout)
@@ -1114,7 +1120,7 @@ Make links point to local files."
 		 '(progn
 		    (define-keys paredit-mode-map
 		      ergoemacs-comment-dwim-key 'paredit-comment-dwim
-		      ergoemacs-isearch-forward-key 'isearch-forward
+		      ergoemacs-isearch-forward-key nil
 		      ergoemacs-backward-kill-word-key
 		      'paredit-backward-kill-word
 		      ergoemacs-kill-word-key 'paredit-forward-kill-word
@@ -1122,11 +1128,13 @@ Make links point to local files."
 		      'paredit-backward-delete
 		      ergoemacs-delete-char-key 'paredit-forward-delete
 		      ergoemacs-kill-line-key 'paredit-kill
-		      ergoemacs-recenter-key 'recenter-top-bottom
+		      ergoemacs-recenter-key nil
 		      "\M-R" 'paredit-raise-sexp)
 		    (when (equal ,layout "colemak")
-		      (define-key paredit-mode-map "\M-r"
-			'paredit-splice-sexp)))))
+		      (define-keys paredit-mode-map
+			"\M-r" 'paredit-splice-sexp
+			ergoemacs-next-line-key nil
+			"\M-g" nil)))))
 
 	    ,(when-library
 	      "slime"
@@ -1158,8 +1166,10 @@ Make links point to local files."
 
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
-     (interactive (list (read-string "Enter layout (default us): "
-				     nil nil "us")))
+     (interactive (list (completing-read "Enter layout (default us): "
+					 '("us" "dv" "sp" "it"
+					   "colemak")
+					 nil t nil nil "us")))
      (unless (equal layout ergoemacs-keyboard-layout)
        (ergoemacs-mode 0)
        (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
@@ -1183,21 +1193,19 @@ Make links point to local files."
 (when-library
  "paredit"				; from ELPA
  (eval-after-load "eldoc"
-   '(eldoc-add-command 'paredit-backward-delete
-		       'paredit-close-round))
+   '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
 ;;; Redshank
- (when-library
-  "redshank-loader"
-  (when (load "redshank-loader" t)
-    (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				     inferior-lisp-mode-hook)
-		    t))))
+ (when (load "redshank-loader" t)
+   (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				    inferior-lisp-mode-hook)
+		   t)))
 
 (setq inferior-lisp-program
       (win-or-nix (eval-when-compile
 		    (concat +home-path+
 			    "bin/clisp/clisp.exe -K full"))
-		  "/usr/local/bin/sbcl"))
+		  "/usr/local/bin/sbcl")
+      scheme-program-name "gsi")
 
 ;;; elisp stuff
 (eval-after-load "eldoc" '(eldoc-add-command 'autopairs-ret))
@@ -1209,13 +1217,11 @@ Make links point to local files."
 (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
 
 ;; common lisp hyperspec info look-up
-(when-library
- "info-look"
- (when (require 'info-look nil t)
-   (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
-			 :ignore-case t
-			 :doc-spec '(("(ansicl)Symbol Index"
-				      nil nil nil)))))
+(when (require 'info-look nil t)
+  (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
+			:ignore-case t
+			:doc-spec '(("(ansicl)Symbol Index"
+				     nil nil nil))))
 
 ;; Hook convenient s-exp minor modes to some major modes.
 (hook-modes activate-lisp-minor-modes
@@ -1455,10 +1461,10 @@ Make links point to local files."
    "Major mode for editing Prolog programs." t)
  (autoload 'mercury-mode "prog/prolog"
    "Major mode for editing Mercury programs." t)
- (setq prolog-system 'swi auto-mode-alist
-       (nconc '(("\\.pl$" . prolog-mode)
-		("\\.m$" . mercury-mode))
-	      auto-mode-alist)))
+ (setq prolog-system 'swi
+       auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
+				("\\.m$" . mercury-mode))
+			      auto-mode-alist)))
 
 ;;; Oz
 (when-library
@@ -1475,11 +1481,9 @@ Make links point to local files."
 			      auto-mode-alist)))
 
 ;;; Haskell
-(when-library "haskell-site-file"
-	      (when (load "haskell-site-file" t)
-		(hook-modes ((haskell-indentation-mode t)
-			     turn-on-haskell-doc-mode)
-			    haskell-mode-hook)))
+(when (load "haskell-site-file" t)
+  (hook-modes ((haskell-indentation-mode t) turn-on-haskell-doc-mode)
+	      haskell-mode-hook))
 
 ;;; Caml
 (when-library
@@ -1514,20 +1518,41 @@ Make links point to local files."
 (add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
 				(local-set-key [backtab]
 					       'hs-toggle-hiding)))
+;;; yasnippet
+(when-library
+ "yasnippet"
+ (autoload 'yas/global-mode "yasnippet"
+   "Activate yasnippet global mode." t)
+
+ (eval-after-load "yasnippet"
+   `(progn
+      (yas/load-directory ,(eval-when-compile
+			     (concat +extras-path+
+				     "prog/yasnippet/snippets")))
+      (when (require 'ido nil t)
+	(setq yas/prompt-functions
+	      '(yas/ido-prompt yas/completing-prompt yas/x-prompt
+			       yas/dropdown-prompt yas/no-prompt))))))
+
+;;; Emacs Code Browser
+(when (load "ecb-autoloads" t)
+  (eval-after-load "ecb"
+    `(progn (custom-set-variables '(ecb-options-version "2.40"))
+	    (let ((prog-path ,(eval-when-compile
+				(concat +home-path+ "Programs"))))
+	      (ecb-add-source-path prog-path prog-path t)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Auxiliary extensions
 
 ;;; AUCTeX
-(when-library
- "auctex"
- (when (load "auctex" t)
-   (when-library "preview-latex" (load "preview-latex" t))
-   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-   (eval-after-load "tex"
-     '(add-hook 'TeX-mode-hook (lambda () (define-key TeX-mode-map "\M-g"
-				       'TeX-complete-symbol))))))
+(when (load "auctex" t)
+  (load "preview-latex" t)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (eval-after-load "tex"
+    '(add-hook 'TeX-mode-hook (lambda () (define-key TeX-mode-map "\M-g"
+				      'TeX-complete-symbol)))))
 
 ;;; LaTeX beamer
 ;; allow for export=>beamer by placing
@@ -1580,101 +1605,118 @@ Make links point to local files."
 			     buffer-file-name)))))
 
 ;;; CompletionUI
-(when-library "completion-ui"
-	      (when (load "completion-ui" t)
-		(global-set-key "\M-G" 'complete-dabbrev)
-		(define-key emacs-lisp-mode-map (kbd "C-c TAB")
-		  'complete-elisp)))
+(when (load "completion-ui" t)
+  (global-set-key "\M-G" 'complete-dabbrev)
+  (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
 
 ;;; Auto Install
 (when-library
  "auto-install"
- (when (load "auto-install" t)
-   (setq auto-install-directory (eval-when-compile
-				  (concat +extras-path+
-					  "auto-install-dir/")))
-   (when-library
-    ("anything" "anything-auto-install")
-    (and (require 'anything nil t)
-	 (load "anything-auto-install" t)
+ (autoload 'auto-install-from-directory "auto-install"
+   "Update elisp files under DIRECTORY from EmacsWiki." t)
 
-	 (defun anything-toggle-auto-install ()
-	   "Toggle anything-c-source-auto-installs in anything sources."
-	   (interactive)
-	   (if (memq 'anything-c-source-auto-install-from-emacswiki
-		     anything-sources)
-	       (progn
-		 (delete-many
-		  ('anything-c-source-auto-install-from-emacswiki
-		   'anything-c-source-auto-install-from-library)
-		  anything-sources)
-		 (ignore-errors
-		   (auto-install-update-emacswiki-package-name nil))
-		 (message "Auto-install removed from Anything."))
-	     (setq anything-sources
-		   (nconc
-		    anything-sources
-		    '(anything-c-source-auto-install-from-emacswiki
-		      anything-c-source-auto-install-from-library)))
-	     (ignore-errors
-	       (auto-install-update-emacswiki-package-name t))
-	     (message "Auto-install added to anything sources.")))))))
+ (eval-after-load "auto-install"
+   `(setq auto-install-directory ,(eval-when-compile
+				    (concat +extras-path+
+					    "auto-install-dir/"))))
+ (when-library
+  ("anything" "anything-auto-install")
+  (autoload 'anything-auto-install "anything-auto-install"
+    "All-in-one command for elisp installation." t)))
+
+(when (executable-find "conkeror")
+  (setq browse-url-browser-function 'browse-url-generic
+	browse-url-generic-program "conkeror"))
 
 ;;; w3m
-(when-library
- "w3m-load"
- (when (and (executable-find "w3m") (load "w3m-load" t))
-   (setq ;; make w3m default for most URLs
-    browse-url-browser-function
-    `(("^ftp:/.*" . (lambda (url &optional nf)
-		      (call-interactively
-		       'find-file-at-point url)))
-      ("video" . ,browse-url-browser-function)
-      ("\\.tv" . ,browse-url-browser-function)
-      ("youtube" . ,browse-url-browser-function)
-      ("." . w3m-browse-url)))
+(when (and (executable-find "w3m") (load "w3m-load" t))
+  (setq ;; make w3m default for most URLs
+   browse-url-browser-function
+   `(("^ftp:/.*" . (lambda (url &optional nf)
+		     (call-interactively
+		      'find-file-at-point url)))
+     ("video" . ,browse-url-browser-function)
+     ("\\.tv" . ,browse-url-browser-function)
+     ("youtube" . ,browse-url-browser-function)
+     ("." . w3m-browse-url)))
 
-   ;; integration with other packages
-   (when-library "wl" (autoload 'mime-w3m-preview-text/html "mime-w3m"
-			"View messages as html."))
-   (when-library "gnus" (autoload 'gnus-group-mode-map "nnshimbun"
-			  "Add shimbun group to Gnus." t))
+  ;; integration with other packages
+  (when-library "wl" (autoload 'mime-w3m-preview-text/html "mime-w3m"
+		       "View messages as html."))
+  (when-library
+   "gnus"
+   (autoload 'gnus-group-mode-map "nnshimbun"
+     "Add shimbun group to Gnus." t)
+   (setq shimbun-atom-hash-group-path-alist
+	 '(("PlanetEmacsen" "http://planet.emacsen.org/atom.xml")
+	   ("Wingolog" "http://wingolog.org/feed/atom" t)
+	   ("36 monkeys"
+	    "http://36monkeys.blogspot.com/feeds/posts/default" t))))
 
-   (eval-after-load "w3m"
-     `(progn
-	(setq w3m-home-page (eval-when-compile
+  (eval-after-load "w3m"
+    `(progn
+       (setq w3m-home-page ,(eval-when-compile
 			      (concat "file://" +home-path+
 				      ".w3m/bookmark.html"))
-	      w3m-use-toolbar t
-	      w3m-use-cookies t)
+	     w3m-use-toolbar t
+	     w3m-use-cookies t)
 
-	,(when-library "wget" '(require 'w3m-wget nil t))
+       (require 'w3m-wget nil t)
 
-	(defun w3m-browse-url-other-window (url &optional newwin)
-	  "Open URL in new window when NEWWIN."
-	  (interactive (browse-url-interactive-arg "w3m URL: "))
-	  (let ((pop-up-frames nil))
-	    (switch-to-buffer-other-window
-	     (w3m-get-buffer-create "*w3m*"))
-	    (w3m-browse-url url)))
+       (defun w3m-browse-url-other-window (url &optional newwin)
+	 "Open URL in new window when NEWWIN."
+	 (interactive (browse-url-interactive-arg "w3m URL: "))
+	 (let ((pop-up-frames nil))
+	   (switch-to-buffer-other-window
+	    (w3m-get-buffer-create "*w3m*"))
+	   (w3m-browse-url url)))
 
-	(defun dired-w3m-find-file ()
-	  "Open a file with w3m."
-	  (interactive)
-	  (let ((file (dired-get-filename)))
-	    (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
-				  (file-name-nondirectory file)))
-		(w3m-find-file file))))
+       (defun dired-w3m-find-file ()
+	 "Open a file with w3m."
+	 (interactive)
+	 (let ((file (dired-get-filename)))
+	   (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
+				 (file-name-nondirectory file)))
+	       (w3m-find-file file))))
 
-	(byte-compile 'w3m-browse-url-other-window)
-	(byte-compile 'dired-w3m-find-file)
+       (byte-compile 'w3m-browse-url-other-window)
+       (byte-compile 'dired-w3m-find-file)
 
-	(define-keys w3m-mode-map
-	  "i" 'w3m-save-image
-	  "l" 'w3m-horizontal-recenter)))
+       (when (executable-find "curl")
+	 (defun w3m-download-with-curl (dir)
+	   "Download current w3m link to DIR."
+	   (interactive (let ((default (eval-when-compile
+					 (concat +home-path+
+						 "Downloads"))))
+			  (list (read-string
+				 (concat "Save to (default "
+					 default "):")
+				 nil nil default))))
+	   (cd dir)
+	   (start-process "curl" "*curl*" "curl" "-O" (w3m-anchor))
+	   (switch-to-buffer-other-window "*curl*"))
 
-   (eval-after-load "dired"
-     '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file))))
+	 (byte-compile 'w3m-download-with-curl)
+	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
+
+       (when browse-url-generic-program
+	 (defun w3m-browse-url-generic (&optional url)
+	   "Open URL, current link or page with generic browser."
+	   (interactive)
+	   (browse-url-generic (or url (w3m-anchor)
+				   (unless w3m-display-inline-images
+				     (w3m-image))
+				   w3m-current-url)))
+
+	 (byte-compile 'w3m-browse-url-generic)
+	 (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
+
+       (define-keys w3m-mode-map
+	 "i" 'w3m-save-image
+	 "l" 'w3m-horizontal-recenter)))
+
+  (eval-after-load "dired"
+    '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file)))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
@@ -1684,9 +1726,8 @@ Make links point to local files."
 			     'find-file-at-point url)))
 	    ("." . ,browse-url-browser-function))))
 
-
 ;;; Traverse
-(when-library "traverselisp" (load "traverselisp" t))
+(load "traverselisp" t)
 
 ;;; Wanderlust
 (when-library
@@ -1803,167 +1844,162 @@ Make links point to local files."
 	  mldonkey-port 4000)))
 
 ;;; EMMS
-(when-library
- "emms"
- (when (load "emms-auto" t)
-   (autoload 'emms-smart-browse "emms-browser"
-     "Display browser and playlist." t)
-   (autoload 'emms-browser "emms-browser"
-     "Launch or switch to the EMMS Browser." t)
-   (autoload 'emms "emms-playlist-mode"
-     "Switch to the current emms-playlist buffer." t)
+(when (load "emms-auto" t)
+  (autoload 'emms-smart-browse "emms-browser"
+    "Display browser and playlist." t)
+  (autoload 'emms-browser "emms-browser"
+    "Launch or switch to the EMMS Browser." t)
+  (autoload 'emms "emms-playlist-mode"
+    "Switch to the current emms-playlist buffer." t)
 
-   (eval-after-load "emms"
-     `(progn
-	(emms-devel)
-	(emms-default-players)
+  (eval-after-load "emms"
+    `(progn
+       (emms-devel)
+       (emms-default-players)
 
-	,(when-library "emms-info-libtag"
-		       '(when (require 'emms-info-libtag nil t)
-			  (add-to-list 'emms-info-functions
-				       'emms-info-libtag)))
+       (when (require 'emms-info-libtag nil t)
+	 (add-to-list 'emms-info-functions 'emms-info-libtag))
 
-	,(when-library "emms-mark" '(require 'emms-mark nil t))
+       (require 'emms-mark nil t)
 
-	;; swap time and other track info
-	(let ((new-global-mode-string nil))
-	  (while (and (not (eq 'emms-mode-line-string
-			       (car global-mode-string)))
-		      global-mode-string)
-	    (push (car global-mode-string) new-global-mode-string)
-	    (setq global-mode-string (cdr global-mode-string)))
-	  (push 'emms-playing-time-string new-global-mode-string)
-	  (push 'emms-mode-line-string new-global-mode-string)
-	  (setq global-mode-string (nreverse new-global-mode-string)))
+       ;; swap time and other track info
+       (let ((new-global-mode-string nil))
+	 (while (and (not (eq 'emms-mode-line-string
+			      (car global-mode-string)))
+		     global-mode-string)
+	   (push (car global-mode-string) new-global-mode-string)
+	   (setq global-mode-string (cdr global-mode-string)))
+	 (push 'emms-playing-time-string new-global-mode-string)
+	 (push 'emms-mode-line-string new-global-mode-string)
+	 (setq global-mode-string (nreverse new-global-mode-string)))
 
-	(add-hook 'emms-player-started-hook 'emms-show)
+       (add-hook 'emms-player-started-hook 'emms-show)
 
-	(defun my-emms-default-info ()
-	  (concat
-	   " (" (number-to-string
-		 (or (emms-track-get track 'play-count) 0))
-	   ", " (emms-last-played-format-date
-		 (or (emms-track-get track 'last-played) '(0 0 0)))
-	   ")" (let ((time (emms-track-get track 'info-playing-time)))
-		 (if time
-		     (format " %d:%02d" (/ time 60) (mod time 60))
-		   ""))))
+       (defun my-emms-default-info ()
+	 (concat
+	  " (" (number-to-string
+		(or (emms-track-get track 'play-count) 0))
+	  ", " (emms-last-played-format-date
+		(or (emms-track-get track 'last-played) '(0 0 0)))
+	  ")" (let ((time (emms-track-get track 'info-playing-time)))
+		(if time
+		    (format " %d:%02d" (/ time 60) (mod time 60))
+		  ""))))
 
-	(defun my-emms-track-description-function (track)
-	  "Return a description of the current TRACK."
-	  (let ((type (emms-track-type track)))
-	    (cond
-	     ((eq 'file type)
-	      (let ((artist (emms-track-get track 'info-artist)))
-		(if artist
-		    (concat
-		     artist " - "
-		     (let ((num (emms-track-get track
-						'info-tracknumber)))
-		       (if num
-			   (format "%02d. " (string-to-number num))
-			 ""))
-		     (or (emms-track-get track 'info-title)
-			 (file-name-sans-extension
-			  (file-name-nondirectory
-			   (emms-track-name track))))
-		     " [" (let ((year (emms-track-get track
-						      'info-year)))
-			    (if year (concat year " - ") ""))
-		     (or (emms-track-get track 'info-album) "unknown")
-		     "]" (my-emms-default-info))
-		  (concat (emms-track-name track)
-			  (my-emms-default-info)))))
-	     ((eq 'url type)
-	      (emms-format-url-track-name (emms-track-name track)))
-	     (t (concat (symbol-name type) ": "
-			(emms-track-name track) (my-emms-default-info))))))
+       (defun my-emms-track-description-function (track)
+	 "Return a description of the current TRACK."
+	 (let ((type (emms-track-type track)))
+	   (cond
+	    ((eq 'file type)
+	     (let ((artist (emms-track-get track 'info-artist)))
+	       (if artist
+		   (concat
+		    artist " - "
+		    (let ((num (emms-track-get track
+					       'info-tracknumber)))
+		      (if num
+			  (format "%02d. " (string-to-number num))
+			""))
+		    (or (emms-track-get track 'info-title)
+			(file-name-sans-extension
+			 (file-name-nondirectory
+			  (emms-track-name track))))
+		    " [" (let ((year (emms-track-get track
+						     'info-year)))
+			   (if year (concat year " - ") ""))
+		    (or (emms-track-get track 'info-album) "unknown")
+		    "]" (my-emms-default-info))
+		 (concat (emms-track-name track)
+			 (my-emms-default-info)))))
+	    ((eq 'url type)
+	     (emms-format-url-track-name (emms-track-name track)))
+	    (t (concat (symbol-name type) ": "
+		       (emms-track-name track) (my-emms-default-info))))))
 
-	(defun file-size (file-descr)
-	  (car (cddr (cddr (cddr (cddr file-descr))))))
+       (defun file-size (file-descr)
+	 (car (cddr (cddr (cddr (cddr file-descr))))))
 
-	(defun my-emms-covers (dir type)
-	  "Choose album cover in DIR deppending on TYPE.
+       (defun my-emms-covers (dir type)
+	 "Choose album cover in DIR deppending on TYPE.
 Small cover should be less than 100000 bytes.
 Medium - less than 120000 bytes."
-	  (let* ((pics (sort (directory-files-and-attributes
-			      dir t "\\.\\(jpg\\|jpeg\\|png\\)$" t)
-			     (lambda (p1 p2)
-			       (< (file-size p1) (file-size p2)))))
-		 (small (car pics)))
-	    (when (<= (or (file-size small) 100001) 100000)
-	      (let ((medium (cadr pics)))
-		(car (case type
-		       ('small small)
-		       ('medium (if (<= (or (file-size medium) 120001)
-					120000)
-				    medium
-				  small))
-		       ('large (or (car (cddr pics)) medium
-				   small))))))))
+	 (let* ((pics (sort (directory-files-and-attributes
+			     dir t "\\.\\(jpg\\|jpeg\\|png\\)$" t)
+			    (lambda (p1 p2)
+			      (< (file-size p1) (file-size p2)))))
+		(small (car pics)))
+	   (when (<= (or (file-size small) 100001) 100000)
+	     (let ((medium (cadr pics)))
+	       (car (cond ((eq type 'small) small)
+			  ((eq type 'medium)
+			   (if (<= (or (file-size medium) 120001)
+				   120000)
+			       medium
+			     small))
+			  ((eq type 'large) (or (car (cddr pics))
+						medium small))))))))
 
-	(byte-compile 'my-emms-track-description-function)
-	(byte-compile 'my-emms-covers)
+       (byte-compile 'my-emms-track-description-function)
+       (byte-compile 'my-emms-covers)
 
-	(setq emms-show-format "EMMS: %s"
-	      emms-mode-line-format "%s"
-	      emms-info-asynchronously t
-	      later-do-interval 0.0001
-	      emms-source-file-default-directory
-	      ,(eval-when-compile (concat +home-path+ "Music/"))
-	      emms-last-played-format-alist
-	      '(((emms-last-played-seconds-today) . "%a %H:%M")
-		(604800 . "%a %H:%M")	; this week
-		((emms-last-played-seconds-month) . "%d")
-		((emms-last-played-seconds-year) . "%d/%m")
-		(t . "%d/%m/%Y"))
-	      emms-track-description-function
-	      'my-emms-track-description-function
-	      emms-browser-covers 'my-emms-covers)
+       (setq emms-show-format "EMMS: %s"
+	     emms-mode-line-format "%s"
+	     emms-info-asynchronously t
+	     later-do-interval 0.0001
+	     emms-source-file-default-directory
+	     ,(eval-when-compile (concat +home-path+ "Music/"))
+	     emms-last-played-format-alist
+	     '(((emms-last-played-seconds-today) . "%a %H:%M")
+	       (604800 . "%a %H:%M")	; this week
+	       ((emms-last-played-seconds-month) . "%d")
+	       ((emms-last-played-seconds-year) . "%d/%m")
+	       (t . "%d/%m/%Y"))
+	     emms-track-description-function
+	     'my-emms-track-description-function
+	     emms-browser-covers 'my-emms-covers)
 
-	,(when-library "emms-lastfm"
-		       '(when (require 'emms-lastfm nil t)
-			  (setq emms-lastfm-username "m00natic"
-				emms-lastfm-password "very-secret")
-			  (emms-lastfm 1)))
+       (when (require 'emms-lastfm nil t)
+	 (setq emms-lastfm-username "m00natic"
+	       emms-lastfm-password "very-secret")
+	 (emms-lastfm 1))
 
-	,(when (executable-find "mpd")
-	   `(when (require 'emms-player-mpd nil t)
-	      (add-to-list 'emms-info-functions 'emms-info-mpd)
-	      (push 'emms-player-mpd emms-player-list)
-	      (setq emms-player-mpd-music-directory
-		    emms-source-file-default-directory)
+       ,(when (executable-find "mpd")
+	  `(when (require 'emms-player-mpd nil t)
+	     (add-to-list 'emms-info-functions 'emms-info-mpd)
+	     (push 'emms-player-mpd emms-player-list)
+	     (setq emms-player-mpd-music-directory
+		   emms-source-file-default-directory)
 
-	      ,(win-or-nix
-		nil
-		(when-library
-		 ("dbus" "notify")
-		 '(defadvice emms-player-started
-		    (after emms-player-mpd-notify
-			   (player) activate compile)
-		    "Notify new track for MPD."
-		    (when (eq emms-player-playing-p 'emms-player-mpd)
-		      (notify "EMMS" (substring (emms-show) 6))))))))
+	     ,(win-or-nix
+	       nil
+	       (when-library
+		("dbus" "notify")
+		'(defadvice emms-player-started
+		   (after emms-player-mpd-notify (player)
+			  activate compile)
+		   "Notify new track for MPD."
+		   (when (eq emms-player-playing-p 'emms-player-mpd)
+		     (notify "EMMS" (substring (emms-show) 6))))))))
 
-	(global-set-key [XF86AudioStop] 'emms-pause)
+       (global-set-key [XF86AudioStop] 'emms-pause)
 
-	(unless (locate-library "ergoemacs")
-	  (global-set-key (kbd "s-r") 'emms-pause))
+       (unless (locate-library "ergoemacs")
+	 (global-set-key (kbd "s-r") 'emms-pause))
 
-	,(win-or-nix
-	  nil
-	  (when-library ("dbus" "notify")
-			'(progn
-			   (defun my-emms-notify ()
-			     "Notify on new track."
-			     (emms-next-noerror)
-			     (when emms-player-playing-p
-			       (notify "EMMS" (substring (emms-show)
-							 6))))
+       ,(win-or-nix
+	 nil
+	 (when-library ("dbus" "notify")
+		       '(progn
+			  (defun my-emms-notify ()
+			    "Notify on new track."
+			    (emms-next-noerror)
+			    (when emms-player-playing-p
+			      (notify "EMMS" (substring (emms-show)
+							6))))
 
-			   (byte-compile 'my-emms-notify)
-			   (setq emms-player-next-function
-				 'my-emms-notify))))))))
+			  (byte-compile 'my-emms-notify)
+			  (setq emms-player-next-function
+				'my-emms-notify)))))))
 
 ;;; Dictionary
 (when-library "dictionary"
