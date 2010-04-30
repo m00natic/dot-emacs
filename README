@@ -19,7 +19,6 @@ which should be byte compiled.  Here's a list of extensions that this
 
 Anything related:
 Anything http://www.emacswiki.org/emacs/Anything
-anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 anything-match http://www.emacswiki.org/emacs/AnythingPlugins
 
 Packages related:
@@ -55,20 +54,15 @@ networking:
 emacs-w3m http://emacs-w3m.namazu.org
 emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
-Wanderlust http://www.gohome.org/wl
-Gnus http://www.gnus.org
 
 misc:
 ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
-Ido http://www.emacswiki.org/emacs/InteractivelyDoThings
 TabBar http://www.emacswiki.org/emacs/TabBarMode
 sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 notify http://www.emacswiki.org/emacs/notify.el
-CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-traverselisp http://mercurial.intuxication.org/hg/traverselisp
 Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 EMMS http://www.gnu.org/software/emms
 Emacs Chess http://github.com/jwiegley/emacs-chess

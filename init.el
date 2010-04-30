@@ -5,7 +5,6 @@
 ;;  Anything related:
 ;;   Anything http://www.emacswiki.org/emacs/Anything
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
-;;   anything-etags http://www.emacswiki.org/emacs/anything-etags.el
 ;;  Packages related:
 ;;   ELPA http://tromey.com/elpa
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
@@ -24,8 +23,8 @@
 ;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
-;;   Yasnippet http://www.emacswiki.org/emacs/Yasnippet
 ;;   gtags http://www.gnu.org/software/global
+;;   Yasnippet http://www.emacswiki.org/emacs/Yasnippet
 ;;   ECB http://ecb.sourceforge.net
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
@@ -36,19 +35,14 @@
 ;;   emacs-w3m http://emacs-w3m.namazu.org
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 ;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
-;;   Wanderlust http://www.gohome.org/wl
-;;   Gnus http://www.gnus.org
 ;;  misc:
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
-;;   Ido-mode http://www.emacswiki.org/emacs/InteractivelyDoThings
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 ;;   notify http://www.emacswiki.org/emacs/notify.el
-;;   CompletionUI http://www.emacswiki.org/emacs/CompletionUI
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-;;   traverselisp http://mercurial.intuxication.org/hg/traverselisp
 ;;   Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
@@ -228,7 +222,7 @@ otherwise increase it in 5%-steps"
 (defun faces-generic ()
   "My prefered faces which differ from default."
   (ignore-errors
-   (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
+    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
   (custom-set-faces
    '(font-lock-comment-face
      ((((class grayscale) (background light))
@@ -506,7 +500,8 @@ Remove hook when done and add `my-colours-set' instead."
     ("^aur:? +\\(.*\\)" .	 ; Search in Arch Linux's Aur packages
      "http://aur.archlinux.org/packages.php?&K=\\1")
     ("^fp:? +\\(.*\\)" .	       ; FreeBSD's FreshPorts
-     "http://www.FreshPorts.org/search.php?query=\\1&num=20"))
+     "http://www.FreshPorts.org/search.php?query=\\1&num=20")
+    ("^nnm:? +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
   "Search engines and sites.")
 
 (autoload 'browse-url-interactive-arg "browse-url")
@@ -590,7 +585,7 @@ If ARG, stay on the original line."
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
 ;; Solar info
-(when (load "solar" t)			; Sofia coordinates
+(when (require 'solar nil t)		; Sofia coordinates
   (setq calendar-latitude +42.68
 	calendar-longitude +23.31))
 
@@ -935,19 +930,19 @@ advice like this:
 ;;;; external extensions
 
 ;;; ELPA
-(when (load "package" t) (package-initialize))
+(when (require 'package nil t) (package-initialize))
 
 ;;; sml-modeline
-(when (load "sml-modeline" t)
+(when (require 'sml-modeline nil t)
   (scroll-bar-mode -1)
   (sml-modeline-mode 1))
 
 ;;; TabBar
-(when (load "tabbar" t)
+(when (require 'tabbar nil t)
   (tabbar-mode)
 
   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
-					      (tab) activate compile)
+					      activate compile)
     "Attach full file path to help message.
 If not a file, attach current directory."
     (let* ((tab-buffer (tabbar-tab-value tab))
@@ -1036,7 +1031,8 @@ DO-ALWAYS is always executed beforehand."
     wget-download-directory-filter 'wget-download-dir-filter-regexp
     wget-download-directory
     (eval-when-compile
-      `(("\\.\\(jpe?g\\|png\\)$" . ,(concat +home-path+ "Pictures"))
+      `(("\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$"
+	 . ,(concat +home-path+ "Pictures"))
 	("." . ,(concat +home-path+ "Downloads")))))
 
    (defun wget-site (uri)
@@ -1054,7 +1050,8 @@ Make links point to local files."
 (when-library
  "anything"
  (autoload 'anything "anything" "Select anything.")
- (global-set-key (kbd "S-M-<f5>") 'anything)
+ (defalias 'my-anything 'anything)
+ (global-set-key (kbd "S-M-<f5>") 'my-anything)
 
  (when-library
   "anything-config"
@@ -1062,37 +1059,38 @@ Make links point to local files."
     "Preconfigured `anything' for opening files.")
   (autoload 'anything-info-at-point "anything-config"
     "Preconfigured `anything' for searching info at point.")
+  (autoload 'anything-show-kill-ring "anything-config"
+    "Preconfigured `anything' for `kill-ring'.")
+
+  (unless (locate-library "ergoemacs")
+    (global-set-key "\M-y" 'anything-show-kill-ring))
 
   (global-set-key [f5] 'anything-for-files)
   (global-set-key (kbd "M-<f5>") 'anything-info-at-point)
 
   (eval-after-load "anything"
     '(when (require 'anything-config nil t)
-       (setq anything-sources
-	     '(anything-c-source-emacs-functions-with-abbrevs
-	       anything-c-source-emacs-variables
-	       anything-c-source-man-pages)))))
+       (defun my-anything ()
+	 (interactive)
+	 (anything-other-buffer
+	  '(anything-c-source-bookmarks
+	    anything-c-source-emacs-variables
+	    anything-c-source-emacs-functions-with-abbrevs
+	    anything-c-source-man-pages)
+	  " *my-anything*"))
+
+       (byte-compile 'my-anything))))
 
  (when-library "anything-match-plugin"
  	       (eval-after-load "anything"
- 		 '(load "anything-match-plugin" t)))
-
- (when-library
-  "anything-etags"
-  (eval-after-load "anything"
-    '(when (load "anything-etags" t)
-       (setq anything-sources
-	     (nconc anything-sources
-		    '(anything-c-source-etags-select)))))))
+ 		 '(require 'anything-match-plugin nil t))))
 
 ;;; ErgoEmacs minor mode
 (when-library
  "ergoemacs-mode"
  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
- (when (load "ergoemacs-mode" t)
+ (when (require 'ergoemacs-mode nil t)
    (when (fboundp 'recenter-top-bottom)
-     (define-key ergoemacs-keymap ergoemacs-recenter-key
-       'recenter-top-bottom)
      (define-key isearch-mode-map ergoemacs-recenter-key
        'recenter-top-bottom))
    (define-keys ergoemacs-keymap
@@ -1113,6 +1111,10 @@ Make links point to local files."
      (defmacro ergoemacs-fix (layout)
        "Fix some keybindings when using ErgoEmacs."
        `(progn
+	  ,(when (fboundp 'recenter-top-bottom)
+	     '(define-key ergoemacs-keymap ergoemacs-recenter-key
+		'recenter-top-bottom))
+
 	  (let ((ergo-layout ,layout))
 	    ,(when-library
 	      "paredit"
@@ -1153,7 +1155,8 @@ Make links point to local files."
 
 	      '(cond ((equal ergo-layout "colemak")
 		      (eval-after-load "slime-repl"
-			'(define-key slime-repl-mode-map "\M-n" nil)))))
+			'(define-key slime-repl-mode-map
+			   "\M-n" nil)))))
 
 	    ,(when-library
 	      "emms"
@@ -1162,7 +1165,12 @@ Make links point to local files."
 			'(global-set-key (kbd "s-r") 'emms-pause)))
 		     ((equal ergo-layout "colemak")
 		      (eval-after-load "emms"
-			'(global-set-key (kbd "s-p") 'emms-pause)))))))))
+			'(global-set-key (kbd "s-p") 'emms-pause)))))
+
+	    ,(when-library
+	      "anything-config"
+	      '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
+		 'anything-show-kill-ring))))))
 
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -1195,7 +1203,7 @@ Make links point to local files."
  (eval-after-load "eldoc"
    '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
 ;;; Redshank
- (when (load "redshank-loader" t)
+ (when (require 'redshank-loader nil t)
    (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
 				    inferior-lisp-mode-hook)
 		   t)))
@@ -1262,7 +1270,7 @@ Make links point to local files."
       (define-key qi-mode-map (kbd "RET") 'autopairs-ret))))
 
 ;;; Set up SLIME
-(when (load "slime-autoloads" t)
+(when (require 'slime-autoloads nil t)
   (eval-after-load "slime"
     `(progn
        (slime-setup ,(win-or-nix
@@ -1518,6 +1526,36 @@ Make links point to local files."
 (add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
 				(local-set-key [backtab]
 					       'hs-toggle-hiding)))
+
+;;; Global tags
+(when-library
+ "gtags"
+ (when (executable-find "global")
+   (autoload 'gtags-mode "gtags"
+     "Minor mode for utilizing global tags." t)
+
+   (defun gtags-create-or-update ()
+     "Create or update the gnu global tag file."
+     (interactive)
+     (if (= 0 (call-process "global" nil nil nil " -p"))
+	 ;; tagfile already exists; update it
+	 (shell-command "global -u && echo 'updated tagfile'")
+       (let ((olddir default-directory)
+	     (topdir (read-directory-name "gtags: top of source tree:"
+					  default-directory)))
+	 (cd topdir)
+	 (shell-command "gtags && echo 'created tagfile'")
+	 (cd olddir))))
+
+   (add-hook 'gtags-mode-hook (lambda ()
+				(local-set-key "\M-." 'gtags-find-tag)
+				(local-set-key "\M-,"
+					       'gtags-find-rtag)))
+   (add-hook 'c-mode-common-hook
+	     (lambda () ;; (gtags-create-or-update)
+	       (when (= 0 (call-process "global" nil nil nil " -p"))
+		 (gtags-mode t))))))
+
 ;;; yasnippet
 (when-library
  "yasnippet"
@@ -1535,12 +1573,14 @@ Make links point to local files."
 			       yas/dropdown-prompt yas/no-prompt))))))
 
 ;;; Emacs Code Browser
-(when (load "ecb-autoloads" t)
-  (eval-after-load "ecb"
-    `(progn (custom-set-variables '(ecb-options-version "2.40"))
-	    (let ((prog-path ,(eval-when-compile
-				(concat +home-path+ "Programs"))))
-	      (ecb-add-source-path prog-path prog-path t)))))
+(when-library
+ "semantic"
+ (when (require 'ecb-autoloads nil t)
+   (eval-after-load "ecb"
+     `(progn (custom-set-variables '(ecb-options-version "2.40"))
+	     (let ((prog-path ,(eval-when-compile
+				 (concat +home-path+ "Programs"))))
+	       (ecb-add-source-path prog-path prog-path t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1604,11 +1644,6 @@ Make links point to local files."
       (shell-command (concat "java -jar " org-ditaa-jar-path " "
 			     buffer-file-name)))))
 
-;;; CompletionUI
-(when (load "completion-ui" t)
-  (global-set-key "\M-G" 'complete-dabbrev)
-  (define-key emacs-lisp-mode-map (kbd "C-c TAB") 'complete-elisp))
-
 ;;; Auto Install
 (when-library
  "auto-install"
@@ -1629,7 +1664,7 @@ Make links point to local files."
 	browse-url-generic-program "conkeror"))
 
 ;;; w3m
-(when (and (executable-find "w3m") (load "w3m-load" t))
+(when (and (executable-find "w3m") (require 'w3m-load nil t))
   (setq ;; make w3m default for most URLs
    browse-url-browser-function
    `(("^ftp:/.*" . (lambda (url &optional nf)
@@ -1641,8 +1676,6 @@ Make links point to local files."
      ("." . w3m-browse-url)))
 
   ;; integration with other packages
-  (when-library "wl" (autoload 'mime-w3m-preview-text/html "mime-w3m"
-		       "View messages as html."))
   (when-library
    "gnus"
    (autoload 'gnus-group-mode-map "nnshimbun"
@@ -1692,9 +1725,11 @@ Make links point to local files."
 				 (concat "Save to (default "
 					 default "):")
 				 nil nil default))))
-	   (cd dir)
-	   (start-process "curl" "*curl*" "curl" "-O" (w3m-anchor))
-	   (switch-to-buffer-other-window "*curl*"))
+	   (let ((olddir default-directory))
+	     (cd dir)
+	     (start-process "curl" "*curl*" "curl" "-O" (w3m-anchor))
+	     (cd olddir)
+	     (switch-to-buffer-other-window "*curl*")))
 
 	 (byte-compile 'w3m-download-with-curl)
 	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
@@ -1726,114 +1761,6 @@ Make links point to local files."
 			     'find-file-at-point url)))
 	    ("." . ,browse-url-browser-function))))
 
-;;; Traverse
-(load "traverselisp" t)
-
-;;; Wanderlust
-(when-library
- "wl"
- (autoload 'wl "wl" "Wanderlust" t)
- (autoload 'wl-other-frame "wl" "Wanderlust on new frame." t)
- (autoload 'wl-draft "wl-draft" "Write draft with Wanderlust." t)
- ;;(setq wl-init-file (concat +home-path+ ".emacs.d/wl.el"))
-
- ;; IMAP
- (setq elmo-maildir-folder-path (concat +home-path+ "Mail")
-       elmo-imap4-default-server "imap.gmail.com"
-       elmo-imap4-default-user "m00naticus@gmail.com"
-       elmo-imap4-default-authenticate-type 'clear
-       elmo-imap4-default-port 993
-       elmo-imap4-default-stream-type 'ssl
-       elmo-imap4-use-modified-utf7 t
-       ;; SMTP
-       wl-smtp-connection-type 'starttls
-       wl-smtp-posting-port 587
-       wl-smtp-authenticate-type "plain"
-       wl-smtp-posting-user "m00naticus@gmail.com"
-       wl-smtp-posting-server "smtp.gmail.com"
-       wl-local-domain "gmail.com"
-
-       wl-default-folder "%inbox"
-       wl-draft-folder ".drafts"
-       wl-trash-folder ".trash"
-       wl-spam-folder ".trash"
-       wl-queue-folder ".queue"
-
-       wl-folder-check-async t
-       wl-fcc ".sent"
-       wl-fcc-force-as-read t
-       wl-from "Andrey Kotlarski <m00naticus@gmail.com>"
-       wl-message-id-use-wl-from t
-       wl-insert-mail-followup-to t
-       wl-draft-buffer-style 'keep
-       wl-subscribed-mailing-list '("slime-devel@common-lisp.net"
-				    "tramp-devel@gnu.org"))
-
- (autoload 'wl-user-agent-compose "wl-draft" nil t)
- (when (boundp 'mail-user-agent)
-   (setq mail-user-agent 'wl-user-agent))
- (when (fboundp 'define-mail-user-agent)
-   (define-mail-user-agent 'wl-user-agent 'wl-user-agent-compose
-     'wl-draft-send 'wl-draft-kill 'mail-send-hook))
-
- (setq
-  wl-forward-subject-prefix "Fwd: " ; use "Fwd: " not "Forward: "
-
-;;; from a WL-mailinglist post by David Bremner
-  ;; Invert behaviour of with and without argument replies.
-  ;; just the author
-  wl-draft-reply-without-argument-list
-  '(("Reply-To" ("Reply-To") nil nil)
-    ("Mail-Reply-To" ("Mail-Reply-To") nil nil)
-    ("From" ("From") nil nil))
-
-  ;; bombard the world
-  wl-draft-reply-with-argument-list
-  '(("Followup-To" nil nil ("Followup-To"))
-    ("Mail-Followup-To" ("Mail-Followup-To") nil ("Newsgroups"))
-    ("Reply-To" ("Reply-To") ("To" "Cc" "From") ("Newsgroups"))
-    ("From" ("From") ("To" "Cc") ("Newsgroups"))))
-
- ;; (when (require 'wl-spam nil t)
- ;;   (wl-spam-setup)
- ;;   (setq elmo-spam-scheme 'sa))
-
- ;; (defun my-wl-summary-refile (&optional folder)
- ;;     "Refile the current message to FOLDER.
- ;; If FOLDER is nil, use the default."
- ;;     (interactive)
- ;;     (wl-summary-refile (wl-summary-message-number) folder)
- ;;     (wl-summary-next)
- ;;     (message (concat "refiled to " folder)))
-
- ;; (define-key wl-summary-mode-map (kbd "b x") ; => Project X
- ;; (byte-compile (lambda () (interactive)
- ;; 		 (my-wl-summary-refile ".project-x"))))
-
- ;; suggested by Masaru Nomiya on the WL mailing list
- (defun wl-draft-subject-check ()
-   "Check whether the message has a subject before sending."
-   (and (< (length (std11-field-body "Subject")) 1)
-	(not (y-or-n-p "No subject! Send current draft? "))
-	(error "Abort")))
-
- ;; note, this check could cause some false positives;
- ;; anyway, better safe than sorry...
- (defun wl-draft-attachment-check ()
-   "If attachment is mention but none included, warn the the user."
-   (save-excursion
-     (goto-char 0)
-     (or ;; don't we have an attachment?
-      (re-search-forward "^Content-Disposition: attachment" nil t)
-      (when ;; no attachment; did we mention an attachment?
-	  (re-search-forward "attach" nil t)
-	(or (y-or-n-p
-	     "Possibly missing an attachment.  Send current draft? ")
-	    (error "Abort"))))))
-
- (hook-modes (wl-draft-subject-check wl-draft-attachment-check)
-	     wl-mail-send-pre-hook))
-
 ;;; mldonkey
 (when-library
  "mldonkey"
@@ -1844,7 +1771,7 @@ Make links point to local files."
 	  mldonkey-port 4000)))
 
 ;;; EMMS
-(when (load "emms-auto" t)
+(when (require 'emms-auto nil t)
   (autoload 'emms-smart-browse "emms-browser"
     "Display browser and playlist." t)
   (autoload 'emms-browser "emms-browser"
@@ -1975,8 +1902,7 @@ Medium - less than 120000 bytes."
 	       (when-library
 		("dbus" "notify")
 		'(defadvice emms-player-started
-		   (after emms-player-mpd-notify (player)
-			  activate compile)
+		   (after emms-player-mpd-notify activate compile)
 		   "Notify new track for MPD."
 		   (when (eq emms-player-playing-p 'emms-player-mpd)
 		     (notify "EMMS" (substring (emms-show) 6))))))))
@@ -2026,11 +1952,11 @@ Medium - less than 120000 bytes."
 	       (let ((cygwin-dir (eval-when-compile
 				   (concat +win-path+ "cygwin/bin"))))
 		 (when (and (file-exists-p cygwin-dir)
-			    (load "cygwin-mount" t))
+			    (require 'cygwin-mount nil t))
 		   (cygwin-mount-activate)
 		   (setq w32shell-cygwin-bin cygwin-dir))))
 
- ;;; Notify
+;;; Notify
  (when-library
   "notify"
   (when (require 'dbus nil t)
@@ -2040,35 +1966,7 @@ Medium - less than 120000 bytes."
 	     (list :app "Emacs"
 		   :icon "/usr/local/share/icons/hicolor/48x48/apps/emacs.png"
 		   :timeout 5000 :urgency "low"
-		   :category "emacs.event")))))
-
-;;; Global tags
- (when-library
-  "gtags"
-  (autoload 'gtags-mode "gtags"
-    "Minor mode for utilizing global tags." t)
-
-  (defun gtags-create-or-update ()
-    "Create or update the gnu global tag file."
-    (interactive)
-    (or (= 0 (call-process "global" nil nil nil " -p"))
-	(let ((olddir default-directory)
-	      (topdir (read-directory-name
-		       "gtags: top of source tree:"
-		       default-directory)))
-	  (cd topdir)
-	  (shell-command "gtags && echo 'created tagfile'")
-	  (cd olddir))	; restore
-	;; tagfile already exists; update it
-	(shell-command "global -u && echo 'updated tagfile'")))
-
-  (add-hook 'gtags-mode-hook (lambda ()
-			       (local-set-key "\M-." 'gtags-find-tag)
-			       (local-set-key "\M-,"
-					      'gtags-find-rtag)))
-  (add-hook 'c-mode-common-hook (lambda () (gtags-mode t)
-				  ;;(gtags-create-or-update)
-				  ))))
+		   :category "emacs.event"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
