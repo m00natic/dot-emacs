@@ -1,21 +1,18 @@
 This is my humble .emacs.  It's tested to run on GNU/Linux, BSDs and
 windows with GNU/Emacs 23.0.95 onwards.  Main target is GNU/Linux with
 trunk version of GNU/Emacs though.  Many things are shamelessly
-adopted from other people (thanks emacswiki).  It is compilable (must
-be recompiled after changing the set of mentioned extensions in the
-load-path) and supposed to be tolerant to missing packages without
-complaining and errors.  Whenever possible, extensions are autoloaded
-on demand for a quicker start-up and smaller memory footprint.  It's
-somewhat personalized, thus if someone is to try it out, some glitches
+adopted from other people (thanks emacswiki).  It is compilable and
+supposed to be tolerant to missing packages without complaining and
+errors.  Whenever possible, extensions are autoloaded on demand for a
+quicker start-up and smaller memory footprint.  It's somewhat
+personalized, thus if someone is to try it out, some glitches
 (obviously personal data and paths eventually) may have to be tuned.
-Also bear in mind that by default ErgoEmacs mode is active (when
-present) and keybindings are adjusted for colemak keyboard layout
-(change ERGOEMACS_KEYBOARD_LAYOUT to "en" for qwerty).  The download
-section contains a relevant set of extensions which is kept up to date
-(as much as possible) at time of upload.  It's expected to be untared
-in ~/.emacs.d/ to run out of the box.  There are just elisp sources
-which should be byte compiled.  Here's a list of extensions that this
-.emacs is somewhat aware of in some order and links:
+The download section contains a relevant set of extensions which is
+kept up to date (as much as possible) at time of upload.  It's
+expected to be untared in ~/.emacs.d/ to run out of the box.  There
+are just elisp sources which should be byte compiled.  Here's a list
+of extensions that this .emacs is somewhat aware of in some order and
+links:
 
 Anything related:
 Anything http://www.emacswiki.org/emacs/Anything

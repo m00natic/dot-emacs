@@ -64,8 +64,7 @@ NIX forms are executed on all other platforms."
 		  ((cadr win) `(progn ,@win))
 		  (t form)))
 	win)
-    (if (cadr nix)
-	`(progn ,@nix)
+    (if (cadr nix) `(progn ,@nix)
       (car nix))))
 
 ;; Set some path constants.
@@ -79,47 +78,129 @@ NIX forms are executed on all other platforms."
    (eval-when-compile (concat (getenv "HOME") "/")))
   "Home path.")
 
+(setq user-emacs-directory (eval-when-compile
+			     (concat +home-path+ ".emacs.d/")))
+
 (defconst +extras-path+ (eval-when-compile
-			  (concat +home-path+ ".emacs.d/extras/"))
+			  (concat user-emacs-directory "extras/"))
   "Elisp extensions' path.")
 
 ;; add `+extras-path+' and subdirs to `load-path'
-(and (fboundp 'normal-top-level-add-subdirs-to-load-path)
-     (file-exists-p (eval-when-compile +extras-path+))
-     (let ((default-directory (eval-when-compile +extras-path+)))
-       (push (eval-when-compile +extras-path+) load-path)
-       (normal-top-level-add-subdirs-to-load-path)))
+(when (and (file-exists-p +extras-path+)
+	   (not (member +extras-path+ 'load-path)))
+  (push +extras-path+ load-path)
+  (if (fboundp 'normal-top-level-add-subdirs-to-load-path)
+      (let ((default-directory +extras-path+))
+	(normal-top-level-add-subdirs-to-load-path))))
 
 (let ((bin-path (eval-when-compile (concat +extras-path+ "bin"))))
-  (when (file-exists-p bin-path)
-    (add-to-list 'exec-path bin-path)))
+  (if (file-exists-p bin-path) (add-to-list 'exec-path bin-path)))
 
-;; set default directory for `*scratch*' and some info
-(setq default-directory (eval-when-compile +home-path+)
-      add-log-full-name "Andrey Kotlarski")
+;; set default directory for `*scratch*'
+(setq default-directory (eval-when-compile +home-path+))
 
 (setenv "EMAIL" "m00naticus@gmail.com")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;; mode a bit emacs
+(custom-set-variables
+ '(add-log-full-name "Andrey Kotlarski")
+ '(backup-by-copying t)
+ `(bookmark-default-file ,(eval-when-compile
+			    (concat user-emacs-directory
+				    "bookmarks")))
+ '(bookmark-save-flag 1)
+ '(browse-url-epiphany-new-window-is-tab t)
+ '(browse-url-firefox-new-window-is-tab t)
+ '(browse-url-galeon-new-window-is-tab t)
+ '(browse-url-mozilla-new-window-is-tab t)
+ '(browse-url-netscape-new-window-is-tab t)
+ '(browse-url-new-window-flag t)
+ '(calendar-latitude 42.68)
+ '(calendar-longitude 23.31)
+ '(column-number-mode t)
+ '(completion-ignore-case t t)
+ '(cua-enable-cua-keys nil)
+ '(cua-mode t nil (cua-base))
+ '(current-language-environment "UTF-8")
+ '(default-input-method "bulgarian-phonetic")
+ '(delete-old-versions t)
+ '(delete-selection-mode t)
+ '(display-battery-mode t)
+ '(display-time-24hr-format t)
+ '(display-time-day-and-date t)
+ '(display-time-mode t)
+ '(font-lock-maximum-decoration t)
+ '(frame-title-format "emacs - %b (%f)" t)
+ '(gdb-many-windows t)
+ '(global-font-lock-mode t)
+ '(global-highlight-changes-mode t)
+ '(global-hl-line-mode t)
+ '(global-linum-mode 1)
+ '(highlight-changes-visibility-initial-state nil)
+ '(icomplete-mode t)
+ '(icomplete-prospects-height 2)
+ '(ido-enable-flex-matching t)
+ '(ido-mode 'both nil (ido))
+ `(ido-save-directory-list-file ,(eval-when-compile
+				   (concat user-emacs-directory
+					   ".ido.last")))
+ '(inhibit-startup-screen t)
+ '(initial-major-mode 'org-mode)
+ '(initial-scratch-message nil)
+ '(ispell-dictionary "english")
+ '(kept-new-versions 5)
+ '(major-mode 'org-mode)
+ '(menu-bar-mode nil)
+ '(mouse-avoidance-mode 'jump nil (avoid))
+ '(mouse-wheel-mode t)
+ '(next-line-add-newlines nil)
+ '(query-replace-highlight t)
+ '(read-file-name-completion-ignore-case t)
+ '(recentf-max-menu-items 15)
+ '(recentf-max-saved-items 100)
+ '(recentf-mode t)
+ `(recentf-save-file ,(eval-when-compile
+			(concat user-emacs-directory "recentf")))
+ '(require-final-newline t)
+ '(save-place t nil (saveplace))
+ '(search-highlight t)
+ '(selection-coding-system 'utf-8)
+ '(show-paren-delay 0)
+ '(show-paren-mode t)
+ '(show-paren-style 'parenthesis)
+ '(size-indication-mode t)
+ '(tool-bar-mode nil)
+ '(transient-mark-mode t)
+ '(uniquify-buffer-name-style 'post-forward nil (uniquify))
+ '(uniquify-separator ":")
+ '(version-control t)
+ '(winner-mode t nil (winner))
+ '(word-wrap t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 ;;;; extension independent macros
 
-(defmacro when-library (library &rest body)
-  "When LIBRARY is in `load-path' leave BODY.
-If LIBRARY is a list, check whether every element is in `load-path'."
+(defmacro when-library (check-on-complile library &rest body)
+  "When CHECK-ON-COMPLILE and LIBRARY is in `load-path' leave BODY.
+If LIBRARY is a list, check whether every element is in `load-path'.
+If not CHECK-ON-COMPLILE, perform library search at run-time."
   (if (consp library)
-      (let ((loadp t))
-	(dolist (lib library)
-	  (when loadp
-	    (setq loadp (locate-library lib))))
-	(when loadp
-	  (if (consp body)
-	      `(progn ,@body)
-	    body)))
-    (when (locate-library library)
-      (if (consp body)
-	  `(progn ,@body)
-	body))))
+      (if check-on-complile
+	  (let ((loadp t))
+	    (dolist (lib library)
+	      (if loadp
+		  (setq loadp (locate-library (symbol-name lib)))))
+	    (if loadp `(progn ,@body)))
+	`(when (and ,@(mapcar (lambda (lib)
+				`(locate-library ,(symbol-name lib)))
+			      library))
+	   ,@body))
+    (if check-on-complile
+	(if (locate-library (symbol-name library)) `(progn ,@body))
+      `(when (locate-library ,(symbol-name library)) ,@body))))
 
 (defmacro hook-modes (functions &rest modes)
   "Hook a list of FUNCTIONS (or atom) to MODES.
@@ -127,58 +208,50 @@ Each function may be an atom or a list with parameters."
   (cons 'progn
 	(if (consp functions)
 	    (if (cdr functions)
-		(let ((fns (mapcar (lambda (fn)
-				     (if (consp fn)
-					 fn
-				       (list fn)))
+		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
+					     (list fn)))
 				   functions)))
-		  (mapcar (lambda (mode)
-			    `(add-hook ',mode (lambda () ,@fns)))
+		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
 	      (let ((fst (car functions)))
 		(if (consp fst)
-		    (mapcar (lambda (mode)
-			      `(add-hook (lambda () ,fst)))
+		    (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,fst)))
 			    modes)
-		  (mapcar (lambda (mode)
-			    `(add-hook ',mode ',fst))
+		  (mapcar (lambda (mode) `(add-hook ',mode ',fst))
 			  modes))))
-	  (mapcar (lambda (mode)
-		    `(add-hook ',mode ',functions))
+	  (mapcar (lambda (mode) `(add-hook ',mode ',functions))
 		  modes))))
 
 (defmacro delete-many (elts sequence)
   "Delete ELTS from SEQUENCE."
-  (if (null elts)
-      sequence
+  (if (null elts) sequence
     `(delete ,(car elts) (delete-many ,(cdr elts) ,sequence))))
 
 (defmacro define-keys (mode &rest keys)
   "Define cascade of keys for a MODE.
 KEYS is alternating list of key-value."
-  (cons 'progn
-	(let ((res nil))
-	  (while keys
-	    (push `(define-key ,mode ,(car keys) ,(cadr keys)) res)
-	    (setq keys (cddr keys)))
-	  (nreverse res))))
+  `(progn ,@(let ((res nil))
+	      (while keys
+		(push `(define-key ,mode ,(car keys) ,(cadr keys))
+		      res)
+		(setq keys (cddr keys)))
+	      (nreverse res))))
 
 (defmacro active-lisp-modes ()
   "Activate convenient s-expressions which are present."
   `(progn (pretty-lambdas)
-	  ,(when-library "hl-sexp" '(hl-sexp-mode +1))
-	  ,(when-library "highlight-parentheses" ; from ELPA
+	  ,(when-library nil hl-sexp '(hl-sexp-mode +1))
+	  ,(when-library nil highlight-parentheses ; from ELPA
 			 '(highlight-parentheses-mode +1))
-	  ,(when-library "paredit" '(paredit-mode +1))))
+	  ,(when-library nil paredit '(paredit-mode +1))))
 
 (defmacro opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
 If DEC is t, decrease transparency;
 otherwise increase it in 5%-steps"
   `(let* ((oldalpha (or (frame-parameter nil 'alpha) 99))
-	  (newalpha ,(if dec
-			 '(if (<= oldalpha 5) 0
-			    (- oldalpha 5))
+	  (newalpha ,(if dec '(if (<= oldalpha 5) 0
+				(- oldalpha 5))
 		       '(if (>= oldalpha 95) 100
 			  (+ oldalpha 5)))))
      (and (>= newalpha frame-alpha-lower-limit)
@@ -213,8 +286,7 @@ otherwise increase it in 5%-steps"
 (defun my-toggle-fullscreen ()
   "Toggle fullscreen."
   (interactive)
-  (if (setq *fullscreen-p* (not *fullscreen-p*))
-      (my-fullscreen)
+  (if (setq *fullscreen-p* (not *fullscreen-p*)) (my-fullscreen)
     (my-non-fullscreen)))
 
 ;;; themes
@@ -222,7 +294,7 @@ otherwise increase it in 5%-steps"
 (defun faces-generic ()
   "My prefered faces which differ from default."
   (ignore-errors
-    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
+   (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
   (custom-set-faces
    '(font-lock-comment-face
      ((((class grayscale) (background light))
@@ -303,7 +375,7 @@ otherwise increase it in 5%-steps"
       (((background dark)) :background "grey50")
       (t :background "gray"))))
   (when-library
-   "tabbar"
+   nil tabbar
    (custom-set-faces
     '(tabbar-default ((t :inherit variable-pitch)))
     '(tabbar-selected
@@ -335,7 +407,7 @@ otherwise increase it in 5%-steps"
 	  :box (:line-width 2 :color "LightGray"))))
     '(tabbar-separator ((t :background "#111")))))
   (when-library
-   "sml-modeline"
+   nil sml-modeline
    (custom-set-faces
     '(sml-modeline-vis-face ((default (:inherit hl-line))
 			     (((class color) (min-colors 88))
@@ -348,10 +420,9 @@ otherwise increase it in 5%-steps"
 (defun switch-faces (light)
   "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
-  (if light
-      (custom-set-faces
-       '(default ((t (:foreground "black" :height 80
-				  :background "cornsilk")))))
+  (if light (custom-set-faces
+	     '(default ((t (:foreground "black" :height 80
+					:background "cornsilk")))))
     (custom-set-faces
      '(default ((default (:background "black" :height 80))
 		(((class color) (min-colors 88))
@@ -429,7 +500,7 @@ Reset some faces which --daemon doesn't quite set.
 Remove hook when done and add `my-colours-set' instead."
   (select-frame frame)
   (cond ((window-system frame)
-	 (my-colours-set)
+	 (if (require 'solar nil t) (my-colours-set))
 	 (let ((frame (selected-frame)))
 	   (modify-frame-parameters frame '((alpha . 99)))
 	   (set-frame-height frame 50))
@@ -455,72 +526,6 @@ Remove hook when done and add `my-colours-set' instead."
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
 
-(defconst +apropos-url-alist+
-  '(("^gw?:? +\\(.*\\)" .		; Google Web
-     "http://www.google.com/search?q=\\1")
-    ("^gs:? +\\(.*\\)" .		; Google Scholar
-     "http://scholar.google.com/scholar?q=\\1")
-    ("^g!:? +\\(.*\\)" .		; Google Lucky
-     "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
-    ("^gl:? +\\(.*\\)" .		; Google Linux
-     "http://www.google.com/linux?q=\\1")
-    ("^gi:? +\\(.*\\)" .		; Google Images
-     "http://images.google.com/images?sa=N&tab=wi&q=\\1")
-    ("^gv:? +\\(.*\\)" .		; Google Video
-     "http://video.google.com/videosearch?q=\\1")
-    ("^gg:? +\\(.*\\)" .		; Google Groups
-     "http://groups.google.com/groups?q=\\1")
-    ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Google Translate URL
-     "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
-    ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Translate Text
-     "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
-    ("^gd:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
-     "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
-    ("^w:? +\\(.*\\)" .			; Wikipedia en
-     "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
-    ("^bgw:? +\\(.*\\)" .		; Wikipedia bg
-     "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-    ("^yt:? +\\(.*\\)" .		; YouTube
-     "http://www.youtube.com/results?search_query=\\1")
-    ("^/\\.:? +\\(.*\\)" .		; Slashdot search
-     "http://www.osdn.com/osdnsearch.pl?site=Slashdot&query=\\1")
-    ("^fm:? +\\(.*\\)" .		; Freshmeat
-     "http://www.freshmeat.net/search?q=\\1")
-    ("^rd:? +\\(.*\\)" .		; sub Reddits (mobile)
-     "http://m.reddit.com/r/\\1")
-    ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
-     "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
-    ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
-     "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
-    ("^hayoo:? +\\(.*\\)" .		; Hayoo
-     "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
-    ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
-     ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
-     "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
-    ("^aur:? +\\(.*\\)" .	 ; Search in Arch Linux's Aur packages
-     "http://aur.archlinux.org/packages.php?&K=\\1")
-    ("^fp:? +\\(.*\\)" .	       ; FreeBSD's FreshPorts
-     "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-    ("^nnm:? +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
-  "Search engines and sites.")
-
-(autoload 'browse-url-interactive-arg "browse-url")
-
-(defun browse-apropos-url (text &optional no-new-window)
-  "Search for TEXT by some search engine in new tab if NO-NEW-WINDOW."
-  (interactive (browse-url-interactive-arg "Location: "))
-  (let ((text (replace-regexp-in-string
-	       "^ *\\| *$" ""
-	       (replace-regexp-in-string "[ \t\n]+" " " text)))
-	(apropo-reg "^$"))
-    (let ((url (assoc-default text +apropos-url-alist+
-			      (lambda (a b)
-				(when (string-match a b)
-				  (setq apropo-reg a)))
-			      text)))
-      (browse-url (replace-regexp-in-string apropo-reg url text)
-      		  no-new-window))))
-
 (defconst +skeleton-pair-alist+
   '((?\( _ ?\)) (?[  _ ?]) (?{  _ ?}) (?\" _ ?\"))
   "List of pair symbols.")
@@ -530,8 +535,8 @@ Remove hook when done and add `my-colours-set' instead."
 If ARG, stay on the original line."
   (interactive "P")
   (dolist (pair +skeleton-pair-alist+)
-    (when (eq (char-after) (car (last pair)))
-      (save-excursion (newline-and-indent))))
+    (if (eq (char-after) (car (last pair)))
+	(save-excursion (newline-and-indent))))
   (newline arg)
   (indent-according-to-mode))
 
@@ -541,56 +546,14 @@ If ARG, stay on the original line."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; mode a bit emacs
-
-(custom-set-variables
- '(column-number-mode t)
- '(completion-ignore-case t t)
- '(delete-selection-mode t)
- '(display-battery-mode t)
- '(display-time-24hr-format t)
- '(display-time-day-and-date t)
- '(display-time-mode t)
- '(font-lock-maximum-decoration t)
- '(frame-title-format "emacs - %b (%f)" t)
- '(global-font-lock-mode t)
- '(global-linum-mode 1)
- '(icomplete-prospects-height 2)
- '(inhibit-startup-screen t)
- '(initial-major-mode 'org-mode)
- '(initial-scratch-message nil)
- '(major-mode 'org-mode)
- '(menu-bar-mode nil)
- '(mouse-wheel-mode t)
- '(next-line-add-newlines nil)
- '(query-replace-highlight t)
- '(read-file-name-completion-ignore-case t)
- '(require-final-newline t)
- '(save-place t nil (saveplace))
- '(search-highlight t)
- '(show-paren-delay 0)
- '(show-paren-mode t)
- '(show-paren-style 'parenthesis)
- '(size-indication-mode t)
- '(tool-bar-mode nil)
- '(transient-mark-mode t)
- '(word-wrap t))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;;;; appearance
 
 ;;; geometry
 (add-to-list 'default-frame-alist (cons 'width +width+))
 (win-or-nix (set-frame-width (selected-frame) +width+))
 
-;; Solar info
-(when (require 'solar nil t)		; Sofia coordinates
-  (setq calendar-latitude +42.68
-	calendar-longitude +23.31))
-
 (if (window-system)
-    (my-colours-set)
+    (if (require 'solar nil t) (my-colours-set))
   ;; hook, execute only first time in graphical frame
   ;;  (and indefinite times in terminal frames till then)
   (add-hook 'after-make-frame-functions 'reset-frame-faces))
@@ -616,108 +579,16 @@ If ARG, stay on the original line."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;;; UTF and languages
-
-;;; unicode + bulgarian phonetic
-(add-hook 'set-language-environment-hook
-	  (lambda ()			; set alternating input language (C-\)
-	    (setq default-input-method "bulgarian-phonetic")))
-(win-or-nix nil (setq locale-coding-system 'utf-8))
-(set-terminal-coding-system 'utf-8)
-(set-keyboard-coding-system 'utf-8)
-(set-selection-coding-system 'utf-8)
-(set-language-environment "UTF-8")
-(prefer-coding-system 'utf-8)
-(global-set-key (kbd "C-s-k")
-		(lambda () "Re-open file with cyrillic encoding."
-		  (interactive)
-		  (revert-buffer-with-coding-system 'cp1251)))
-
-;;; ispell
-(setq-default ispell-program-name "aspell")
-(setq ispell-dictionary "english")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;;;; useful stuff
 
-;;; browse web
-(global-set-key [f6] 'browse-apropos-url)
+;;; unicode
+(setq locale-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
 
-(setq browse-url-new-window-flag t
-      browse-url-firefox-new-window-is-tab t
-      browse-url-mozilla-new-window-is-tab t
-      browse-url-epiphany-new-window-is-tab t
-      browse-url-galeon-new-window-is-tab t
-      browse-url-netscape-new-window-is-tab t)
+;;; eclectic autoindent on newline
+(global-set-key (kbd "M-RET") 'autopairs-ret)
 
-;; handle window configuration
-(when-library "winner" (winner-mode 1))
 
-;; gdb
-(when-library "gud" (setq gdb-many-windows t))
-
-;; Imenu
-(when-library "imenu" (global-set-key (kbd "C-`") 'imenu))
-
-;; Proced
-(when-library "proced" (global-set-key (kbd "C-M-`") 'proced))
-
-;; Ido
-(when (require 'ido nil t)
-  (ido-mode t)
-  (setq ido-enable-flex-matching t)
-
-  (defvar *ido-enable-replace-completing-read* t
-    "If t, use ido-completing-read instead of completing-read if possible.
-Set it to nil using let in around-advice for functions where the
-original completing-read is required.  For example, if a function
-foo absolutely must use the original completing-read, define some
-advice like this:
- (defadvice foo (around original-completing-read-only activate)
-   (let (ido-enable-replace-completing-read) ad-do-it))")
-
-  (defadvice completing-read (around use-ido-when-possible
-				     activate compile)
-    "Replace completing-read wherever possible, unless directed otherwise."
-    (if (or (not *ido-enable-replace-completing-read*)
-	    (boundp 'ido-cur-list))	; Avoid infinite loop
-	ad-do-it			; from ido calling this
-      (let ((allcomp (all-completions "" collection predicate)))
-	(if allcomp
-	    (setq ad-return-value
-		  (ido-completing-read prompt allcomp nil
-				       require-match initial-input
-				       hist def))
-	  ad-do-it)))))
-
-;; don't count on same named files, rather show path difference
-(when (require 'uniquify nil t)
-  (setq uniquify-buffer-name-style 'post-forward
-	uniquify-separator ":"))
-
-;;; CUA rectangle action
-(setq cua-enable-cua-keys nil)		; only for rectangles
-(cua-mode t)
-
-;; highlight current line, turn it on for all modes by default
-(when-library "hl-line" (global-hl-line-mode t))
-
-(when-library
- "hilit-chg"
-;;; highlight changes in documents
- (global-highlight-changes-mode t)
- (setq highlight-changes-visibility-initial-state nil) ; hide initially
-
- ;; toggle changes visibility
- (global-set-key [f7] 'highlight-changes-visible-mode)
-
- ;; remove the change-highlight in region
- (global-set-key (kbd "S-<f7>") 'highlight-changes-remove-highlight)
-
- ;; alt-pgup/pgdown jump to the previous/next change
- (global-set-key (kbd "<M-prior>") 'highlight-changes-previous-change)
- (global-set-key (kbd "<M-next>") 'highlight-changes-next-change))
 
 ;;; jump through errors/results
 (global-set-key (kbd "<C-M-prior>") 'previous-error)
@@ -737,65 +608,86 @@ advice like this:
 (defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region,copy current line."
   (interactive
-   (if mark-active
-       (list (region-beginning) (region-end))
+   (if mark-active (list (region-beginning) (region-end))
      (message "Copied line.")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
 (defadvice kill-region (before slick-cut activate compile)
   "When called interactively with no active region,kill current line."
   (interactive
-   (if mark-active
-       (list (region-beginning) (region-end))
+   (if mark-active (list (region-beginning) (region-end))
      (message "Killed line.")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-;;; recentf
-(when (require 'recentf nil t)		; save recently used files
-  (setq recentf-max-saved-items 100	; max save 100
-	recentf-save-file (concat +home-path+
-				  ".emacs.d/recentf")
-	recentf-max-menu-items 15)	; max 15 in menu
-  (recentf-mode t))			; turn it on
-
 ;;; backups
-(setq make-backup-files t		; do make backups
-      backup-by-copying t		; and copy them ...
-      backup-directory-alist `(("." . ,(concat +home-path+ ; ... here
-					       ".emacs.d/backup/")))
-      tramp-backup-directory-alist backup-directory-alist
-      version-control t
-      kept-new-versions 5
-      kept-old-versions 2
-      delete-old-versions t)
+(setq backup-directory-alist
+      `(("." . ,(eval-when-compile (concat user-emacs-directory
+					   "backup/"))))
+      tramp-backup-directory-alist backup-directory-alist)
 
-;;; bookmarks
-(setq					; keep my ~/ clean
- bookmark-default-file (concat +home-path+ ".emacs.d/bookmarks")
- bookmark-save-flag 1)			; autosave each change
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(mouse-avoidance-mode 'jump)	  ; mouse ptr when cursor is too close
-(when-library "icomplete" (icomplete-mode t)) ; completion in minibuffer
+;;;; built-in packages
 
-(when (fboundp 'file-name-shadow-mode)	; emacs22+
-  (file-name-shadow-mode t))	    ; be smart about filenames in mbuf
+;; Imenu
+(when-library t imenu (global-set-key (kbd "C-`") 'imenu))
+
+;; Proced
+(when-library t proced (global-set-key (kbd "C-M-`") 'proced))
+
+;;; highlight changes in documents
+(when-library
+ t hilit-chg
+ ;; toggle changes visibility
+ (global-set-key [f7] 'highlight-changes-visible-mode)
+ ;; remove the change-highlight in region
+ (global-set-key (kbd "S-<f7>") 'highlight-changes-remove-highlight)
+ ;; alt-pgup/pgdown jump to the previous/next change
+ (global-set-key (kbd "<M-prior>") 'highlight-changes-previous-change)
+ (global-set-key (kbd "<M-next>") 'highlight-changes-next-change))
+
+;; Ido
+(when-library
+ t ido
+ (defvar *ido-enable-replace-completing-read* t
+   "If t, use ido-completing-read instead of completing-read if possible.
+Set it to nil using let in around-advice for functions where the
+original completing-read is required.  For example, if a function
+foo absolutely must use the original completing-read, define some
+advice like this:
+ (defadvice foo (around original-completing-read-only activate)
+   (let (ido-enable-replace-completing-read) ad-do-it))")
+
+ (defadvice completing-read (around use-ido-when-possible
+				    activate compile)
+   "Replace completing-read wherever possible, unless directed otherwise."
+   (if (or (not *ido-enable-replace-completing-read*)
+	   (boundp 'ido-cur-list))	; Avoid infinite loop
+       ad-do-it		; from ido calling this
+     (let ((allcomp (all-completions "" collection predicate)))
+       (if allcomp
+	   (setq ad-return-value
+		 (ido-completing-read prompt allcomp nil
+				      require-match initial-input
+				      hist def))
+	 ad-do-it)))))
 
 ;;; tramp-ing
 (when-library
- "tramp"
+ t tramp
  (defun tramping-mode-line ()
    "Change modeline when root or remote."
-   (let ((host-name (when (file-remote-p default-directory)
-		      (tramp-file-name-host
-		       (tramp-dissect-file-name
-			default-directory)))))
-     (when host-name
-       (setq host-name
-	     (concat (if (string-match "^[^0-9][^.]*\\(\\..*\\)"
-				       host-name)
-			 (substring host-name 0 (match-beginning 1))
-		       host-name)
-		     ":")))
+   (let ((host-name (if (file-remote-p default-directory)
+			(tramp-file-name-host
+			 (tramp-dissect-file-name
+			  default-directory)))))
+     (if host-name
+	 (setq host-name
+	       (concat (if (string-match "^[^0-9][^.]*\\(\\..*\\)"
+					 host-name)
+			   (substring host-name 0 (match-beginning 1))
+			 host-name)
+		       ":")))
      (if (string-match "^/su\\(do\\)?:" default-directory)
 	 (progn
 	   (make-local-variable 'mode-line-buffer-identification)
@@ -817,7 +709,7 @@ advice like this:
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook))
 
-(when-library "epg"
+(when-library t epg
 ;;; bypass gpg graphical pop-up on passphrase
 	      (defadvice epg--start (around advice-epg-disable-agent
 					    activate compile)
@@ -829,7 +721,7 @@ advice like this:
 
 ;;; Gnus
 (when-library
- "gnus"
+ t gnus
  (defvar *gnus-new-mail-count* "" "Unread messages count.")
  (setq global-mode-string (append global-mode-string
 				  (list '*gnus-new-mail-count*)))
@@ -903,13 +795,15 @@ advice like this:
 		    ,(win-or-nix
 		      nil
 		      (when-library
-		       ("dbus" "notify")
-		       '(notify "Gnus"
-				(format
-				 (concat "%d new mail%s in "
-					 (substring unread-groups 2))
-				 unread-count
-				 (if (= unread-count 1) "" "s")))))
+		       t dbus
+		       (when-library
+			nil notify
+			'(notify "Gnus"
+				 (format
+				  (concat "%d new mail%s in "
+					  (substring unread-groups 2))
+				  unread-count
+				  (if (= unread-count 1) "" "s"))))))
 		    (put '*gnus-new-mail-count*
 			 'risky-local-variable t)
 		    (propertize (format "%d" unread-count)
@@ -918,19 +812,125 @@ advice like this:
       (byte-compile 'my-gnus-demon-scan-mail)
 
       ;; run (gnus-demon-init) to track emails
-      (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)))
+      (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)
 
- (when-library "nnshimbun"
+      (add-hook 'kill-emacs-hook (byte-compile
+				  (lambda () "Quit Gnus."
+				    (setq gnus-interactive-exit nil)
+				    (gnus-group-exit))))))
+
+ (when-library nil nnshimbun
 	       (eval-after-load "gnus-group"
 		 '(define-key gnus-group-mode-map "Gn"
 		    'gnus-group-make-shimbun-group))))
+
+(when-library
+ t browse-url
+ (defconst +apropos-url-alist+
+   '(("^gw?:? +\\(.*\\)" . "http://www.google.com/search?q=\\1")
+     ("^gs:? +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
+     ("^g!:? +\\(.*\\)" .		; Google Lucky
+      "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
+     ("^gl:? +\\(.*\\)" . "http://www.google.com/linux?q=\\1")
+     ("^gi:? +\\(.*\\)" .		; Google Images
+      "http://images.google.com/images?sa=N&tab=wi&q=\\1")
+     ("^gv:? +\\(.*\\)" . "http://video.google.com/videosearch?q=\\1")
+     ("^gg:? +\\(.*\\)" . "http://groups.google.com/groups?q=\\1")
+     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
+      "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
+     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
+      "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
+     ("^gd:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
+      "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
+     ("^w:? +\\(.*\\)" .		; Wikipedia en
+      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
+     ("^bgw:? +\\(.*\\)" .		; Wikipedia bg
+      "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
+     ("^yt:? +\\(.*\\)" .		; YouTube
+      "http://www.youtube.com/results?search_query=\\1")
+     ("^/\\.:? +\\(.*\\)" .		; Slashdot search
+      "http://www.osdn.com/osdnsearch.pl?site=Slashdot&query=\\1")
+     ("^fm:? +\\(.*\\)" . "http://www.freshmeat.net/search?q=\\1")
+     ("^rd:? +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
+     ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
+      "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
+     ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
+      "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
+     ("^hayoo:? +\\(.*\\)" .		; Hayoo
+      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
+     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
+      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
+      "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
+     ("^aur:? +\\(.*\\)" .		; Arch Linux's Aur packages
+      "http://aur.archlinux.org/packages.php?&K=\\1")
+     ("^fp:? +\\(.*\\)" .		; FreeBSD's FreshPorts
+      "http://www.FreshPorts.org/search.php?query=\\1&num=20")
+     ("^nnm:? +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
+   "Search engines and sites.")
+
+ (autoload 'browse-url-interactive-arg "browse-url")
+
+ (defun browse-apropos-url (text &optional new-window)
+   "Search for TEXT by some search engine.
+Open in new tab if NEW-WINDOW."
+   (interactive (browse-url-interactive-arg "Location: "))
+   (let ((text (replace-regexp-in-string
+		"^ *\\| *$" ""
+		(replace-regexp-in-string "[ \t\n]+" " " text)))
+	 (apropo-reg "^$"))
+     (let ((url (assoc-default text +apropos-url-alist+
+			       (lambda (a b) (if (string-match a b)
+					    (setq apropo-reg a)))
+			       text)))
+       (browse-url (replace-regexp-in-string apropo-reg url text)
+		   (not new-window)))))
+
+ (global-set-key [f6] 'browse-apropos-url))
+
+;;; LaTeX beamer
+;; allow for export=>beamer by placing
+;; #+LaTeX_CLASS: beamer in org files
+(when-library
+ t org
+ (or (boundp 'org-export-latex-classes)
+     (setq org-export-latex-classes nil))
+
+ (add-to-list 'org-export-latex-classes
+	      '("beamer"
+		"\\documentclass[11pt]{beamer}\n
+\\mode<presentation>\n
+\\usetheme{Antibes}\n
+\\usecolortheme{lily}\n
+\\beamertemplateballitem\n
+\\setbeameroption{show notes}
+\\usepackage[utf8]{inputenc}\n
+\\usepackage[bulgarian]{babel}\n
+\\usepackage{hyperref}\n
+\\usepackage{color}
+\\usepackage{listings}
+\\lstset{numbers=none,language=[ISO]C++,tabsize=4,
+  frame=single,
+  basicstyle=\\small,
+  showspaces=false,showstringspaces=false,
+  showtabs=false,
+  keywordstyle=\\color{blue}\\bfseries,
+  commentstyle=\\color{red},
+  }\n
+\\usepackage{verbatim}\n
+\\institute{Sofia University, FMI}\n
+\\subject{RMRF}\n"
+		("\\section{%s}" . "\\section*{%s}")
+		("\\begin{frame}[fragile]\\frametitle{%s}"
+		 "\\end{frame}"
+		 "\\begin{frame}[fragile]\\frametitle{%s}"
+		 "\\end{frame}"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; external extensions
 
 ;;; ELPA
-(when (require 'package nil t) (package-initialize))
+(if (require 'package nil t) (package-initialize))
 
 ;;; sml-modeline
 (when (require 'sml-modeline nil t)
@@ -939,7 +939,7 @@ advice like this:
 
 ;;; TabBar
 (when (require 'tabbar nil t)
-  (tabbar-mode)
+  (tabbar-mode 1)
 
   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
 					      activate compile)
@@ -977,19 +977,17 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
-  (eval-when-compile
-    (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
-				       &optional do-always)
-      "Create a one-argument interactive function FUN with COMMENT.
+  (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
+				     &optional do-always)
+    "Create a one-argument interactive function FUN with COMMENT.
 ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
 DO-ALWAYS is always executed beforehand."
-      `(defun ,fun (arg)
-	 ,comment
-	 (interactive "P")
-	 ,do-always
-	 (if (null arg)
-	     ,on-no-prefix
-	   ,on-prefix))))
+    `(defun ,fun (arg)
+       ,comment
+       (interactive "P")
+       ,do-always
+       (if (null arg) ,on-no-prefix
+	 ,on-prefix)))
 
   (def-interactive-arg tabbar-move-next
     "Go to next tab. With prefix, next group."
@@ -999,26 +997,25 @@ DO-ALWAYS is always executed beforehand."
     (tabbar-backward-tab) (tabbar-backward-group))
 
   (global-set-key (kbd "C-<tab>") 'tabbar-move-next)
-  (global-set-key [backtab] 'tabbar-move-prev) ; for terminal
   (global-set-key (win-or-nix (kbd "C-S-<tab>")
 			      (kbd "<C-S-iso-lefttab>"))
 		  'tabbar-move-prev)
 
   (when-library
-   "org"
+   t org
    (add-hook 'org-load-hook
-	     (lambda () (define-keys org-mode-map
-		     (kbd "C-<tab>") nil
-		     [backtab] nil
-		     (win-or-nix (kbd "C-S-<tab>")
-				 (kbd "<C-S-iso-lefttab>")) nil))))
+	     (lambda () "Allow tabbar keys in org."
+	       (define-keys org-mode-map
+		 (kbd "C-<tab>") nil
+		 (win-or-nix (kbd "C-S-<tab>")
+			     (kbd "<C-S-iso-lefttab>")) nil))))
 
   ;; remove buffer name from modeline as it now becomes redundant
   (setq-default mode-line-buffer-identification ""))
 
 ;; Wget
 (when-library
- "wget"
+ nil wget
  (when (executable-find "wget")
    (autoload 'wget "wget" "Wget interface for Emacs." t)
    (autoload 'wget-web-page "wget"
@@ -1041,20 +1038,19 @@ Make links point to local files."
      (interactive (list (read-string "Web Site URI: "
 				     (thing-at-point-url-at-point))))
      (let ((dir (wget-cd-download-dir t uri)))
-       (when dir
-	 (if (string= uri "") (error "There is no uri")
-	   (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
-			       "--no-check-certificate"))))))))
+       (if dir (if (string= uri "") (error "There is no uri")
+		 (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
+				     "--no-check-certificate"))))))))
 
 ;;; Anything
 (when-library
- "anything"
+ nil anything
  (autoload 'anything "anything" "Select anything.")
  (defalias 'my-anything 'anything)
  (global-set-key (kbd "S-M-<f5>") 'my-anything)
 
  (when-library
-  "anything-config"
+  nil anything-config
   (autoload 'anything-for-files "anything-config"
     "Preconfigured `anything' for opening files.")
   (autoload 'anything-info-at-point "anything-config"
@@ -1062,8 +1058,9 @@ Make links point to local files."
   (autoload 'anything-show-kill-ring "anything-config"
     "Preconfigured `anything' for `kill-ring'.")
 
-  (unless (locate-library "ergoemacs")
-    (global-set-key "\M-y" 'anything-show-kill-ring))
+  (unless (fboundp 'ergoemacs-mode)
+    (global-set-key "\M-y" 'anything-show-kill-ring)
+    (define-key minibuffer-local-map "\M-y" 'yank-pop))
 
   (global-set-key [f5] 'anything-for-files)
   (global-set-key (kbd "M-<f5>") 'anything-info-at-point)
@@ -1077,29 +1074,29 @@ Make links point to local files."
 	    anything-c-source-emacs-variables
 	    anything-c-source-emacs-functions-with-abbrevs
 	    anything-c-source-man-pages)
-	  " *my-anything*"))
+	  "*my-anything*"))
 
        (byte-compile 'my-anything))))
 
- (when-library "anything-match-plugin"
+ (when-library nil anything-match-plugin
  	       (eval-after-load "anything"
  		 '(require 'anything-match-plugin nil t))))
 
 ;;; ErgoEmacs minor mode
 (when-library
- "ergoemacs-mode"
- (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
+ nil ergoemacs-mode
+ (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "en")
  (when (require 'ergoemacs-mode nil t)
-   (when (fboundp 'recenter-top-bottom)
-     (define-key isearch-mode-map ergoemacs-recenter-key
-       'recenter-top-bottom))
+   (if (fboundp 'recenter-top-bottom)
+       (define-key isearch-mode-map ergoemacs-recenter-key
+	 'recenter-top-bottom))
    (define-keys ergoemacs-keymap
      "\M-3" 'move-cursor-previous-pane
      "\M-#" 'move-cursor-next-pane
      "\C-f" 'search-forward-regexp)
 
    ;; workaround arrows not active in terminal with ErgoEmacs active
-   (when-library "anything"
+   (when-library nil anything
 		 (eval-after-load "anything"
 		   '(define-keys anything-map
 		      "\C-d" 'anything-next-line
@@ -1107,70 +1104,62 @@ Make links point to local files."
 		      (kbd "C-M-d") 'anything-next-source
 		      (kbd "C-M-u") 'anything-previous-source)))
 
-   (eval-when-compile
-     (defmacro ergoemacs-fix (layout)
-       "Fix some keybindings when using ErgoEmacs."
-       `(progn
-	  ,(when (fboundp 'recenter-top-bottom)
+   (defmacro ergoemacs-fix (layout)
+     "Fix some keybindings when using ErgoEmacs."
+     `(progn
+	,(if (fboundp 'recenter-top-bottom)
 	     '(define-key ergoemacs-keymap ergoemacs-recenter-key
 		'recenter-top-bottom))
-
-	  (let ((ergo-layout ,layout))
-	    ,(when-library
-	      "paredit"
-	      `(eval-after-load 'paredit
-		 '(progn
-		    (define-keys paredit-mode-map
-		      ergoemacs-comment-dwim-key 'paredit-comment-dwim
-		      ergoemacs-isearch-forward-key nil
-		      ergoemacs-backward-kill-word-key
-		      'paredit-backward-kill-word
-		      ergoemacs-kill-word-key 'paredit-forward-kill-word
-		      ergoemacs-delete-backward-char-key
-		      'paredit-backward-delete
-		      ergoemacs-delete-char-key 'paredit-forward-delete
-		      ergoemacs-kill-line-key 'paredit-kill
-		      ergoemacs-recenter-key nil
-		      "\M-R" 'paredit-raise-sexp)
-		    (when (equal ,layout "colemak")
+	(let ((ergo-layout ,layout))
+	  ,(when-library
+	    nil paredit
+	    `(eval-after-load 'paredit
+	       '(progn
+		  (define-keys paredit-mode-map
+		    ergoemacs-comment-dwim-key 'paredit-comment-dwim
+		    ergoemacs-isearch-forward-key nil
+		    ergoemacs-backward-kill-word-key
+		    'paredit-backward-kill-word
+		    ergoemacs-kill-word-key 'paredit-forward-kill-word
+		    ergoemacs-delete-backward-char-key
+		    'paredit-backward-delete
+		    ergoemacs-delete-char-key 'paredit-forward-delete
+		    ergoemacs-kill-line-key 'paredit-kill
+		    ergoemacs-recenter-key nil
+		    "\M-R" 'paredit-raise-sexp)
+		  (if (equal ,layout "colemak")
 		      (define-keys paredit-mode-map
 			"\M-r" 'paredit-splice-sexp
 			ergoemacs-next-line-key nil
 			"\M-g" nil)))))
-
-	    ,(when-library
-	      "slime"
-	      '(cond ((equal ergo-layout "colemak")
-		      (eval-after-load "slime"
-			'(define-keys slime-mode-map
-			   "\M-k" 'slime-next-note
-			   "\M-K" 'slime-previous-note
-			   "\M-n" nil
-			   "\M-p" nil)))
-		     ((equal ergo-layout "en")
-		      (eval-after-load "slime"
-			'(define-keys slime-mode-map
-			   "\M-N" 'slime-previous-note
-			   "\M-p" nil))))
-
-	      '(cond ((equal ergo-layout "colemak")
-		      (eval-after-load "slime-repl"
-			'(define-key slime-repl-mode-map
-			   "\M-n" nil)))))
-
-	    ,(when-library
-	      "emms"
-	      '(cond ((equal ergo-layout "en")
-		      (eval-after-load "emms"
-			'(global-set-key (kbd "s-r") 'emms-pause)))
-		     ((equal ergo-layout "colemak")
-		      (eval-after-load "emms"
-			'(global-set-key (kbd "s-p") 'emms-pause)))))
-
-	    ,(when-library
-	      "anything-config"
-	      '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
-		 'anything-show-kill-ring))))))
+	  ,(when-library
+	    nil slime
+	    '(cond ((equal ergo-layout "colemak")
+		    (eval-after-load "slime"
+		      '(define-keys slime-mode-map
+			 "\M-k" 'slime-next-note
+			 "\M-K" 'slime-previous-note
+			 "\M-n" nil
+			 "\M-p" nil))
+		    (eval-after-load "slime-repl"
+		      '(define-key slime-repl-mode-map "\M-n" nil)))
+		   ((equal ergo-layout "en")
+		    (eval-after-load "slime"
+		      '(define-keys slime-mode-map
+			 "\M-N" 'slime-previous-note
+			 "\M-p" nil)))))
+	  ,(when-library
+	    nil emms
+	    '(cond ((equal ergo-layout "en")
+		    (eval-after-load "emms"
+		      '(global-set-key (kbd "s-r") 'emms-pause)))
+		   ((equal ergo-layout "colemak")
+		    (eval-after-load "emms"
+		      '(global-set-key (kbd "s-p") 'emms-pause)))))
+	  ,(when-library
+	    nil anything-config
+	    '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
+	       'anything-show-kill-ring)))))
 
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -1186,27 +1175,36 @@ Make links point to local files."
        (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
        (ergoemacs-mode 1)))
 
-   (ergoemacs-fix "colemak")
+   (when-library
+    nil anything-config
+    (defvar ergoemacs-minibuffer-keymap
+      (copy-keymap ergoemacs-keymap))
+    (defadvice ergoemacs-minibuffer-setup-hook
+      (after ergoemacs-minibuffer-yank-pop activate compile)
+      (define-key ergoemacs-minibuffer-keymap
+	ergoemacs-yank-pop-key 'yank-pop)))
+
+   (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
    (ergoemacs-mode 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Lisp goodies
 
-(when-library "hl-sexp"
+(when-library nil hl-sexp
 	      (autoload 'hl-sexp-mode "hl-sexp"
 		"Highlight s-expressions minor mode." t))
 
 ;;; Paredit
 (when-library
- "paredit"				; from ELPA
+ nil paredit				; from ELPA
  (eval-after-load "eldoc"
    '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
 ;;; Redshank
- (when (require 'redshank-loader nil t)
-   (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				    inferior-lisp-mode-hook)
-		   t)))
+ (if (require 'redshank-loader nil t)
+     (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				      inferior-lisp-mode-hook)
+		     t)))
 
 (setq inferior-lisp-program
       (win-or-nix (eval-when-compile
@@ -1222,14 +1220,15 @@ Make links point to local files."
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
 
-(define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol)
+(unless (fboundp 'ergoemacs-mode)
+  (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
 ;; common lisp hyperspec info look-up
-(when (require 'info-look nil t)
-  (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
-			:ignore-case t
-			:doc-spec '(("(ansicl)Symbol Index"
-				     nil nil nil))))
+(if (require 'info-look nil t)
+    (info-lookup-add-help :mode 'lisp-mode :regexp "[^][()'\" \t\n]+"
+			  :ignore-case t
+			  :doc-spec '(("(ansicl)Symbol Index"
+				       nil nil nil))))
 
 ;; Hook convenient s-exp minor modes to some major modes.
 (hook-modes activate-lisp-minor-modes
@@ -1237,9 +1236,6 @@ Make links point to local files."
 	    lisp-interaction-mode-hook
 	    emacs-lisp-mode-hook ielm-mode-hook
 	    inferior-scheme-mode-hook scheme-mode-hook)
-
-;; set eclectic return in lisp modes
-(define-key lisp-mode-shared-map (kbd "RET") 'autopairs-ret)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1249,11 +1245,11 @@ Make links point to local files."
 
 ;;; Qi
 (when-library
- "qi-mode"
+ nil qi-mode
  (autoload 'qi-mode "qi-mode" "Major mode for editing Qi progams" t)
  (autoload 'run-qi "qi-mode" "Run an inferior Qi process." t)
 
- (push '("\\.qi\\'" . qi-mode) auto-mode-alist)
+ (add-to-list 'auto-mode-alist '("\\.qi\\'" . qi-mode))
  (eval-after-load "qi-mode"
    `(progn
       (setq inferior-qi-program
@@ -1270,43 +1266,44 @@ Make links point to local files."
       (define-key qi-mode-map (kbd "RET") 'autopairs-ret))))
 
 ;;; Set up SLIME
-(when (require 'slime-autoloads nil t)
-  (eval-after-load "slime"
-    `(progn
-       (slime-setup ,(win-or-nix
-		      ''(slime-fancy slime-banner slime-indentation)
-		      ''(slime-fancy slime-banner slime-indentation
-				     slime-asdf)))
+(if (require 'slime-autoloads nil t)
+    (eval-after-load "slime"
+      `(progn
+	 (slime-setup ,(win-or-nix
+			''(slime-fancy slime-banner slime-indentation)
+			''(slime-fancy slime-banner slime-indentation
+				       slime-asdf)))
 
-       (push (list ',(win-or-nix 'clisp 'sbcl)
-		   ',(split-string inferior-lisp-program " +"))
-	     slime-lisp-implementations)
+	 (add-to-list 'slime-lisp-implementations
+		      (list ',(win-or-nix 'clisp 'sbcl)
+			    ',(split-string inferior-lisp-program
+					    " +")))
 
-       (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
-	     slime-complete-symbol*-fancy t
-	     slime-complete-symbol-function 'slime-fuzzy-complete-symbol
-	     common-lisp-hyperspec-root
-	     ,(eval-when-compile
-		(concat "file://" +home-path+ "Documents/HyperSpec/"))
-	     slime-net-coding-system
-	     (find-if 'slime-find-coding-system
-		      '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
-				   binary)))
+	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
+	       slime-complete-symbol*-fancy t
+	       slime-complete-symbol-function
+	       'slime-fuzzy-complete-symbol
+	       common-lisp-hyperspec-root
+	       ,(eval-when-compile (concat "file://" +home-path+
+					   "Documents/HyperSpec/"))
+	       slime-net-coding-system
+	       (find-if 'slime-find-coding-system
+			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+				     binary)))
 
-       (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-       (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
-       (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
+	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
+	 (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
+	 (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
 
 ;;; Clojure
 (when-library
- "clojure-mode"				; from ELPA
+ nil clojure-mode			; from ELPA
  (eval-after-load "clojure-mode"
-   '(progn
-      (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)
-      (define-key clojure-mode-map (kbd "RET") 'autopairs-ret)))
+   '(progn (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)
+	   (define-key clojure-mode-map (kbd "RET") 'autopairs-ret)))
 
- (when-library		     ; at the moment (slime-autodoc-mode)
-  ("slime" "swank-clojure")  ; has to be turned off with swank-clojure
+ (when-library
+  nil (slime swank-clojure)
   (autoload 'swank-clojure-init "swank-clojure"
     "Initialize clojure for swank")
   (autoload 'swank-clojure-cmd "swank-clojure"
@@ -1402,22 +1399,28 @@ Make links point to local files."
        (byte-compile 'slime-javadoc)
        (byte-compile 'slime-browse-local-javadoc)
 
-       (add-hook 'slime-connected-hook
-		 (lambda () (slime-redirect-inferior-output)
-		   (define-keys slime-mode-map
-		     "\C-cd" 'slime-java-describe
-		     "\C-cD" 'slime-javadoc)
-		   (define-keys slime-repl-mode-map
-		     "\C-cd" 'slime-java-describe
-		     "\C-cD" 'slime-javadoc)
-		   (define-key slime-mode-map "\C-cb"
-		     'slime-browse-local-javadoc)
-		   (define-key slime-repl-mode-map "\C-cb"
-		     'slime-browse-local-javadoc)))))))
+       (define-keys slime-mode-map
+	 "\C-cd" 'slime-java-describe
+	 "\C-cD" 'slime-javadoc)
+       (define-keys slime-repl-mode-map
+	 "\C-cd" 'slime-java-describe
+	 "\C-cD" 'slime-javadoc)
+       (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
+       (define-key slime-repl-mode-map "\C-cb"
+	 'slime-browse-local-javadoc)
 
-;;; Scheme
+       (add-hook 'slime-connected-hook
+		 (byte-compile
+		  (lambda () "Turn off slime-autodoc for clojure."
+		    (if (equal (cadr slime-inferior-lisp-args) "java")
+			(custom-set-variables
+			 '(slime-use-autodoc-mode nil))
+		      (custom-set-variables
+		       '(slime-use-autodoc-mode t))))))))))
+
+;;; Quack
 (when-library
- "quack"
+ nil quack
  (autoload 'quack-scheme-mode-hookfunc "quack")
  (autoload 'quack-inferior-scheme-mode-hookfunc "quack")
 
@@ -1436,16 +1439,17 @@ Make links point to local files."
 
 ;;; CLIPS
 (when-library
- "inf-clips"
+ nil inf-clips
  (autoload 'clips-mode "clips-mode"
    "Major mode for editing Clips code." t)
  (autoload 'run-clips "inf-clips" "Run an inferior Clips process." t)
- (push '("\\.clp$" . clips-mode) auto-mode-alist)
+ (add-to-list 'auto-mode-alist '("\\.clp$" . clips-mode))
 
  (eval-after-load "clips-mode"
    '(progn
-      (add-hook 'clips-mode-hook (lambda () (activate-lisp-minor-modes)
-				   (setq indent-region-function nil)))
+      (add-hook 'clips-mode-hook (byte-compile
+				  (lambda () (activate-lisp-minor-modes)
+				    (setq indent-region-function nil))))
       (define-key clips-mode-map (kbd "RET") 'autopairs-ret)))
 
  (eval-after-load "inf-clips"
@@ -1458,11 +1462,12 @@ Make links point to local files."
 	      "clips"))
 
       (add-hook 'inferior-clips-mode-hook
-		(lambda () (activate-lisp-minor-modes)
-		  (setq indent-region-function nil))))))
+		(byte-compile
+		 (lambda () (activate-lisp-minor-modes)
+		   (setq indent-region-function nil)))))))
 
 (when-library
- "prog/prolog"
+ nil prog/prolog
  (fset 'run-prolog '(autoload "prog/prolog"
 		      "Start a Prolog sub-process." t nil))
  (autoload 'prolog-mode "prog/prolog"
@@ -1476,7 +1481,7 @@ Make links point to local files."
 
 ;;; Oz
 (when-library
- "oz"
+ nil oz
  (autoload 'oz-mode "oz" "Major mode for editing Oz code." t)
  (autoload 'ozm-mode "mozart"
    "Major mode for displaying Oz machine code." t)
@@ -1489,38 +1494,40 @@ Make links point to local files."
 			      auto-mode-alist)))
 
 ;;; Haskell
-(when (load "haskell-site-file" t)
-  (hook-modes ((haskell-indentation-mode t) turn-on-haskell-doc-mode)
-	      haskell-mode-hook))
+(if (load "haskell-site-file" t)
+    (hook-modes ((haskell-indentation-mode t)
+		 turn-on-haskell-doc-mode)
+		haskell-mode-hook))
 
 ;;; Caml
 (when-library
- "tuareg"
+ nil tuareg
  (autoload 'tuareg-mode "tuareg"
    "Major mode for editing Caml code" t)
  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
- (push '("\\.ml\\w?" . tuareg-mode) auto-mode-alist))
+ (add-to-list 'auto-mode-alist '("\\.ml\\w?" . tuareg-mode)))
 
 ;;; Python
 (when-library
- "python-mode"
+ nil python-mode
  (autoload 'python-mode "python-mode" "Python editing mode." t)
- (push '("\\.py$" . python-mode) auto-mode-alist)
- (push '("python" . python-mode) interpreter-mode-alist))
+ (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
+ (add-to-list 'interpreter-mode-alist '("python" . python-mode)))
 
 ;;; VB
-(when-library "visual-basic-mode"
+(when-library nil visual-basic-mode
 	      (autoload 'visual-basic-mode "visual-basic-mode"
 		"Visual Basic mode." t)
-	      (push '("\\.\\(frm\\|bas\\|cls\\|rvb\\|vbs\\)$"
-		      . visual-basic-mode)
-		    auto-mode-alist))
+	      (add-to-list 'auto-mode-alist
+			   '("\\.\\(frm\\|bas\\|cls\\|rvb\\|vbs\\)$"
+			     . visual-basic-mode)))
 
 ;;; C#
-(when-library "csharp-mode"
-	      (autoload 'csharp-mode "csharp-mode"
-		"Major mode for editing C# code." t)
-	      (push '("\\.cs$" . csharp-mode) auto-mode-alist))
+(when-library
+ nil csharp-mode
+ (autoload 'csharp-mode "csharp-mode"
+   "Major mode for editing C# code." t)
+ (add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode)))
 
 ;;; cc-mode - hide functions
 (add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
@@ -1529,7 +1536,7 @@ Make links point to local files."
 
 ;;; Global tags
 (when-library
- "gtags"
+ nil gtags
  (when (executable-find "global")
    (autoload 'gtags-mode "gtags"
      "Minor mode for utilizing global tags." t)
@@ -1553,12 +1560,12 @@ Make links point to local files."
 					       'gtags-find-rtag)))
    (add-hook 'c-mode-common-hook
 	     (lambda () ;; (gtags-create-or-update)
-	       (when (= 0 (call-process "global" nil nil nil " -p"))
-		 (gtags-mode t))))))
+	       (if (= 0 (call-process "global" nil nil nil " -p"))
+		   (gtags-mode t))))))
 
 ;;; yasnippet
 (when-library
- "yasnippet"
+ nil yasnippet
  (autoload 'yas/global-mode "yasnippet"
    "Activate yasnippet global mode." t)
 
@@ -1567,20 +1574,21 @@ Make links point to local files."
       (yas/load-directory ,(eval-when-compile
 			     (concat +extras-path+
 				     "prog/yasnippet/snippets")))
-      (when (require 'ido nil t)
-	(setq yas/prompt-functions
-	      '(yas/ido-prompt yas/completing-prompt yas/x-prompt
-			       yas/dropdown-prompt yas/no-prompt))))))
+      (if (require 'ido nil t)
+	  (setq yas/prompt-functions
+		'(yas/ido-prompt yas/completing-prompt yas/x-prompt
+				 yas/dropdown-prompt
+				 yas/no-prompt))))))
 
 ;;; Emacs Code Browser
 (when-library
- "semantic"
- (when (require 'ecb-autoloads nil t)
-   (eval-after-load "ecb"
-     `(progn (custom-set-variables '(ecb-options-version "2.40"))
-	     (let ((prog-path ,(eval-when-compile
-				 (concat +home-path+ "Programs"))))
-	       (ecb-add-source-path prog-path prog-path t))))))
+ t semantic
+ (if (require 'ecb-autoloads nil t)
+     (eval-after-load "ecb"
+       `(progn (custom-set-variables '(ecb-options-version "2.40"))
+	       (let ((prog-path ,(eval-when-compile
+				   (concat +home-path+ "Programs"))))
+		 (ecb-add-source-path prog-path prog-path t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1590,53 +1598,15 @@ Make links point to local files."
 (when (load "auctex" t)
   (load "preview-latex" t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (eval-after-load "tex"
-    '(add-hook 'TeX-mode-hook (lambda () (define-key TeX-mode-map "\M-g"
-				      'TeX-complete-symbol)))))
-
-;;; LaTeX beamer
-;; allow for export=>beamer by placing
-;; #+LaTeX_CLASS: beamer in org files
-(when-library
- "org"
- (or (boundp 'org-export-latex-classes)
-     (setq org-export-latex-classes nil))
-
- (add-to-list 'org-export-latex-classes
-	      '("beamer"
-		"\\documentclass[11pt]{beamer}\n
-\\mode<presentation>\n
-\\usetheme{Antibes}\n
-\\usecolortheme{lily}\n
-\\beamertemplateballitem\n
-\\setbeameroption{show notes}
-\\usepackage[utf8]{inputenc}\n
-\\usepackage[bulgarian]{babel}\n
-\\usepackage{hyperref}\n
-\\usepackage{color}
-\\usepackage{listings}
-\\lstset{numbers=none,language=[ISO]C++,tabsize=4,
-  frame=single,
-  basicstyle=\\small,
-  showspaces=false,showstringspaces=false,
-  showtabs=false,
-  keywordstyle=\\color{blue}\\bfseries,
-  commentstyle=\\color{red},
-  }\n
-\\usepackage{verbatim}\n
-\\institute{Sofia University, FMI}\n
-\\subject{RMRF}\n"
-		("\\section{%s}" . "\\section*{%s}")
-		("\\begin{frame}[fragile]\\frametitle{%s}"
-		 "\\end{frame}"
-		 "\\begin{frame}[fragile]\\frametitle{%s}"
-		 "\\end{frame}"))))
+  (unless (fboundp 'ergoemacs-mode)
+    (eval-after-load "tex"
+      '(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
 ;;; Ditaa
 (let ((ditaa-path (eval-when-compile
 		    (concat +extras-path+ "bin/ditaa.jar"))))
   (when (file-exists-p ditaa-path)
-    (setq org-ditaa-jar-path ditaa-path)
+    (when-library t org (setq org-ditaa-jar-path ditaa-path))
 
     (defun ditaa-generate ()
       "Invoke ditaa over current buffer."
@@ -1646,7 +1616,7 @@ Make links point to local files."
 
 ;;; Auto Install
 (when-library
- "auto-install"
+ nil auto-install
  (autoload 'auto-install-from-directory "auto-install"
    "Update elisp files under DIRECTORY from EmacsWiki." t)
 
@@ -1655,13 +1625,13 @@ Make links point to local files."
 				    (concat +extras-path+
 					    "auto-install-dir/"))))
  (when-library
-  ("anything" "anything-auto-install")
+  nil (anything anything-auto-install)
   (autoload 'anything-auto-install "anything-auto-install"
     "All-in-one command for elisp installation." t)))
 
-(when (executable-find "conkeror")
-  (setq browse-url-browser-function 'browse-url-generic
-	browse-url-generic-program "conkeror"))
+(if (executable-find "conkeror")
+    (setq browse-url-browser-function 'browse-url-generic
+	  browse-url-generic-program "conkeror"))
 
 ;;; w3m
 (when (and (executable-find "w3m") (require 'w3m-load nil t))
@@ -1677,7 +1647,7 @@ Make links point to local files."
 
   ;; integration with other packages
   (when-library
-   "gnus"
+   t gnus
    (autoload 'gnus-group-mode-map "nnshimbun"
      "Add shimbun group to Gnus." t)
    (setq shimbun-atom-hash-group-path-alist
@@ -1685,6 +1655,11 @@ Make links point to local files."
 	   ("Wingolog" "http://wingolog.org/feed/atom" t)
 	   ("36 monkeys"
 	    "http://36monkeys.blogspot.com/feeds/posts/default" t))))
+
+  (add-hook 'dired-load-hook
+	    (lambda () "Add w3m key for opening files in dired."
+	      (define-key dired-mode-map "\C-xm"
+		'dired-w3m-find-file)))
 
   (eval-after-load "w3m"
     `(progn
@@ -1694,7 +1669,11 @@ Make links point to local files."
 	     w3m-use-toolbar t
 	     w3m-use-cookies t)
 
-       (require 'w3m-wget nil t)
+       ,@(when-library
+	  nil wget
+	  '((autoload 'wget-api "wget"
+	      "Application Program Interface for wget")
+	    (require 'w3m-wget nil t)))
 
        (defun w3m-browse-url-other-window (url &optional newwin)
 	 "Open URL in new window when NEWWIN."
@@ -1748,10 +1727,10 @@ Make links point to local files."
 
        (define-keys w3m-mode-map
 	 "i" 'w3m-save-image
-	 "l" 'w3m-horizontal-recenter)))
+	 "l" 'w3m-horizontal-recenter)
 
-  (eval-after-load "dired"
-    '(define-key dired-mode-map "\C-xm" 'dired-w3m-find-file)))
+       (add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
+						  (w3m-quit t))) t))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
@@ -1763,7 +1742,7 @@ Make links point to local files."
 
 ;;; mldonkey
 (when-library
- "mldonkey"
+ nil mldonkey
  (autoload 'mldonkey "mldonkey" "Run the MlDonkey interface." t)
 
  (eval-after-load "mldonkey"
@@ -1784,8 +1763,8 @@ Make links point to local files."
        (emms-devel)
        (emms-default-players)
 
-       (when (require 'emms-info-libtag nil t)
-	 (add-to-list 'emms-info-functions 'emms-info-libtag))
+       (if (require 'emms-info-libtag nil t)
+	   (add-to-list 'emms-info-functions 'emms-info-libtag))
 
        (require 'emms-mark nil t)
 
@@ -1855,16 +1834,16 @@ Medium - less than 120000 bytes."
 			    (lambda (p1 p2)
 			      (< (file-size p1) (file-size p2)))))
 		(small (car pics)))
-	   (when (<= (or (file-size small) 100001) 100000)
-	     (let ((medium (cadr pics)))
-	       (car (cond ((eq type 'small) small)
-			  ((eq type 'medium)
-			   (if (<= (or (file-size medium) 120001)
-				   120000)
-			       medium
-			     small))
-			  ((eq type 'large) (or (car (cddr pics))
-						medium small))))))))
+	   (if (<= (or (file-size small) 100001) 100000)
+	       (let ((medium (cadr pics)))
+		 (car (cond ((eq type 'small) small)
+			    ((eq type 'medium)
+			     (if (<= (or (file-size medium) 120001)
+				     120000)
+				 medium
+			       small))
+			    ((eq type 'large) (or (car (cddr pics))
+						  medium small))))))))
 
        (byte-compile 'my-emms-track-description-function)
        (byte-compile 'my-emms-covers)
@@ -1890,55 +1869,57 @@ Medium - less than 120000 bytes."
 	       emms-lastfm-password "very-secret")
 	 (emms-lastfm 1))
 
-       ,(when (executable-find "mpd")
-	  `(when (require 'emms-player-mpd nil t)
-	     (add-to-list 'emms-info-functions 'emms-info-mpd)
-	     (push 'emms-player-mpd emms-player-list)
-	     (setq emms-player-mpd-music-directory
-		   emms-source-file-default-directory)
+       (when (and (executable-find "mpd")
+		  (require 'emms-player-mpd nil t))
+	 (add-to-list 'emms-info-functions 'emms-info-mpd)
+	 (add-to-list 'emms-player-list 'emms-player-mpd)
+	 (setq emms-player-mpd-music-directory
+	       emms-source-file-default-directory)
 
-	     ,(win-or-nix
-	       nil
-	       (when-library
-		("dbus" "notify")
-		'(defadvice emms-player-started
-		   (after emms-player-mpd-notify activate compile)
-		   "Notify new track for MPD."
-		   (when (eq emms-player-playing-p 'emms-player-mpd)
-		     (notify "EMMS" (substring (emms-show) 6))))))))
+	 ,(win-or-nix
+	   nil
+	   (when-library
+	    t dbus
+	    (when-library
+	     nil notify
+	     '(defadvice emms-player-started
+		(after emms-player-mpd-notify activate compile)
+		"Notify new track for MPD."
+		(if (eq emms-player-playing-p 'emms-player-mpd)
+		    (notify "EMMS" (substring (emms-show) 6))))))))
 
-       (global-set-key [XF86AudioStop] 'emms-pause)
-
-       (unless (locate-library "ergoemacs")
+       (global-set-key [XF86AudioPlay] 'emms-pause)
+       (unless (fboundp 'ergoemacs-mode)
 	 (global-set-key (kbd "s-r") 'emms-pause))
 
-       ,(win-or-nix
-	 nil
-	 (when-library ("dbus" "notify")
-		       '(progn
-			  (defun my-emms-notify ()
-			    "Notify on new track."
-			    (emms-next-noerror)
-			    (when emms-player-playing-p
-			      (notify "EMMS" (substring (emms-show)
-							6))))
+       ,@(win-or-nix
+	  nil
+	  (when-library
+	   t dbus
+	   (when-library
+	    nil notify
+	    '((defun my-emms-notify ()
+		"Notify on new track."
+		(emms-next-noerror)
+		(if emms-player-playing-p
+		    (notify "EMMS" (substring (emms-show) 6))))
 
-			  (byte-compile 'my-emms-notify)
-			  (setq emms-player-next-function
-				'my-emms-notify)))))))
+	      (byte-compile 'my-emms-notify)
+	      (setq emms-player-next-function
+		    'my-emms-notify))))))))
 
 ;;; Dictionary
-(when-library "dictionary"
+(when-library nil dictionary
 	      (global-set-key (kbd "C-s-w") 'dictionary-search))
 
 ;;; chess
-(when-library "chess"			; from ELPA
+(when-library nil chess			; from ELPA
 	      ;;(autoload 'chess "chess" "Play a game of chess" t)
 	      (setq chess-sound-play-function nil))
 
 ;;; sudoku
 (when-library
- "sudoku"
+ nil sudoku
  (autoload 'sudoku "sudoku" "Start a sudoku game." t)
  (eval-after-load "sudoku" '(setq sudoku-level "evil")))
 
@@ -1948,7 +1929,7 @@ Medium - less than 120000 bytes."
 
 (win-or-nix
 ;;; Cygwin
- (when-library "cygwin-mount"
+ (when-library nil cygwin-mount
 	       (let ((cygwin-dir (eval-when-compile
 				   (concat +win-path+ "cygwin/bin"))))
 		 (when (and (file-exists-p cygwin-dir)
@@ -1958,18 +1939,19 @@ Medium - less than 120000 bytes."
 
 ;;; Notify
  (when-library
-  "notify"
-  (when (require 'dbus nil t)
-    (autoload 'notify "notify" "Use pop-up notifications for events.")
-    (eval-after-load "notify"
-      '(setq notify-defaults
-	     (list :app "Emacs"
-		   :icon "/usr/local/share/icons/hicolor/48x48/apps/emacs.png"
-		   :timeout 5000 :urgency "low"
-		   :category "emacs.event"))))))
+  t dbus
+  (when-library
+   nil notify
+   (autoload 'dbus-ping "dbus"
+     "Check whether SERVICE is registered for D-Bus BUS.")
+   (autoload 'notify "notify" "Use pop-up notifications for events.")
+   (eval-after-load "notify"
+     '(setq notify-defaults
+	    (list :app "Emacs"
+		  :icon "/usr/local/share/icons/hicolor/48x48/apps/emacs.png"
+		  :timeout 5000 :urgency "low"
+		  :category "emacs.event"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; (server-start) ; using --daemon or emacsW32 instead
-
-;;; init.el ends here
