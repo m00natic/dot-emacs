@@ -28,12 +28,12 @@ SLIME http://common-lisp.net/project/slime
 Quack http://www.neilvandyke.org/quack
 clojure-mode http://github.com/technomancy/clojure-mode
 swank-clojure http://github.com/techkomancy/swank-clojure
-clips-mode http://www.cs.us.es/software/clips
+clips-mode (modified) http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
 haskell-mode http://projects.haskell.org/haskellmode-emacs
 tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
 Oz-mode http://www.mozart-oz.org
-Qi-mode http://code.google.com/p/qilang
+Qi-mode (modified) http://code.google.com/p/qilang
 python-mode https://launchpad.net/python-mode
 CSharpMode http://www.emacswiki.org/emacs/CSharpMode
 VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode

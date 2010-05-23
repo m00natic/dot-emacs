@@ -149,13 +149,13 @@ NIX forms are executed on all other platforms."
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
- '(ispell-dictionary "english")
  '(kept-new-versions 5)
  '(major-mode 'org-mode)
  '(menu-bar-mode nil)
  '(mouse-avoidance-mode 'jump nil (avoid))
  '(mouse-wheel-mode t)
  '(next-line-add-newlines nil)
+ '(proced-format 'medium)
  '(query-replace-highlight t)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-menu-items 15)
@@ -240,10 +240,10 @@ KEYS is alternating list of key-value."
 (defmacro active-lisp-modes ()
   "Activate convenient s-expressions which are present."
   `(progn (pretty-lambdas)
-	  ,(when-library nil hl-sexp '(hl-sexp-mode +1))
+	  ,(when-library nil hl-sexp '(hl-sexp-mode 1))
 	  ,(when-library nil highlight-parentheses ; from ELPA
-			 '(highlight-parentheses-mode +1))
-	  ,(when-library nil paredit '(paredit-mode +1))))
+			 '(highlight-parentheses-mode 1))
+	  ,(when-library nil paredit '(paredit-mode 1))))
 
 (defmacro opacity-modify (&optional dec)
   "Modify the transparency of the Emacs frame.
@@ -268,9 +268,8 @@ otherwise increase it in 5%-steps"
   (if (fboundp 'w32-send-sys-command)
       ;; WM_SYSCOMMAND restore #xf120
       '(w32-send-sys-command 61728)
-    '(progn
-       (set-frame-parameter nil 'width +width+)
-       (set-frame-parameter nil 'fullscreen 'fullheight))))
+    '(progn (set-frame-parameter nil 'width +width+)
+	    (set-frame-parameter nil 'fullscreen 'fullheight))))
 
 (defmacro my-fullscreen ()
   "Go fullscreen."
@@ -293,8 +292,9 @@ otherwise increase it in 5%-steps"
 
 (defun faces-generic ()
   "My prefered faces which differ from default."
-  (ignore-errors
-   (set-face-font 'default (win-or-nix "Consolas" "Inconsolata")))
+  (condition-case nil
+      (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
+    (error (ignore-errors (set-face-font 'default "terminus"))))
   (custom-set-faces
    '(font-lock-comment-face
      ((((class grayscale) (background light))
@@ -723,8 +723,7 @@ advice like this:
 (when-library
  t gnus
  (defvar *gnus-new-mail-count* "" "Unread messages count.")
- (setq global-mode-string (append global-mode-string
-				  (list '*gnus-new-mail-count*)))
+ (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
 
  (eval-after-load "gnus"
    `(progn
@@ -778,8 +777,8 @@ advice like this:
 			(active (gnus-active group)))
 		    (when info (gnus-request-update-info info method))
 		    (gnus-get-unread-articles-in-group info active)
-		    (unless (gnus-virtual-group-p group)
-		      (gnus-close-group group))
+		    (or (gnus-virtual-group-p group)
+			(gnus-close-group group))
 		    (when gnus-agent
 		      (gnus-agent-save-group-info
 		       method (gnus-group-real-name group) active))
@@ -795,15 +794,15 @@ advice like this:
 		    ,(win-or-nix
 		      nil
 		      (when-library
-		       t dbus
-		       (when-library
-			nil notify
-			'(notify "Gnus"
-				 (format
-				  (concat "%d new mail%s in "
-					  (substring unread-groups 2))
-				  unread-count
-				  (if (= unread-count 1) "" "s"))))))
+		       nil notify
+		       '(notify
+			 "Gnus"
+			 (format
+			  (concat "%d new mail%s in "
+				  (substring unread-groups 2))
+			  unread-count
+			  (if (= unread-count 1) "" "s")))))
+
 		    (put '*gnus-new-mail-count*
 			 'risky-local-variable t)
 		    (propertize (format "%d" unread-count)
@@ -958,13 +957,15 @@ If not a file, attach current directory."
 					  activate compile)
     "Add some rules for grouping tabs to run before original."
     (cond
-     ((string-match "^*tramp" (buffer-name))
-      (setq ad-return-value (list "Tramp")))
      ((memq major-mode '(woman-mode completion-list-mode
 				    slime-fuzzy-completions-mode))
       (setq ad-return-value (list "Help")))
      ((eq major-mode 'asdf-mode)
       (setq ad-return-value (list "Lisp")))
+     ((string-match "^*tramp" (buffer-name))
+      (setq ad-return-value (list "Tramp")))
+     ((string-match "^*anything" (buffer-name))
+      (setq ad-return-value (list "Anything")))
      ((string-match "^emms" (symbol-name major-mode))
       (setq ad-return-value (list "EMMS")))
      ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
@@ -1065,6 +1066,14 @@ Make links point to local files."
   (global-set-key [f5] 'anything-for-files)
   (global-set-key (kbd "M-<f5>") 'anything-info-at-point)
 
+  (win-or-nix
+   nil (when (eval-when-compile
+	       (string-match "gentoo"
+			     (shell-command-to-string "uname -r")))
+	 (autoload 'anything-gentoo "anything-config"
+	   "Preconfigured `anything' for gentoo linux.")
+	 (global-set-key (kbd "C-<f5>") 'anything-gentoo)))
+
   (eval-after-load "anything"
     '(when (require 'anything-config nil t)
        (defun my-anything ()
@@ -1164,8 +1173,8 @@ Make links point to local files."
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
      (interactive (list (completing-read "Enter layout (default us): "
-					 '("us" "dv" "sp" "it"
-					   "colemak")
+					 '("us" "dv" "sp" "it" "gb"
+					   "gb-dv" "colemak")
 					 nil t nil nil "us")))
      (unless (equal layout ergoemacs-keyboard-layout)
        (ergoemacs-mode 0)
@@ -1210,7 +1219,7 @@ Make links point to local files."
       (win-or-nix (eval-when-compile
 		    (concat +home-path+
 			    "bin/clisp/clisp.exe -K full"))
-		  "/usr/local/bin/sbcl")
+		  "sbcl")
       scheme-program-name "gsi")
 
 ;;; elisp stuff
@@ -1220,8 +1229,8 @@ Make links point to local files."
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
 
-(unless (fboundp 'ergoemacs-mode)
-  (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
+(or (fboundp 'ergoemacs-mode)
+    (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
 ;; common lisp hyperspec info look-up
 (if (require 'info-look nil t)
@@ -1598,9 +1607,9 @@ Make links point to local files."
 (when (load "auctex" t)
   (load "preview-latex" t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (unless (fboundp 'ergoemacs-mode)
-    (eval-after-load "tex"
-      '(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
+  (or (fboundp 'ergoemacs-mode)
+      (eval-after-load "tex"
+	'(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
 ;;; Ditaa
 (let ((ditaa-path (eval-when-compile
@@ -1718,8 +1727,8 @@ Make links point to local files."
 	   "Open URL, current link or page with generic browser."
 	   (interactive)
 	   (browse-url-generic (or url (w3m-anchor)
-				   (unless w3m-display-inline-images
-				     (w3m-image))
+				   (or w3m-display-inline-images
+				       (w3m-image))
 				   w3m-current-url)))
 
 	 (byte-compile 'w3m-browse-url-generic)
@@ -1764,14 +1773,16 @@ Make links point to local files."
        (emms-default-players)
 
        (if (require 'emms-info-libtag nil t)
-	   (add-to-list 'emms-info-functions 'emms-info-libtag))
+	   (add-to-list 'emms-info-functions 'emms-info-libtag
+			nil 'eq))
 
        (require 'emms-mark nil t)
 
        ;; swap time and other track info
        (let ((new-global-mode-string nil))
-	 (while (and (not (eq 'emms-mode-line-string
-			      (car global-mode-string)))
+	 (while (and (not (memq (car global-mode-string)
+				'(emms-mode-line-string
+				  emms-playing-time-string)))
 		     global-mode-string)
 	   (push (car global-mode-string) new-global-mode-string)
 	   (setq global-mode-string (cdr global-mode-string)))
@@ -1871,42 +1882,37 @@ Medium - less than 120000 bytes."
 
        (when (and (executable-find "mpd")
 		  (require 'emms-player-mpd nil t))
-	 (add-to-list 'emms-info-functions 'emms-info-mpd)
-	 (add-to-list 'emms-player-list 'emms-player-mpd)
+	 (add-to-list 'emms-info-functions 'emms-info-mpd nil 'eq)
+	 (add-to-list 'emms-player-list 'emms-player-mpd nil 'eq)
 	 (setq emms-player-mpd-music-directory
 	       emms-source-file-default-directory)
 
 	 ,(win-or-nix
 	   nil
 	   (when-library
-	    t dbus
-	    (when-library
-	     nil notify
-	     '(defadvice emms-player-started
-		(after emms-player-mpd-notify activate compile)
-		"Notify new track for MPD."
-		(if (eq emms-player-playing-p 'emms-player-mpd)
-		    (notify "EMMS" (substring (emms-show) 6))))))))
+	    nil notify
+	    '(defadvice emms-player-started
+	       (after emms-player-mpd-notify activate compile)
+	       "Notify new track for MPD."
+	       (if (eq emms-player-playing-p 'emms-player-mpd)
+		   (notify "EMMS" (substring (emms-show) 6)))))))
 
        (global-set-key [XF86AudioPlay] 'emms-pause)
-       (unless (fboundp 'ergoemacs-mode)
-	 (global-set-key (kbd "s-r") 'emms-pause))
+       (or (fboundp 'ergoemacs-mode)
+	   (global-set-key (kbd "s-r") 'emms-pause))
 
        ,@(win-or-nix
 	  nil
 	  (when-library
-	   t dbus
-	   (when-library
-	    nil notify
-	    '((defun my-emms-notify ()
-		"Notify on new track."
-		(emms-next-noerror)
-		(if emms-player-playing-p
-		    (notify "EMMS" (substring (emms-show) 6))))
+	   nil notify
+	   '((defun my-emms-notify ()
+	       "Notify on new track."
+	       (emms-next-noerror)
+	       (if emms-player-playing-p
+		   (notify "EMMS" (substring (emms-show) 6))))
 
-	      (byte-compile 'my-emms-notify)
-	      (setq emms-player-next-function
-		    'my-emms-notify))))))))
+	     (byte-compile 'my-emms-notify)
+	     (setq emms-player-next-function 'my-emms-notify)))))))
 
 ;;; Dictionary
 (when-library nil dictionary
@@ -1937,20 +1943,9 @@ Medium - less than 120000 bytes."
 		   (cygwin-mount-activate)
 		   (setq w32shell-cygwin-bin cygwin-dir))))
 
-;;; Notify
- (when-library
-  t dbus
-  (when-library
-   nil notify
-   (autoload 'dbus-ping "dbus"
-     "Check whether SERVICE is registered for D-Bus BUS.")
-   (autoload 'notify "notify" "Use pop-up notifications for events.")
-   (eval-after-load "notify"
-     '(setq notify-defaults
-	    (list :app "Emacs"
-		  :icon "/usr/local/share/icons/hicolor/48x48/apps/emacs.png"
-		  :timeout 5000 :urgency "low"
-		  :category "emacs.event"))))))
+;;; Desktop notifications
+ (when-library nil notify
+	       (autoload 'notify "notify" "Notify TITLE, BODY.")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
