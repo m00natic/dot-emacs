@@ -30,6 +30,7 @@
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
 ;;   ParEdit http://www.emacswiki.org/emacs/ParEdit
+;;   autopair http://code.google.com/p/autopair
 ;;   Redshank http://www.foldr.org/~michaelw/emacs/redshank
 ;;  networking:
 ;;   emacs-w3m http://emacs-w3m.namazu.org
@@ -47,6 +48,7 @@
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   sudoku http://www.columbia.edu/~jr2075/elisp/index.html
+;;   GoMode http://www.emacswiki.org/emacs/GoMode
 
 ;;; Code:
 ;; do some OS recognition and set main parameters
@@ -72,17 +74,23 @@ NIX forms are executed on all other platforms."
 
 (defconst +home-path+
   (win-or-nix
-   (if (string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
-       (match-string 0 exec-directory)
-     (eval-when-compile (concat (getenv "HOME") "/")))
+   (cond ((string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
+	  (match-string 0 exec-directory)) ; usb
+	 ((file-exists-p (concat exec-directory "../../home"))
+	  (file-truename (concat exec-directory "../../home/")))
+	 (t (eval-when-compile (concat (getenv "HOME") "/"))))
    (eval-when-compile (concat (getenv "HOME") "/")))
   "Home path.")
 
-(setq user-emacs-directory (eval-when-compile
-			     (concat +home-path+ ".emacs.d/")))
+(setq user-emacs-directory (win-or-nix
+			    (concat +home-path+ ".emacs.d/")
+			    (eval-when-compile
+			      (concat +home-path+ ".emacs.d/"))))
 
-(defconst +extras-path+ (eval-when-compile
-			  (concat user-emacs-directory "extras/"))
+(defconst +extras-path+ (win-or-nix
+			 (concat user-emacs-directory "extras/")
+			 (eval-when-compile
+			   (concat user-emacs-directory "extras/")))
   "Elisp extensions' path.")
 
 ;; add `+extras-path+' and subdirs to `load-path'
@@ -93,11 +101,14 @@ NIX forms are executed on all other platforms."
       (let ((default-directory +extras-path+))
 	(normal-top-level-add-subdirs-to-load-path))))
 
-(let ((bin-path (eval-when-compile (concat +extras-path+ "bin"))))
+(let ((bin-path (win-or-nix
+		 (concat +extras-path+ "bin")
+		 (eval-when-compile (concat +extras-path+ "bin")))))
   (if (file-exists-p bin-path) (add-to-list 'exec-path bin-path)))
 
 ;; set default directory for `*scratch*'
-(setq default-directory (eval-when-compile +home-path+))
+(setq default-directory (win-or-nix +home-path+
+				    (eval-when-compile +home-path+)))
 
 (setenv "EMAIL" "m00naticus@gmail.com")
 
@@ -107,15 +118,15 @@ NIX forms are executed on all other platforms."
 (custom-set-variables
  '(add-log-full-name "Andrey Kotlarski")
  '(backup-by-copying t)
- `(bookmark-default-file ,(eval-when-compile
-			    (concat user-emacs-directory
-				    "bookmarks")))
+ `(bookmark-default-file ,(win-or-nix
+			   (concat user-emacs-directory
+				   "bookmarks")
+			   (eval-when-compile
+			     (concat user-emacs-directory
+				     "bookmarks"))))
  '(bookmark-save-flag 1)
- '(browse-url-epiphany-new-window-is-tab t)
  '(browse-url-firefox-new-window-is-tab t)
- '(browse-url-galeon-new-window-is-tab t)
  '(browse-url-mozilla-new-window-is-tab t)
- '(browse-url-netscape-new-window-is-tab t)
  '(browse-url-new-window-flag t)
  '(calendar-latitude 42.68)
  '(calendar-longitude 23.31)
@@ -126,7 +137,6 @@ NIX forms are executed on all other platforms."
  '(current-language-environment "UTF-8")
  '(default-input-method "bulgarian-phonetic")
  '(delete-old-versions t)
- '(delete-selection-mode t)
  '(display-battery-mode t)
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
@@ -143,9 +153,12 @@ NIX forms are executed on all other platforms."
  '(icomplete-prospects-height 2)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both nil (ido))
- `(ido-save-directory-list-file ,(eval-when-compile
-				   (concat user-emacs-directory
-					   ".ido.last")))
+ `(ido-save-directory-list-file ,(win-or-nix
+				  (concat user-emacs-directory
+					  ".ido.last")
+				  (eval-when-compile
+				    (concat user-emacs-directory
+					    ".ido.last"))))
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
@@ -161,8 +174,10 @@ NIX forms are executed on all other platforms."
  '(recentf-max-menu-items 15)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
- `(recentf-save-file ,(eval-when-compile
-			(concat user-emacs-directory "recentf")))
+ `(recentf-save-file ,(win-or-nix
+		       (concat user-emacs-directory "recentf")
+		       (eval-when-compile
+			 (concat user-emacs-directory "recentf"))))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
  '(search-highlight t)
@@ -526,20 +541,6 @@ Remove hook when done and add `my-colours-set' instead."
 				   ,(make-char 'greek-iso8859-7 107))
 				  nil))))))
 
-(defconst +skeleton-pair-alist+
-  '((?\( _ ?\)) (?[  _ ?]) (?{  _ ?}) (?\" _ ?\"))
-  "List of pair symbols.")
-
-(defun autopairs-ret (arg)
-  "Eclectic newline inside closing brackets.
-If ARG, stay on the original line."
-  (interactive "P")
-  (dolist (pair +skeleton-pair-alist+)
-    (if (eq (char-after) (car (last pair)))
-	(save-excursion (newline-and-indent))))
-  (newline arg)
-  (indent-according-to-mode))
-
 (defun activate-lisp-minor-modes ()
   "Activate some convenient minor modes for editing s-exp."
   (active-lisp-modes))
@@ -547,10 +548,6 @@ If ARG, stay on the original line."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; appearance
-
-;;; geometry
-(add-to-list 'default-frame-alist (cons 'width +width+))
-(win-or-nix (set-frame-width (selected-frame) +width+))
 
 (if (window-system)
     (if (require 'solar nil t) (my-colours-set))
@@ -585,10 +582,11 @@ If ARG, stay on the original line."
 (setq locale-coding-system 'utf-8)
 (set-terminal-coding-system 'utf-8)
 
-;;; eclectic autoindent on newline
-(global-set-key (kbd "M-RET") 'autopairs-ret)
-
-
+;;; autoindent
+(global-set-key (kbd "M-RET") (lambda () "Newline and indent."
+				(interactive)
+				(newline)
+				(indent-according-to-mode)))
 
 ;;; jump through errors/results
 (global-set-key (kbd "<C-M-prior>") 'previous-error)
@@ -597,6 +595,8 @@ If ARG, stay on the original line."
 ;;; clipboard
 (global-set-key (kbd "C-s-v") 'clipboard-yank)
 (global-set-key (kbd "C-s-c") 'clipboard-kill-ring-save)
+(global-set-key (kbd "<C-lwindow> C-v") 'clipboard-yank)
+(global-set-key (kbd "<C-lwindow> C-c") 'clipboard-kill-ring-save)
 
 ;;; enable some actions
 (put 'narrow-to-region 'disabled nil)
@@ -619,10 +619,12 @@ If ARG, stay on the original line."
      (message "Killed line.")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-;;; backups
+;;; backup
 (setq backup-directory-alist
-      `(("." . ,(eval-when-compile (concat user-emacs-directory
-					   "backup/"))))
+      `(("." . ,(win-or-nix
+		 (concat user-emacs-directory "backup/")
+		 (eval-when-compile (concat user-emacs-directory
+					    "backup/")))))
       tramp-backup-directory-alist backup-directory-alist)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -634,6 +636,27 @@ If ARG, stay on the original line."
 
 ;; Proced
 (when-library t proced (global-set-key (kbd "C-M-`") 'proced))
+
+;; Battery
+(when-library
+ t battery
+ (and (eq battery-status-function 'battery-linux-sysfs)
+      (file-readable-p "/proc/acpi/thermal_zone")
+      (defadvice battery-linux-sysfs (after battery-add-temperature
+					    activate compile)
+	"Add temperature to battery status when using `sysfs'."
+	(setq ad-return-value
+	      (cons
+	       (cons ?d (or (battery-search-for-one-match-in-files
+			     (mapcar (lambda (e) (concat e "/temperature"))
+				     (ignore-errors
+				       (directory-files
+					"/proc/acpi/thermal_zone/" t
+					"\\`[^.]")))
+			     "temperature: +\\([0-9]+\\) C$" 1)
+			    "N/A"))
+	       ad-return-value)))
+      (setq battery-mode-line-format "[%b%p%%,%dC]")))
 
 ;;; highlight changes in documents
 (when-library
@@ -724,6 +747,7 @@ advice like this:
  t gnus
  (defvar *gnus-new-mail-count* "" "Unread messages count.")
  (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
+ (put '*gnus-new-mail-count* 'risky-local-variable t)
 
  (eval-after-load "gnus"
    `(progn
@@ -775,19 +799,19 @@ advice like this:
 		(when (gnus-activate-group group 'scan nil method)
 		  (let ((info (gnus-get-info group))
 			(active (gnus-active group)))
-		    (when info (gnus-request-update-info info method))
+		    (if info (gnus-request-update-info info method))
 		    (gnus-get-unread-articles-in-group info active)
 		    (or (gnus-virtual-group-p group)
 			(gnus-close-group group))
-		    (when gnus-agent
-		      (gnus-agent-save-group-info
-		       method (gnus-group-real-name group) active))
+		    (if gnus-agent
+			(gnus-agent-save-group-info
+			 method (gnus-group-real-name group) active))
 		    (gnus-group-update-group group))
 		  (let ((unread (gnus-group-unread group)))
-		    (when (and (numberp unread) (> unread 0))
-		      (setq unread-count (+ unread-count unread)
-			    unread-groups (concat unread-groups
-						  ", " group)))))))
+		    (and (numberp unread) (> unread 0)
+			 (setq unread-count (+ unread-count unread)
+			       unread-groups (concat unread-groups
+						     ", " group)))))))
 	    ;; show popup on new mail and change mode line
 	    (setq *gnus-new-mail-count*
 		  (if (null unread-groups) ""
@@ -795,16 +819,17 @@ advice like this:
 		      nil
 		      (when-library
 		       nil notify
-		       '(notify
-			 "Gnus"
-			 (format
-			  (concat "%d new mail%s in "
-				  (substring unread-groups 2))
-			  unread-count
-			  (if (= unread-count 1) "" "s")))))
+		       '(if (> unread-count
+			       (string-to-number
+				*gnus-new-mail-count*))
+			    (notify
+			     "Gnus"
+			     (format
+			      (concat "%d new mail%s in "
+				      (substring unread-groups 2))
+			      unread-count
+			      (if (= unread-count 1) "" "s"))))))
 
-		    (put '*gnus-new-mail-count*
-			 'risky-local-variable t)
 		    (propertize (format "%d" unread-count)
 				'face 'font-lock-warning-face))))))
 
@@ -855,6 +880,8 @@ advice like this:
       "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
      ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
       "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
+     ("^cliki:? +\\(.*\\)" .		; Common Lisp wiki
+      "http://www.cliki.net/admin/search?words=\\1")
      ("^hayoo:? +\\(.*\\)" .		; Hayoo
       "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
      ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
@@ -1083,7 +1110,7 @@ Make links point to local files."
 	    anything-c-source-emacs-variables
 	    anything-c-source-emacs-functions-with-abbrevs
 	    anything-c-source-man-pages)
-	  "*my-anything*"))
+	  "*anything-custom*"))
 
        (byte-compile 'my-anything))))
 
@@ -1161,10 +1188,16 @@ Make links point to local files."
 	    nil emms
 	    '(cond ((equal ergo-layout "en")
 		    (eval-after-load "emms"
-		      '(global-set-key (kbd "s-r") 'emms-pause)))
+		      '(progn
+			 (global-set-key (kbd "s-r") 'emms-pause)
+			 (global-set-key (kbd "<lwindow>-r")
+					 'emms-pause))))
 		   ((equal ergo-layout "colemak")
 		    (eval-after-load "emms"
-		      '(global-set-key (kbd "s-p") 'emms-pause)))))
+		      '(progn
+			 (global-set-key (kbd "s-p") 'emms-pause)
+			 (global-set-key (kbd "<lwindow>-p")
+					 'emms-pause))))))
 	  ,(when-library
 	    nil anything-config
 	    '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
@@ -1204,6 +1237,11 @@ Make links point to local files."
 	      (autoload 'hl-sexp-mode "hl-sexp"
 		"Highlight s-expressions minor mode." t))
 
+;;; autopairs
+(when (require 'autopair nil t)
+  (setq autopair-autowrap t)
+  (autopair-global-mode 1))
+
 ;;; Paredit
 (when-library
  nil paredit				; from ELPA
@@ -1216,14 +1254,17 @@ Make links point to local files."
 		     t)))
 
 (setq inferior-lisp-program
-      (win-or-nix (eval-when-compile
-		    (concat +home-path+
-			    "bin/clisp/clisp.exe -K full"))
-		  "sbcl")
+      (win-or-nix
+       (cond ((file-exists-p (concat +home-path+ "../clisp"))
+	      (file-truename (concat +home-path+
+				     "../clisp/clisp.exe -K full")))
+	     ((file-exists-p (concat +home-path+ "clisp"))
+	      (concat +home-path+ "clisp/clisp.exe -K full"))
+	     "clisp")
+       "sbcl")
       scheme-program-name "gsi")
 
 ;;; elisp stuff
-(eval-after-load "eldoc" '(eldoc-add-command 'autopairs-ret))
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
@@ -1271,8 +1312,7 @@ Make links point to local files."
 			" --core " +home-path+
 			"Programs/Qi/Qi.core"))))
       (hook-modes activate-lisp-minor-modes
-		  qi-mode-hook inferior-qi-mode-hook)
-      (define-key qi-mode-map (kbd "RET") 'autopairs-ret))))
+		  qi-mode-hook inferior-qi-mode-hook))))
 
 ;;; Set up SLIME
 (if (require 'slime-autoloads nil t)
@@ -1301,15 +1341,13 @@ Make links point to local files."
 				     binary)))
 
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	 (define-key slime-mode-map (kbd "RET") 'autopairs-ret)
 	 (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
 
 ;;; Clojure
 (when-library
  nil clojure-mode			; from ELPA
  (eval-after-load "clojure-mode"
-   '(progn (add-hook 'clojure-mode-hook 'activate-lisp-minor-modes)
-	   (define-key clojure-mode-map (kbd "RET") 'autopairs-ret)))
+   '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
 
  (when-library
   nil (slime swank-clojure)
@@ -1366,10 +1404,9 @@ Make links point to local files."
 
 ;;; Local JavaDoc to Slime
        (defconst +slime-browse-local-javadoc-root+
-	 ,(eval-when-compile
-	    (concat (win-or-nix (concat +home-path+ "Documents")
-				"/usr/share")
-		    "/javadoc/java-1.6.0-openjdk"))
+	 ,(win-or-nix
+	   (concat +home-path+ "Documents/javadoc/java-1.6.0-openjdk")
+	   "/usr/share/javadoc/java-1.6.0-openjdk")
 	 "Path to javadoc.")
 
        (defun slime-browse-local-javadoc (ci-name)
@@ -1441,9 +1478,8 @@ Make links point to local files."
  (eval-after-load "quack"
    `(setq quack-default-program "gsi"
 	  quack-pltcollect-dirs (list ,(win-or-nix
-					(eval-when-compile
-					  (concat +home-path+
-						  "Documents/plt"))
+					(concat +home-path+
+						"Documents/plt")
 					"/usr/share/plt/doc")))))
 
 ;;; CLIPS
@@ -1455,11 +1491,9 @@ Make links point to local files."
  (add-to-list 'auto-mode-alist '("\\.clp$" . clips-mode))
 
  (eval-after-load "clips-mode"
-   '(progn
-      (add-hook 'clips-mode-hook (byte-compile
-				  (lambda () (activate-lisp-minor-modes)
-				    (setq indent-region-function nil))))
-      (define-key clips-mode-map (kbd "RET") 'autopairs-ret)))
+   '(add-hook 'clips-mode-hook (byte-compile
+				(lambda () (activate-lisp-minor-modes)
+				  (setq indent-region-function nil)))))
 
  (eval-after-load "inf-clips"
    `(progn
@@ -1580,9 +1614,12 @@ Make links point to local files."
 
  (eval-after-load "yasnippet"
    `(progn
-      (yas/load-directory ,(eval-when-compile
-			     (concat +extras-path+
-				     "prog/yasnippet/snippets")))
+      (yas/load-directory ,(win-or-nix
+			    (concat +extras-path+
+				    "prog/yasnippet/snippets")
+			    (eval-when-compile
+			      (concat +extras-path+
+				      "prog/yasnippet/snippets"))))
       (if (require 'ido nil t)
 	  (setq yas/prompt-functions
 		'(yas/ido-prompt yas/completing-prompt yas/x-prompt
@@ -1595,8 +1632,10 @@ Make links point to local files."
  (if (require 'ecb-autoloads nil t)
      (eval-after-load "ecb"
        `(progn (custom-set-variables '(ecb-options-version "2.40"))
-	       (let ((prog-path ,(eval-when-compile
-				   (concat +home-path+ "Programs"))))
+	       (let ((prog-path ,(win-or-nix
+				  (concat +home-path+ "Programs")
+				  (eval-when-compile
+				    (concat +home-path+ "Programs")))))
 		 (ecb-add-source-path prog-path prog-path t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1612,8 +1651,10 @@ Make links point to local files."
 	'(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
 ;;; Ditaa
-(let ((ditaa-path (eval-when-compile
-		    (concat +extras-path+ "bin/ditaa.jar"))))
+(let ((ditaa-path (win-or-nix
+		   (concat +extras-path+ "bin/ditaa.jar")
+		   (eval-when-compile
+		     (concat +extras-path+ "bin/ditaa.jar")))))
   (when (file-exists-p ditaa-path)
     (when-library t org (setq org-ditaa-jar-path ditaa-path))
 
@@ -1630,9 +1671,12 @@ Make links point to local files."
    "Update elisp files under DIRECTORY from EmacsWiki." t)
 
  (eval-after-load "auto-install"
-   `(setq auto-install-directory ,(eval-when-compile
-				    (concat +extras-path+
-					    "auto-install-dir/"))))
+   `(setq auto-install-directory ,(win-or-nix
+				   (concat +extras-path+
+					   "auto-install-dir/")
+				   (eval-when-compile
+				     (concat +extras-path+
+					     "auto-install-dir/")))))
  (when-library
   nil (anything anything-auto-install)
   (autoload 'anything-auto-install "anything-auto-install"
@@ -1665,6 +1709,15 @@ Make links point to local files."
 	   ("36 monkeys"
 	    "http://36monkeys.blogspot.com/feeds/posts/default" t))))
 
+  (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
+  (defun dired-w3m-find-file ()
+    "Open a file with w3m."
+    (interactive)
+    (let ((file (dired-get-filename)))
+      (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
+			    (file-name-nondirectory file)))
+	  (w3m-find-file file))))
+
   (add-hook 'dired-load-hook
 	    (lambda () "Add w3m key for opening files in dired."
 	      (define-key dired-mode-map "\C-xm"
@@ -1672,9 +1725,12 @@ Make links point to local files."
 
   (eval-after-load "w3m"
     `(progn
-       (setq w3m-home-page ,(eval-when-compile
-			      (concat "file://" +home-path+
-				      ".w3m/bookmark.html"))
+       (setq w3m-home-page ,(win-or-nix
+			     (concat "file://" +home-path+
+				     ".w3m/bookmark.html")
+			     (eval-when-compile
+			       (concat "file://" +home-path+
+				       ".w3m/bookmark.html")))
 	     w3m-use-toolbar t
 	     w3m-use-cookies t)
 
@@ -1692,23 +1748,17 @@ Make links point to local files."
 	    (w3m-get-buffer-create "*w3m*"))
 	   (w3m-browse-url url)))
 
-       (defun dired-w3m-find-file ()
-	 "Open a file with w3m."
-	 (interactive)
-	 (let ((file (dired-get-filename)))
-	   (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
-				 (file-name-nondirectory file)))
-	       (w3m-find-file file))))
-
        (byte-compile 'w3m-browse-url-other-window)
-       (byte-compile 'dired-w3m-find-file)
 
        (when (executable-find "curl")
 	 (defun w3m-download-with-curl (dir)
 	   "Download current w3m link to DIR."
-	   (interactive (let ((default (eval-when-compile
-					 (concat +home-path+
-						 "Downloads"))))
+	   (interactive (let ((default (win-or-nix
+					(concat +home-path+
+						"Downloads")
+					(eval-when-compile
+					  (concat +home-path+
+						  "Downloads")))))
 			  (list (read-string
 				 (concat "Save to (default "
 					 default "):")
@@ -1864,7 +1914,9 @@ Medium - less than 120000 bytes."
 	     emms-info-asynchronously t
 	     later-do-interval 0.0001
 	     emms-source-file-default-directory
-	     ,(eval-when-compile (concat +home-path+ "Music/"))
+	     ,(win-or-nix
+	       (concat +home-path+ "Music/")
+	       (eval-when-compile (concat +home-path+ "Music/")))
 	     emms-last-played-format-alist
 	     '(((emms-last-played-seconds-today) . "%a %H:%M")
 	       (604800 . "%a %H:%M")	; this week
@@ -1895,11 +1947,15 @@ Medium - less than 120000 bytes."
 	       (after emms-player-mpd-notify activate compile)
 	       "Notify new track for MPD."
 	       (if (eq emms-player-playing-p 'emms-player-mpd)
-		   (notify "EMMS" (substring (emms-show) 6)))))))
+		   (notify
+		    "EMMS"
+		    (emms-track-description
+		     (emms-playlist-current-selected-track))))))))
 
        (global-set-key [XF86AudioPlay] 'emms-pause)
-       (or (fboundp 'ergoemacs-mode)
-	   (global-set-key (kbd "s-r") 'emms-pause))
+       (unless (fboundp 'ergoemacs-mode)
+	 (global-set-key (kbd "s-r") 'emms-pause)
+	 (global-set-key (kbd "<lwindow>-r") 'emms-pause))
 
        ,@(win-or-nix
 	  nil
@@ -1909,19 +1965,28 @@ Medium - less than 120000 bytes."
 	       "Notify on new track."
 	       (emms-next-noerror)
 	       (if emms-player-playing-p
-		   (notify "EMMS" (substring (emms-show) 6))))
+		   (notify "EMMS"
+			   (emms-track-description
+			    (emms-playlist-current-selected-track)))))
 
 	     (byte-compile 'my-emms-notify)
 	     (setq emms-player-next-function 'my-emms-notify)))))))
 
 ;;; Dictionary
 (when-library nil dictionary
-	      (global-set-key (kbd "C-s-w") 'dictionary-search))
+	      (global-set-key (kbd "C-s-w") 'dictionary-search)
+	      (global-set-key (kbd "<C-lwindow> C-w")
+			      'dictionary-search))
 
 ;;; chess
 (when-library nil chess			; from ELPA
 	      ;;(autoload 'chess "chess" "Play a game of chess" t)
 	      (setq chess-sound-play-function nil))
+
+;;; go
+(when-library nil gnugo
+	      (if (executable-find "gnugo")
+		  (autoload 'gnugo "gnugo" "Play Go." t)))
 
 ;;; sudoku
 (when-library
@@ -1935,13 +2000,16 @@ Medium - less than 120000 bytes."
 
 (win-or-nix
 ;;; Cygwin
- (when-library nil cygwin-mount
-	       (let ((cygwin-dir (eval-when-compile
-				   (concat +win-path+ "cygwin/bin"))))
-		 (when (and (file-exists-p cygwin-dir)
-			    (require 'cygwin-mount nil t))
-		   (cygwin-mount-activate)
-		   (setq w32shell-cygwin-bin cygwin-dir))))
+ (let ((cygwin-dir (eval-when-compile
+		     (concat +win-path+ "cygwin/bin"))))
+   (when (file-exists-p cygwin-dir)
+     (setq shell-file-name "bash"
+	   explicit-shell-file-name "bash")
+     (setenv "SHELL" shell-file-name)
+     (setenv "CYGWIN" "nodosfilewarning")
+     (when (require 'cygwin-mount nil t)
+       (cygwin-mount-activate)
+       (setq w32shell-cygwin-bin cygwin-dir))))
 
 ;;; Desktop notifications
  (when-library nil notify
@@ -1949,4 +2017,4 @@ Medium - less than 120000 bytes."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (server-start) ; using --daemon or emacsW32 instead
+(win-or-nix (server-start))	  ; using --daemon on *nix
