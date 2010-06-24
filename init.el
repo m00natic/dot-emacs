@@ -17,11 +17,11 @@
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
-;;   tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
+;;   tuareg-mode http://tuareg.forge.ocamlcore.org
 ;;   Oz-mode http://www.mozart-oz.org
 ;;   Qi-mode http://code.google.com/p/qilang
 ;;   python-mode https://launchpad.net/python-mode
-;;   CSharpMode http://www.emacswiki.org/emacs/CSharpMode
+;;   CSharpMode https://code.google.com/p/csharpmode
 ;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 ;;   gtags http://www.gnu.org/software/global
 ;;   Yasnippet http://www.emacswiki.org/emacs/Yasnippet
@@ -111,6 +111,10 @@ NIX forms are executed on all other platforms."
 				    (eval-when-compile +home-path+)))
 
 (setenv "EMAIL" "m00naticus@gmail.com")
+
+(win-or-nix
+ nil
+ (add-to-list 'Info-directory-list "/usr/local/share/info"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -645,17 +649,15 @@ Remove hook when done and add `my-colours-set' instead."
       (defadvice battery-linux-sysfs (after battery-add-temperature
 					    activate compile)
 	"Add temperature to battery status when using `sysfs'."
-	(setq ad-return-value
-	      (cons
-	       (cons ?d (or (battery-search-for-one-match-in-files
-			     (mapcar (lambda (e) (concat e "/temperature"))
-				     (ignore-errors
-				       (directory-files
-					"/proc/acpi/thermal_zone/" t
-					"\\`[^.]")))
-			     "temperature: +\\([0-9]+\\) C$" 1)
-			    "N/A"))
-	       ad-return-value)))
+	(push (cons ?d (or (battery-search-for-one-match-in-files
+			    (mapcar (lambda (e) (concat e "/temperature"))
+				    (ignore-errors
+				      (directory-files
+				       "/proc/acpi/thermal_zone/" t
+				       "\\`[^.]")))
+			    "temperature: +\\([0-9]+\\) C$" 1)
+			   "N/A"))
+	      ad-return-value))
       (setq battery-mode-line-format "[%b%p%%,%dC]")))
 
 ;;; highlight changes in documents
@@ -913,8 +915,7 @@ Open in new tab if NEW-WINDOW."
 
  (global-set-key [f6] 'browse-apropos-url))
 
-;;; LaTeX beamer
-;; allow for export=>beamer by placing
+;;; LaTeX beamer allow for export=>beamer by placing
 ;; #+LaTeX_CLASS: beamer in org files
 (when-library
  t org
@@ -1260,7 +1261,7 @@ Make links point to local files."
 				     "../clisp/clisp.exe -K full")))
 	     ((file-exists-p (concat +home-path+ "clisp"))
 	      (concat +home-path+ "clisp/clisp.exe -K full"))
-	     "clisp")
+	     (t "clisp"))
        "sbcl")
       scheme-program-name "gsi")
 
@@ -1548,7 +1549,7 @@ Make links point to local files."
  (autoload 'tuareg-mode "tuareg"
    "Major mode for editing Caml code" t)
  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
- (add-to-list 'auto-mode-alist '("\\.ml\\w?" . tuareg-mode)))
+ (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
 ;;; Python
 (when-library
@@ -1587,15 +1588,16 @@ Make links point to local files."
    (defun gtags-create-or-update ()
      "Create or update the gnu global tag file."
      (interactive)
-     (if (= 0 (call-process "global" nil nil nil " -p"))
+     (if (= 0 (call-process "global" nil nil nil "-p"))
 	 ;; tagfile already exists; update it
-	 (shell-command "global -u && echo 'updated tagfile'")
+	 (start-process "global" "*GTags*" "global" "-u")
        (let ((olddir default-directory)
-	     (topdir (read-directory-name "gtags: top of source tree:"
-					  default-directory)))
+	     (topdir (read-directory-name "GTags:top of source tree: "
+					  nil nil t)))
 	 (cd topdir)
-	 (shell-command "gtags && echo 'created tagfile'")
-	 (cd olddir))))
+	 (start-process "gtags" "*GTags*" "gtags")
+	 (cd olddir)))
+     (display-buffer "*GTags*"))
 
    (add-hook 'gtags-mode-hook (lambda ()
 				(local-set-key "\M-." 'gtags-find-tag)
@@ -1603,7 +1605,7 @@ Make links point to local files."
 					       'gtags-find-rtag)))
    (add-hook 'c-mode-common-hook
 	     (lambda () ;; (gtags-create-or-update)
-	       (if (= 0 (call-process "global" nil nil nil " -p"))
+	       (if (= 0 (call-process "global" nil nil nil "-p"))
 		   (gtags-mode t))))))
 
 ;;; yasnippet
@@ -1661,8 +1663,9 @@ Make links point to local files."
     (defun ditaa-generate ()
       "Invoke ditaa over current buffer."
       (interactive)
-      (shell-command (concat "java -jar " org-ditaa-jar-path " "
-			     buffer-file-name)))))
+      (start-process "ditaa" "*Ditaa*" "java" "-jar"
+      		     org-ditaa-jar-path buffer-file-name)
+      (display-buffer "*Ditaa*"))))
 
 ;;; Auto Install
 (when-library
@@ -1759,15 +1762,12 @@ Make links point to local files."
 					(eval-when-compile
 					  (concat +home-path+
 						  "Downloads")))))
-			  (list (read-string
-				 (concat "Save to (default "
-					 default "):")
-				 nil nil default))))
+			  (list (read-directory-name "Save to: "
+						     default nil t))))
 	   (let ((olddir default-directory))
 	     (cd dir)
-	     (start-process "curl" "*curl*" "curl" "-O" (w3m-anchor))
-	     (cd olddir)
-	     (switch-to-buffer-other-window "*curl*")))
+	     (async-shell-command (concat "curl -O " (w3m-anchor)))
+	     (cd olddir)))
 
 	 (byte-compile 'w3m-download-with-curl)
 	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
@@ -1844,8 +1844,8 @@ Make links point to local files."
 
        (defun my-emms-default-info ()
 	 (concat
-	  " (" (number-to-string
-		(or (emms-track-get track 'play-count) 0))
+	  "(" (number-to-string
+	       (or (emms-track-get track 'play-count) 0))
 	  ", " (emms-last-played-format-date
 		(or (emms-track-get track 'last-played) '(0 0 0)))
 	  ")" (let ((time (emms-track-get track 'info-playing-time)))
@@ -1992,7 +1992,12 @@ Medium - less than 120000 bytes."
 (when-library
  nil sudoku
  (autoload 'sudoku "sudoku" "Start a sudoku game." t)
- (eval-after-load "sudoku" '(setq sudoku-level "evil")))
+ (eval-after-load "sudoku"
+   `(progn
+      (setq sudoku-level "evil")
+      ,(win-or-nix
+	'(let ((wget-path (executable-find "wget")))
+	   (if wget-path (setq sudoku-wget-process wget-path)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

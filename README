@@ -31,11 +31,11 @@ swank-clojure http://github.com/techkomancy/swank-clojure
 clips-mode (modified) http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
 haskell-mode http://projects.haskell.org/haskellmode-emacs
-tuareg-mode http://www-rocq.inria.fr/~acohen/tuareg/index.html.en
+tuareg-mode http://tuareg.forge.ocamlcore.org
 Oz-mode http://www.mozart-oz.org
 Qi-mode (modified) http://code.google.com/p/qilang
 python-mode https://launchpad.net/python-mode
-CSharpMode http://www.emacswiki.org/emacs/CSharpMode
+CSharpMode https://code.google.com/p/csharpmode
 VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 Yasnippet http://www.emacswiki.org/emacs/Yasnippet
 Emacs Code Browser http://ecb.sourceforge.net
