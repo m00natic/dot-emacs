@@ -5,8 +5,6 @@
 ;;  Anything related:
 ;;   Anything http://www.emacswiki.org/emacs/Anything
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
-;;  Packages related:
-;;   ELPA http://tromey.com/elpa
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   anything-auto-install
 ;;  Programming languages related:
@@ -114,7 +112,8 @@ NIX forms are executed on all other platforms."
 
 (win-or-nix
  nil
- (add-to-list 'Info-directory-list "/usr/local/share/info"))
+ (if (boundp 'Info-directory-list)
+     (add-to-list 'Info-directory-list "/usr/local/share/info")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1096,7 +1095,7 @@ Make links point to local files."
 
   (win-or-nix
    nil (when (eval-when-compile
-	       (string-match "gentoo"
+	       (string-match "gentoo\\|funtoo"
 			     (shell-command-to-string "uname -r")))
 	 (autoload 'anything-gentoo "anything-config"
 	   "Preconfigured `anything' for gentoo linux.")
@@ -1240,7 +1239,8 @@ Make links point to local files."
 
 ;;; autopairs
 (when (require 'autopair nil t)
-  (setq autopair-autowrap t)
+  (setq autopair-autowrap t
+	autopair-blink nil)
   (autopair-global-mode 1))
 
 ;;; Paredit
@@ -1256,9 +1256,12 @@ Make links point to local files."
 
 (setq inferior-lisp-program
       (win-or-nix
-       (cond ((file-exists-p (concat +home-path+ "../clisp"))
-	      (file-truename (concat +home-path+
-				     "../clisp/clisp.exe -K full")))
+       (cond ((file-exists-p (eval-when-compile
+			       (concat +win-path+
+				       "Program Files/clisp")))
+	      (eval-when-compile
+		(concat +win-path+
+			"Program Files/clisp/clisp.exe -K full")))
 	     ((file-exists-p (concat +home-path+ "clisp"))
 	      (concat +home-path+ "clisp/clisp.exe -K full"))
 	     (t "clisp"))
@@ -1369,8 +1372,9 @@ Make links point to local files."
 	swank-clojure-extra-vm-args
 	'("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"
 	  "-server" "-Xdebug"))
-       (aput 'slime-lisp-implementations 'clojure
-	     (list (swank-clojure-cmd) :init 'swank-clojure-init))))
+       (add-to-list 'slime-lisp-implementations
+		    (list 'clojure (swank-clojure-cmd)
+			  :init 'swank-clojure-init))))
 
   (eval-after-load "swank-clojure"
     `(progn
@@ -2023,3 +2027,5 @@ Medium - less than 120000 bytes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (win-or-nix (server-start))	  ; using --daemon on *nix
+
+;;; init.el ends here
