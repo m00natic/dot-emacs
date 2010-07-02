@@ -255,6 +255,20 @@ KEYS is alternating list of key-value."
 		(setq keys (cddr keys)))
 	      (nreverse res))))
 
+(defmacro do-buffers (buf &rest body)
+  "Execute action over all buffers with BUF as iterator.
+With prefix arg, skip executing BODY over current."
+  `(if current-prefix-arg
+       (let ((curr (current-buffer)))
+	 (dolist (,buf (buffer-list))
+	   (,(if (cdr body)
+		 'unless
+	       'or)
+	    (eq ,buf curr)
+	    ,@body)))
+     (dolist (,buf (buffer-list))
+       ,@body)))
+
 (defmacro active-lisp-modes ()
   "Activate convenient s-expressions which are present."
   `(progn (pretty-lambdas)
@@ -299,6 +313,25 @@ otherwise increase it in 5%-steps"
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent functions
+
+(defun nuke-buffers (reg-ex)
+  "Kill buffers whose name is matched by REG-EX.
+With prefix arg, leave current."
+  (interactive (list (read-regexp "Buffer names to kill?" ".*")))
+  (do-buffers buf
+	      (if (string-match-p reg-ex (or (buffer-name buf) ""))
+		  (kill-buffer buf)))
+  (if (string-equal reg-ex ".*") (delete-other-windows)))
+
+(defun nuke-modes (reg-ex)
+  "Kill buffers whose major mode name is matched by REG-EX.
+With prefix arg, leave current."
+  (interactive (list (read-regexp "Major modes to kill?"
+				  (symbol-name major-mode))))
+  (do-buffers buf
+	      (with-current-buffer buf
+		(if (string-match-p reg-ex (symbol-name major-mode))
+		    (kill-buffer buf)))))
 
 (defun my-toggle-fullscreen ()
   "Toggle fullscreen."
@@ -718,7 +751,7 @@ advice like this:
 	   (setq mode-line-buffer-identification
 		 (cons
 		  (propertize
-		   (concat (or host-name "") "su"
+		   (concat host-name "su"
 			   (match-string 1 default-directory) ": ")
 		   'face 'font-lock-warning-face)
 		  (default-value 'mode-line-buffer-identification))))
@@ -852,7 +885,7 @@ advice like this:
 (when-library
  t browse-url
  (defconst +apropos-url-alist+
-   '(("^gw?:? +\\(.*\\)" . "http://www.google.com/search?q=\\1")
+   '(("^gw?:? +\\(.*\\)" . "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
      ("^gs:? +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^g!:? +\\(.*\\)" .		; Google Lucky
       "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
@@ -900,16 +933,20 @@ advice like this:
  (defun browse-apropos-url (text &optional new-window)
    "Search for TEXT by some search engine.
 Open in new tab if NEW-WINDOW."
-   (interactive (browse-url-interactive-arg "Location: "))
-   (let ((text (replace-regexp-in-string
-		"^ *\\| *$" ""
-		(replace-regexp-in-string "[ \t\n]+" " " text)))
+   (interactive (browse-url-interactive-arg
+		 (concat "Location" (if current-prefix-arg
+					" (new tab)")
+			 ": ")))
+   (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
+			  (split-string text) " "))
 	 (apropo-reg "^$"))
      (let ((url (assoc-default text +apropos-url-alist+
 			       (lambda (a b) (if (string-match a b)
 					    (setq apropo-reg a)))
 			       text)))
-       (browse-url (replace-regexp-in-string apropo-reg url text)
+       (browse-url (replace-regexp-in-string
+		    " " "+"
+		    (replace-regexp-in-string apropo-reg url text))
 		   (not new-window)))))
 
  (global-set-key [f6] 'browse-apropos-url))
@@ -1378,7 +1415,7 @@ Make links point to local files."
 
   (eval-after-load "swank-clojure"
     `(progn
-;;; Online JavaDoc to Slime
+       ;; Online JavaDoc to Slime
        (defun slime-java-describe (symbol-name)
 	 "Get details on Java class/instance at point SYMBOL-NAME."
 	 (interactive
@@ -1393,25 +1430,11 @@ Make links point to local files."
 	     (slime-repl-return)
 	     (other-window 1))))
 
-       (defun slime-javadoc (symbol-name)
-	 "Get JavaDoc documentation on Java class at point SYMBOL-NAME."
-	 (interactive
-	  (list (slime-read-symbol-name "JavaDoc info for: ")))
-	 (or symbol-name (error "No symbol given"))
-	 (set-buffer (slime-output-buffer))
-	 (or (eq (current-buffer) (window-buffer))
-	     (pop-to-buffer (current-buffer) t))
-	 (goto-char (point-max))
-	 (insert (concat "(javadoc " symbol-name ")"))
-	 (when symbol-name
-	   (slime-repl-return)
-	   (other-window 1)))
-
 ;;; Local JavaDoc to Slime
        (defconst +slime-browse-local-javadoc-root+
 	 ,(win-or-nix
-	   (concat +home-path+ "Documents/javadoc/java-1.6.0-openjdk")
-	   "/usr/share/javadoc/java-1.6.0-openjdk")
+	   (concat +home-path+ "Documents/javadoc")
+	   "/usr/share/doc/java-sdk-docs-1.6.0.18/html")
 	 "Path to javadoc.")
 
        (defun slime-browse-local-javadoc (ci-name)
@@ -1447,15 +1470,14 @@ Make links point to local files."
 		 (error (concat "Not found: " ci-name)))))))
 
        (byte-compile 'slime-java-describe)
-       (byte-compile 'slime-javadoc)
        (byte-compile 'slime-browse-local-javadoc)
 
        (define-keys slime-mode-map
 	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'slime-javadoc)
+	 "\C-cD" 'swank-clojure-javadoc)
        (define-keys slime-repl-mode-map
 	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'slime-javadoc)
+	 "\C-cD" 'swank-clojure-javadoc)
        (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
        (define-key slime-repl-mode-map "\C-cb"
 	 'slime-browse-local-javadoc)
@@ -1877,7 +1899,7 @@ Make links point to local files."
 			  (emms-track-name track))))
 		    " [" (let ((year (emms-track-get track
 						     'info-year)))
-			   (if year (concat year " - ") ""))
+			   (if year (concat year " - ")))
 		    (or (emms-track-get track 'info-album) "unknown")
 		    "]" (my-emms-default-info))
 		 (concat (emms-track-name track)
