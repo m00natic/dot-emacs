@@ -137,7 +137,6 @@ NIX forms are executed on all other platforms."
  '(completion-ignore-case t t)
  '(cua-enable-cua-keys nil)
  '(cua-mode t nil (cua-base))
- '(current-language-environment "UTF-8")
  '(default-input-method "bulgarian-phonetic")
  '(delete-old-versions t)
  '(display-battery-mode t)
@@ -165,6 +164,7 @@ NIX forms are executed on all other platforms."
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
+ '(ispell-dictionary "en")
  '(kept-new-versions 5)
  '(major-mode 'org-mode)
  '(menu-bar-mode nil)
@@ -184,7 +184,6 @@ NIX forms are executed on all other platforms."
  '(require-final-newline t)
  '(save-place t nil (saveplace))
  '(search-highlight t)
- '(selection-coding-system 'utf-8)
  '(show-paren-delay 0)
  '(show-paren-mode t)
  '(show-paren-style 'parenthesis)
@@ -585,11 +584,13 @@ Remove hook when done and add `my-colours-set' instead."
 
 ;;;; appearance
 
-(if (window-system)
-    (if (require 'solar nil t) (my-colours-set))
-  ;; hook, execute only first time in graphical frame
-  ;;  (and indefinite times in terminal frames till then)
-  (add-hook 'after-make-frame-functions 'reset-frame-faces))
+(win-or-nix
+ (if (require 'solar nil t) (my-colours-set))
+ (if (window-system)
+     (if (require 'solar nil t) (my-colours-set))
+   ;; hook, execute only first time in graphical frame
+   ;;  (and indefinite times in terminal frames till then)
+   (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
 (faces-generic)
 
@@ -613,10 +614,6 @@ Remove hook when done and add `my-colours-set' instead."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; useful stuff
-
-;;; unicode
-(setq locale-coding-system 'utf-8)
-(set-terminal-coding-system 'utf-8)
 
 ;;; autoindent
 (global-set-key (kbd "M-RET") (lambda () "Newline and indent."
@@ -918,6 +915,7 @@ advice like this:
       "http://www.cliki.net/admin/search?words=\\1")
      ("^hayoo:? +\\(.*\\)" .		; Hayoo
       "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
+     ("^imdb:? +\\(.*\\)" . "http://imdb.com/find?q=\\1")
      ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
       ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
       "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
@@ -988,12 +986,12 @@ Open in new tab if NEW-WINDOW."
 		 "\\begin{frame}[fragile]\\frametitle{%s}"
 		 "\\end{frame}"))))
 
+;;; ELPA
+(if (require 'package nil t) (package-initialize))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; external extensions
-
-;;; ELPA
-(if (require 'package nil t) (package-initialize))
 
 ;;; sml-modeline
 (when (require 'sml-modeline nil t)
@@ -1112,7 +1110,7 @@ Make links point to local files."
  nil anything
  (autoload 'anything "anything" "Select anything.")
  (defalias 'my-anything 'anything)
- (global-set-key (kbd "S-M-<f5>") 'my-anything)
+ (global-set-key (kbd "<f5> m") 'my-anything)
 
  (when-library
   nil anything-config
@@ -1127,8 +1125,8 @@ Make links point to local files."
     (global-set-key "\M-y" 'anything-show-kill-ring)
     (define-key minibuffer-local-map "\M-y" 'yank-pop))
 
-  (global-set-key [f5] 'anything-for-files)
-  (global-set-key (kbd "M-<f5>") 'anything-info-at-point)
+  (global-set-key (kbd "<f5> f") 'anything-for-files)
+  (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
 
   (win-or-nix
    nil (when (eval-when-compile
@@ -1136,7 +1134,7 @@ Make links point to local files."
 			     (shell-command-to-string "uname -r")))
 	 (autoload 'anything-gentoo "anything-config"
 	   "Preconfigured `anything' for gentoo linux.")
-	 (global-set-key (kbd "C-<f5>") 'anything-gentoo)))
+	 (global-set-key (kbd "<f5> a g") 'anything-gentoo)))
 
   (eval-after-load "anything"
     '(when (require 'anything-config nil t)
@@ -1151,9 +1149,15 @@ Make links point to local files."
 
        (byte-compile 'my-anything))))
 
- (when-library nil anything-match-plugin
- 	       (eval-after-load "anything"
- 		 '(require 'anything-match-plugin nil t))))
+ (when-library
+  nil anything-match-plugin
+  (eval-after-load "anything"
+    `(if (require 'anything-match-plugin nil t)
+	 ,(win-or-nix
+	   nil
+	   (if (file-exists-p "/dev/shm")
+	       '(setq anything-grep-candidates-fast-directory-regexp
+		      "^/dev/shm/")))))))
 
 ;;; ErgoEmacs minor mode
 (when-library
@@ -1293,14 +1297,13 @@ Make links point to local files."
 
 (setq inferior-lisp-program
       (win-or-nix
-       (cond ((file-exists-p (eval-when-compile
+       (cond ((file-exists-p (concat +home-path+ "clisp"))
+	      (concat +home-path+ "clisp/clisp.exe -K full"))
+	     ((file-exists-p (eval-when-compile
 			       (concat +win-path+
 				       "Program Files/clisp")))
 	      (eval-when-compile
-		(concat +win-path+
-			"Program Files/clisp/clisp.exe -K full")))
-	     ((file-exists-p (concat +home-path+ "clisp"))
-	      (concat +home-path+ "clisp/clisp.exe -K full"))
+		(concat +win-path+ "Program Files/clisp/clisp.exe")))
 	     (t "clisp"))
        "sbcl")
       scheme-program-name "gsi")
@@ -1431,21 +1434,18 @@ Make links point to local files."
 	     (other-window 1))))
 
 ;;; Local JavaDoc to Slime
-       (defconst +slime-browse-local-javadoc-root+
-	 ,(win-or-nix
-	   (concat +home-path+ "Documents/javadoc")
-	   "/usr/share/doc/java-sdk-docs-1.6.0.18/html")
-	 "Path to javadoc.")
-
        (defun slime-browse-local-javadoc (ci-name)
 	 "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
 	 (interactive
 	  (list (slime-read-symbol-name "Class/Interface name: ")))
 	 (or ci-name (error "No name given"))
 	 (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-	       (path (concat (expand-file-name
-			      +slime-browse-local-javadoc-root+)
-			     "/api/")))
+	       (path (concat
+		      (expand-file-name
+		       ,(win-or-nix
+			 (concat +home-path+ "Documents/javadoc")
+			 "/usr/share/doc/java-sdk-docs-1.6.0.18/html"))
+		      "/api/")))
 	   (with-temp-buffer
 	     (insert-file-contents
 	      (concat path "allclasses-noframe.html"))
@@ -1752,6 +1752,12 @@ Make links point to local files."
 	      (define-key dired-mode-map "\C-xm"
 		'dired-w3m-find-file)))
 
+  (when-library nil w3m-wget (if (executable-find "w3m")
+				 (require 'w3m-wget nil t)))
+
+  ;; Conkeror style anchor numbering on actions
+  (add-hook 'w3m-mode-hook 'w3m-link-numbering-mode)
+
   (eval-after-load "w3m"
     `(progn
        (setq w3m-home-page ,(win-or-nix
@@ -1763,56 +1769,53 @@ Make links point to local files."
 	     w3m-use-toolbar t
 	     w3m-use-cookies t)
 
-       ,@(when-library
-	  nil wget
-	  '((autoload 'wget-api "wget"
-	      "Application Program Interface for wget")
-	    (require 'w3m-wget nil t)))
-
-       (defun w3m-browse-url-other-window (url &optional newwin)
-	 "Open URL in new window when NEWWIN."
-	 (interactive (browse-url-interactive-arg "w3m URL: "))
-	 (let ((pop-up-frames nil))
-	   (switch-to-buffer-other-window
-	    (w3m-get-buffer-create "*w3m*"))
-	   (w3m-browse-url url)))
-
-       (byte-compile 'w3m-browse-url-other-window)
+       (define-keys w3m-mode-map
+	 (if w3m-key-binding "t" "i") 'w3m-linknum-save-image
+	 "\M-i" nil "z" 'w3m-horizontal-recenter
+	 "\C-cs" 'w3m-session-select)
 
        (when (executable-find "curl")
-	 (defun w3m-download-with-curl (dir)
-	   "Download current w3m link to DIR."
-	   (interactive (let ((default (win-or-nix
-					(concat +home-path+
-						"Downloads")
-					(eval-when-compile
-					  (concat +home-path+
-						  "Downloads")))))
-			  (list (read-directory-name "Save to: "
-						     default nil t))))
-	   (let ((olddir default-directory))
-	     (cd dir)
-	     (async-shell-command (concat "curl -O " (w3m-anchor)))
-	     (cd olddir)))
+	 (autoload 'thing-at-point-url-at-point "thingatpt")
+
+	 (defun w3m-download-with-curl (arg)
+	   "Download current w3m link or URL to DIR."
+	   (interactive "P")
+	   (let ((url (or (w3m-anchor)
+			  (if arg
+			      (read-string
+			       "URI: " (thing-at-point-url-at-point))
+			    (car (w3m-linknum-get-action
+				  "Curl on: " 1))))))
+	     (if (stringp url)
+		 (let ((olddir default-directory))
+		   (cd (read-directory-name
+			"Save to: "
+			,(win-or-nix '(concat +home-path+ "Downloads")
+				     (concat +home-path+ "Downloads"))
+			nil t))
+		   (async-shell-command (concat "curl -O '" url "'")
+					"*Curl*")
+		   (cd olddir))
+	       (error "No url specified"))))
 
 	 (byte-compile 'w3m-download-with-curl)
 	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
 
        (when browse-url-generic-program
-	 (defun w3m-browse-url-generic (&optional url)
-	   "Open URL, current link or page with generic browser."
-	   (interactive)
-	   (browse-url-generic (or url (w3m-anchor)
-				   (or w3m-display-inline-images
-				       (w3m-image))
-				   w3m-current-url)))
+	 (defun w3m-browse-url-generic (&optional arg)
+	   "Open current link, link-number url with generic browser.
+With optional prefix ARG ask for url."
+	   (interactive "P")
+	   (browse-url-generic
+	    (if arg
+		(read-string "URI: " (thing-at-point-url-at-point))
+	      (or (w3m-anchor) (w3m-image)
+		  (car (w3m-linknum-get-action
+			(concat browse-url-generic-program
+				" on link: ") 1))))))
 
 	 (byte-compile 'w3m-browse-url-generic)
 	 (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
-
-       (define-keys w3m-mode-map
-	 "i" 'w3m-save-image
-	 "l" 'w3m-horizontal-recenter)
 
        (add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
 						  (w3m-quit t))) t))))
@@ -2049,5 +2052,3 @@ Medium - less than 120000 bytes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (win-or-nix (server-start))	  ; using --daemon on *nix
-
-;;; init.el ends here
