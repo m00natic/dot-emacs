@@ -120,14 +120,6 @@ NIX forms are executed on all other platforms."
 ;;;; mode a bit emacs
 (custom-set-variables
  '(add-log-full-name "Andrey Kotlarski")
- '(backup-by-copying t)
- `(bookmark-default-file ,(win-or-nix
-			   (concat user-emacs-directory
-				   "bookmarks")
-			   (eval-when-compile
-			     (concat user-emacs-directory
-				     "bookmarks"))))
- '(bookmark-save-flag 1)
  '(browse-url-firefox-new-window-is-tab t)
  '(browse-url-mozilla-new-window-is-tab t)
  '(browse-url-new-window-flag t)
@@ -136,25 +128,22 @@ NIX forms are executed on all other platforms."
  '(column-number-mode t)
  '(completion-ignore-case t t)
  '(cua-enable-cua-keys nil)
- '(cua-mode t nil (cua-base))
+ '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
  '(delete-old-versions t)
  '(display-battery-mode t)
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-mode t)
- '(font-lock-maximum-decoration t)
  '(frame-title-format "emacs - %b (%f)" t)
  '(gdb-many-windows t)
- '(global-font-lock-mode t)
  '(global-highlight-changes-mode t)
  '(global-hl-line-mode t)
  '(global-linum-mode 1)
  '(highlight-changes-visibility-initial-state nil)
  '(icomplete-mode t)
- '(icomplete-prospects-height 2)
  '(ido-enable-flex-matching t)
- '(ido-mode 'both nil (ido))
+ '(ido-mode 'both)
  `(ido-save-directory-list-file ,(win-or-nix
 				  (concat user-emacs-directory
 					  ".ido.last")
@@ -165,16 +154,11 @@ NIX forms are executed on all other platforms."
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
- '(kept-new-versions 5)
  '(major-mode 'org-mode)
  '(menu-bar-mode nil)
- '(mouse-avoidance-mode 'jump nil (avoid))
- '(mouse-wheel-mode t)
- '(next-line-add-newlines nil)
+ '(mouse-avoidance-mode 'jump)
  '(proced-format 'medium)
- '(query-replace-highlight t)
  '(read-file-name-completion-ignore-case t)
- '(recentf-max-menu-items 15)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
  `(recentf-save-file ,(win-or-nix
@@ -183,17 +167,15 @@ NIX forms are executed on all other platforms."
 			 (concat user-emacs-directory "recentf"))))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
- '(search-highlight t)
  '(show-paren-delay 0)
  '(show-paren-mode t)
  '(show-paren-style 'parenthesis)
  '(size-indication-mode t)
  '(tool-bar-mode nil)
- '(transient-mark-mode t)
  '(uniquify-buffer-name-style 'post-forward nil (uniquify))
  '(uniquify-separator ":")
  '(version-control t)
- '(winner-mode t nil (winner))
+ '(winner-mode t)
  '(word-wrap t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -239,11 +221,6 @@ Each function may be an atom or a list with parameters."
 	  (mapcar (lambda (mode) `(add-hook ',mode ',functions))
 		  modes))))
 
-(defmacro delete-many (elts sequence)
-  "Delete ELTS from SEQUENCE."
-  (if (null elts) sequence
-    `(delete ,(car elts) (delete-many ,(cdr elts) ,sequence))))
-
 (defmacro define-keys (mode &rest keys)
   "Define cascade of keys for a MODE.
 KEYS is alternating list of key-value."
@@ -254,91 +231,23 @@ KEYS is alternating list of key-value."
 		(setq keys (cddr keys)))
 	      (nreverse res))))
 
-(defmacro do-buffers (buf &rest body)
-  "Execute action over all buffers with BUF as iterator.
-With prefix arg, skip executing BODY over current."
-  `(if current-prefix-arg
-       (let ((curr (current-buffer)))
-	 (dolist (,buf (buffer-list))
-	   (,(if (cdr body)
-		 'unless
-	       'or)
-	    (eq ,buf curr)
-	    ,@body)))
-     (dolist (,buf (buffer-list))
-       ,@body)))
-
 (defmacro active-lisp-modes ()
-  "Activate convenient s-expressions which are present."
-  `(progn (pretty-lambdas)
-	  ,(when-library nil hl-sexp '(hl-sexp-mode 1))
-	  ,(when-library nil highlight-parentheses ; from ELPA
-			 '(highlight-parentheses-mode 1))
-	  ,(when-library nil paredit '(paredit-mode 1))))
-
-(defmacro opacity-modify (&optional dec)
-  "Modify the transparency of the Emacs frame.
-If DEC is t, decrease transparency;
-otherwise increase it in 5%-steps"
-  `(let* ((oldalpha (or (frame-parameter nil 'alpha) 99))
-	  (newalpha ,(if dec '(if (<= oldalpha 5) 0
-				(- oldalpha 5))
-		       '(if (>= oldalpha 95) 100
-			  (+ oldalpha 5)))))
-     (and (>= newalpha frame-alpha-lower-limit)
-	  (<= newalpha 100)
-	  (modify-frame-parameters nil (list (cons 'alpha
-						   newalpha))))))
-
-;;; fullscreen stuff
-(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
-(defconst +width+ 100 "My prefered non-fullscreen width.")
-
-(defmacro my-non-fullscreen ()
-  "Exit fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND restore #xf120
-      '(w32-send-sys-command 61728)
-    '(progn (set-frame-parameter nil 'width +width+)
-	    (set-frame-parameter nil 'fullscreen 'fullheight))))
-
-(defmacro my-fullscreen ()
-  "Go fullscreen."
-  (if (fboundp 'w32-send-sys-command)
-      ;; WM_SYSCOMMAND maximize #xf030
-      '(w32-send-sys-command 61488)
-    '(set-frame-parameter nil 'fullscreen 'fullboth)))
+  "Activate convenient s-expression modes which are present."
+  `(progn
+     (font-lock-add-keywords		; pretty lambdas
+      nil `(("(\\(lambda\\>\\)"
+	     (0 (progn
+		  (compose-region (match-beginning 1) (match-end 1)
+				  ,(make-char 'greek-iso8859-7 107))
+		  nil)))))
+     ,(when-library nil hl-sexp '(hl-sexp-mode 1))
+     ,(when-library nil highlight-parentheses ; from ELPA
+		    '(highlight-parentheses-mode 1))
+     ,(when-library nil paredit '(paredit-mode 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent functions
-
-(defun nuke-buffers (reg-ex)
-  "Kill buffers whose name is matched by REG-EX.
-With prefix arg, leave current."
-  (interactive (list (read-regexp "Buffer names to kill?" ".*")))
-  (do-buffers buf
-	      (if (string-match-p reg-ex (or (buffer-name buf) ""))
-		  (kill-buffer buf)))
-  (if (string-equal reg-ex ".*") (delete-other-windows)))
-
-(defun nuke-modes (reg-ex)
-  "Kill buffers whose major mode name is matched by REG-EX.
-With prefix arg, leave current."
-  (interactive (list (read-regexp "Major modes to kill?"
-				  (symbol-name major-mode))))
-  (do-buffers buf
-	      (with-current-buffer buf
-		(if (string-match-p reg-ex (symbol-name major-mode))
-		    (kill-buffer buf)))))
-
-(defun my-toggle-fullscreen ()
-  "Toggle fullscreen."
-  (interactive)
-  (if (setq *fullscreen-p* (not *fullscreen-p*)) (my-fullscreen)
-    (my-non-fullscreen)))
-
-;;; themes
 
 (defun faces-generic ()
   "My prefered faces which differ from default."
@@ -498,8 +407,7 @@ With prefix arg, leave current."
   (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)" time-str)
       (format "%02d:%s"
 	      (if (equal (match-string 3 time-str) "p")
-		  (+ (string-to-number (match-string 1 time-str))
-		     12)
+		  (+ 12 (string-to-number (match-string 1 time-str)))
 		(string-to-number (match-string 1 time-str)))
 	      (match-string 2 time-str))
     time-str))
@@ -544,6 +452,25 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
 	      (run-at-time sunset-string nil 'my-colours-set)))))
     (switch-faces t)))
 
+(defun activate-lisp-minor-modes ()
+  "Activate some convenient minor modes for editing s-exp."
+  (active-lisp-modes))
+
+;;; fullscreen stuff
+(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
+
+(defun fullscreen-toggle ()
+  "Toggle fullscreen view on and off."
+  (interactive)
+  (if (setq *fullscreen-p* (not *fullscreen-p*))
+      (win-or-nix
+       (w32-send-sys-command 61488)    ; WM_SYSCOMMAND maximize #xf030
+       (set-frame-parameter nil 'fullscreen 'fullboth))
+    (win-or-nix
+     (w32-send-sys-command 61728)	; WM_SYSCOMMAND restore #xf120
+     (set-frame-parameter nil 'width 100)
+     (set-frame-parameter nil 'fullscreen 'fullheight))))
+
 (defun reset-frame-faces (frame)
   "Execute once in the first graphical new FRAME.
 Reset some faces which --daemon doesn't quite set.
@@ -555,65 +482,47 @@ Remove hook when done and add `my-colours-set' instead."
 	   (modify-frame-parameters frame '((alpha . 99)))
 	   (set-frame-height frame 50))
 	 (faces-generic)
+	 (if *fullscreen-p*
+	     (win-or-nix
+	      (w32-send-sys-command 61488)
+	      (set-frame-parameter nil 'fullscreen 'fullboth)))
 	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
 	((equal (face-background 'default) "black")
 	 (set-face-background 'default "black" frame)
 	 (set-face-foreground 'default "white" frame))))
-
-(win-or-nix (defun hide-emacs ()
-	      "Keep emacs running hidden on exit."
-	      (interactive)
-	      (server-edit)
-	      (make-frame-invisible nil t)))
-
-(defun pretty-lambdas ()
-  "Show an actual lambda instead of the string `lambda'."
-  (font-lock-add-keywords nil
-			  `(("(\\(lambda\\>\\)"
-			     (0 (progn
-				  (compose-region
-				   (match-beginning 1) (match-end 1)
-				   ,(make-char 'greek-iso8859-7 107))
-				  nil))))))
-
-(defun activate-lisp-minor-modes ()
-  "Activate some convenient minor modes for editing s-exp."
-  (active-lisp-modes))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; appearance
 
 (win-or-nix
- (if (require 'solar nil t) (my-colours-set))
+ ((if (require 'solar nil t) (my-colours-set))
+  (if *fullscreen-p*
+      (win-or-nix (w32-send-sys-command 61488)
+		  (set-frame-parameter nil 'fullscreen 'fullboth)))
+  (global-set-key "\C-x\C-c"
+		  (lambda () "Keep emacs running hidden."
+		    (interactive)
+		    (server-edit)
+		    (make-frame-invisible nil t))))
  (if (window-system)
-     (if (require 'solar nil t) (my-colours-set))
+     (progn (if (require 'solar nil t) (my-colours-set))
+	    (if *fullscreen-p*
+		(win-or-nix
+		 (w32-send-sys-command 61488)
+		 (set-frame-parameter nil 'fullscreen 'fullboth))))
    ;; hook, execute only first time in graphical frame
    ;;  (and indefinite times in terminal frames till then)
    (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
 (faces-generic)
 
-(win-or-nix (global-set-key "\C-x\C-c" 'hide-emacs))
-
-(global-set-key [f10] 'my-toggle-fullscreen)
-(global-set-key (kbd "M-<f10>") 'menu-bar-mode)
-
-;;; opacity
-(global-set-key (kbd "C-=") (lambda () "Increase window opacity."
-			      (interactive)
-			      (opacity-modify)))
-(global-set-key (kbd "C-+") (lambda () "Decrease window opacity."
-			      (interactive)
-			      (opacity-modify t)))
-(global-set-key (kbd "C-M-=") (lambda () "Set window opacity to 99%."
-				(interactive)
-				(modify-frame-parameters
-				 nil '((alpha . 99)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; useful stuff
+
+;;; goto-line
+(global-set-key "\C-cl" 'goto-line)
 
 ;;; autoindent
 (global-set-key (kbd "M-RET") (lambda () "Newline and indent."
@@ -703,21 +612,11 @@ Remove hook when done and add `my-colours-set' instead."
 ;; Ido
 (when-library
  t ido
- (defvar *ido-enable-replace-completing-read* t
-   "If t, use ido-completing-read instead of completing-read if possible.
-Set it to nil using let in around-advice for functions where the
-original completing-read is required.  For example, if a function
-foo absolutely must use the original completing-read, define some
-advice like this:
- (defadvice foo (around original-completing-read-only activate)
-   (let (ido-enable-replace-completing-read) ad-do-it))")
-
  (defadvice completing-read (around use-ido-when-possible
 				    activate compile)
-   "Replace completing-read wherever possible, unless directed otherwise."
-   (if (or (not *ido-enable-replace-completing-read*)
-	   (boundp 'ido-cur-list))	; Avoid infinite loop
-       ad-do-it		; from ido calling this
+   "Replace completing-read wherever possible."
+   (if (boundp 'ido-cur-list)	; Avoid infinite loop
+       ad-do-it			; from ido calling this
      (let ((allcomp (all-completions "" collection predicate)))
        (if allcomp
 	   (setq ad-return-value
@@ -882,7 +781,10 @@ advice like this:
 (when-library
  t browse-url
  (defconst +apropos-url-alist+
-   '(("^gw?:? +\\(.*\\)" . "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
+   '(("^s:? +\\(.*\\)" .
+      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=\\1")
+     ("^gw?:? +\\(.*\\)" .
+      "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
      ("^gs:? +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^g!:? +\\(.*\\)" .		; Google Lucky
       "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
@@ -1303,7 +1205,8 @@ Make links point to local files."
 			       (concat +win-path+
 				       "Program Files/clisp")))
 	      (eval-when-compile
-		(concat +win-path+ "Program Files/clisp/clisp.exe")))
+		(concat +win-path+
+			"Program Files/clisp/clisp.exe -K full")))
 	     (t "clisp"))
        "sbcl")
       scheme-program-name "gsi")
@@ -1766,13 +1669,16 @@ Make links point to local files."
 			     (eval-when-compile
 			       (concat "file://" +home-path+
 				       ".w3m/bookmark.html")))
-	     w3m-use-toolbar t
 	     w3m-use-cookies t)
 
        (define-keys w3m-mode-map
 	 (if w3m-key-binding "t" "i") 'w3m-linknum-save-image
-	 "\M-i" nil "z" 'w3m-horizontal-recenter
+	 "z" 'w3m-horizontal-recenter
 	 "\C-cs" 'w3m-session-select)
+
+       ,(when-library
+	 nil ergoemacs-mode
+	 '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
 
        (when (executable-find "curl")
 	 (autoload 'thing-at-point-url-at-point "thingatpt")
@@ -1818,7 +1724,16 @@ With optional prefix ARG ask for url."
 	 (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
 
        (add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
-						  (w3m-quit t))) t))))
+						  (w3m-quit t))) t)))
+
+  (eval-after-load "w3m-search"
+    '(progn
+       (add-to-list
+	'w3m-search-engine-alist
+	'("scroogle"
+	  "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=%s"
+	  utf-8))
+       (setq w3m-search-default-engine "scroogle"))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
@@ -2052,3 +1967,5 @@ Medium - less than 120000 bytes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (win-or-nix (server-start))	  ; using --daemon on *nix
+
+;;; init.el ends here
