@@ -472,24 +472,15 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
      (set-frame-parameter nil 'fullscreen 'fullheight))))
 
 (defun reset-frame-faces (frame)
-  "Execute once in the first graphical new FRAME.
-Reset some faces which --daemon doesn't quite set.
-Remove hook when done and add `my-colours-set' instead."
+  "Reset some faces which --daemon doesn't quite set and remove hook.
+Execute once in the first graphical FRAME."
   (select-frame frame)
-  (cond ((window-system frame)
-	 (if (require 'solar nil t) (my-colours-set))
-	 (let ((frame (selected-frame)))
-	   (modify-frame-parameters frame '((alpha . 99)))
-	   (set-frame-height frame 50))
-	 (faces-generic)
-	 (if *fullscreen-p*
-	     (win-or-nix
-	      (w32-send-sys-command 61488)
-	      (set-frame-parameter nil 'fullscreen 'fullboth)))
-	 (remove-hook 'after-make-frame-functions 'reset-frame-faces))
-	((equal (face-background 'default) "black")
-	 (set-face-background 'default "black" frame)
-	 (set-face-foreground 'default "white" frame))))
+  (when (window-system)
+    (remove-hook 'after-make-frame-functions 'reset-frame-faces)
+    (if (require 'solar nil t) (my-colours-set))
+    (faces-generic)
+    (if *fullscreen-p*
+	(set-frame-parameter nil 'fullscreen 'fullboth))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -497,22 +488,17 @@ Remove hook when done and add `my-colours-set' instead."
 
 (win-or-nix
  ((if (require 'solar nil t) (my-colours-set))
-  (if *fullscreen-p*
-      (win-or-nix (w32-send-sys-command 61488)
-		  (set-frame-parameter nil 'fullscreen 'fullboth)))
+  (and *fullscreen-p* (window-system) (w32-send-sys-command 61488))
   (global-set-key "\C-x\C-c"
-		  (lambda () "Keep emacs running hidden."
+		  (lambda () "Keep emacs running hidden.
+Use emacsclient -e '(make-frame-visible)' to restore it."
 		    (interactive)
 		    (server-edit)
 		    (make-frame-invisible nil t))))
  (if (window-system)
      (progn (if (require 'solar nil t) (my-colours-set))
 	    (if *fullscreen-p*
-		(win-or-nix
-		 (w32-send-sys-command 61488)
-		 (set-frame-parameter nil 'fullscreen 'fullboth))))
-   ;; hook, execute only first time in graphical frame
-   ;;  (and indefinite times in terminal frames till then)
+		(set-frame-parameter nil 'fullscreen 'fullboth)))
    (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
 (faces-generic)
@@ -535,14 +521,8 @@ Remove hook when done and add `my-colours-set' instead."
 (global-set-key (kbd "<C-M-next>") 'next-error)
 
 ;;; clipboard
-(global-set-key (kbd "C-s-v") 'clipboard-yank)
-(global-set-key (kbd "C-s-c") 'clipboard-kill-ring-save)
-(global-set-key (kbd "<C-lwindow> C-v") 'clipboard-yank)
-(global-set-key (kbd "<C-lwindow> C-c") 'clipboard-kill-ring-save)
-
-;;; enable some actions
-(put 'narrow-to-region 'disabled nil)
-(put 'upcase-region 'disabled nil)
+(global-set-key "\C-cv" 'clipboard-yank)
+(global-set-key "\C-cc" 'clipboard-kill-ring-save)
 
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -577,7 +557,7 @@ Remove hook when done and add `my-colours-set' instead."
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
 
 ;; Proced
-(when-library t proced (global-set-key (kbd "C-M-`") 'proced))
+(when-library t proced (global-set-key (kbd "C-~") 'proced))
 
 ;; Battery
 (when-library
@@ -777,6 +757,14 @@ Remove hook when done and add `my-colours-set' instead."
 	       (eval-after-load "gnus-group"
 		 '(define-key gnus-group-mode-map "Gn"
 		    'gnus-group-make-shimbun-group))))
+
+(when-library
+ nil fortune
+ (when (executable-find "fortune")
+   (setq fortune-dir (concat user-emacs-directory "fortune/")
+	 fortune-file (concat fortune-dir "sigs"))
+
+   (add-hook 'message-signature-setup-hook 'fortune-to-signature)))
 
 (when-library
  t browse-url
@@ -1127,20 +1115,7 @@ Make links point to local files."
 		      '(define-keys slime-mode-map
 			 "\M-N" 'slime-previous-note
 			 "\M-p" nil)))))
-	  ,(when-library
-	    nil emms
-	    '(cond ((equal ergo-layout "en")
-		    (eval-after-load "emms"
-		      '(progn
-			 (global-set-key (kbd "s-r") 'emms-pause)
-			 (global-set-key (kbd "<lwindow>-r")
-					 'emms-pause))))
-		   ((equal ergo-layout "colemak")
-		    (eval-after-load "emms"
-		      '(progn
-			 (global-set-key (kbd "s-p") 'emms-pause)
-			 (global-set-key (kbd "<lwindow>-p")
-					 'emms-pause))))))
+
 	  ,(when-library
 	    nil anything-config
 	    '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
@@ -1377,13 +1352,12 @@ Make links point to local files."
 
        (define-keys slime-mode-map
 	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'swank-clojure-javadoc)
+	 "\C-cD" 'swank-clojure-javadoc
+	 "\C-cb" 'slime-browse-local-javadoc)
        (define-keys slime-repl-mode-map
 	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'swank-clojure-javadoc)
-       (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
-       (define-key slime-repl-mode-map "\C-cb"
-	 'slime-browse-local-javadoc)
+	 "\C-cD" 'swank-clojure-javadoc
+	 "\C-cb" 'slime-browse-local-javadoc)
 
        (add-hook 'slime-connected-hook
 		 (byte-compile
@@ -1634,26 +1608,15 @@ Make links point to local files."
   (when-library
    t gnus
    (autoload 'gnus-group-mode-map "nnshimbun"
-     "Add shimbun group to Gnus." t)
-   (setq shimbun-atom-hash-group-path-alist
-	 '(("PlanetEmacsen" "http://planet.emacsen.org/atom.xml")
-	   ("Wingolog" "http://wingolog.org/feed/atom" t)
-	   ("36 monkeys"
-	    "http://36monkeys.blogspot.com/feeds/posts/default" t))))
+     "Add shimbun group to Gnus." t))
 
   (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
-  (defun dired-w3m-find-file ()
-    "Open a file with w3m."
-    (interactive)
-    (let ((file (dired-get-filename)))
-      (if (y-or-n-p (format "Use emacs-w3m to browse %s? "
-			    (file-name-nondirectory file)))
-	  (w3m-find-file file))))
-
   (add-hook 'dired-load-hook
 	    (lambda () "Add w3m key for opening files in dired."
-	      (define-key dired-mode-map "\C-xm"
-		'dired-w3m-find-file)))
+	      (define-key dired-mode-map "\C-cw"
+		(lambda () "Open a file with w3m."
+		  (interactive)
+		  (w3m-find-file (dired-get-filename))))))
 
   (when-library nil w3m-wget (if (executable-find "w3m")
 				 (require 'w3m-wget nil t)))
@@ -1702,7 +1665,7 @@ Make links point to local files."
 		   (async-shell-command (concat "curl -O '" url "'")
 					"*Curl*")
 		   (cd olddir))
-	       (error "No url specified"))))
+	       (w3m-message "No url specified"))))
 
 	 (byte-compile 'w3m-download-with-curl)
 	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
@@ -1827,28 +1790,66 @@ With optional prefix ARG ask for url."
 	    (t (concat (symbol-name type) ": "
 		       (emms-track-name track) (my-emms-default-info))))))
 
-       (defun file-size (file-descr)
-	 (car (cddr (cddr (cddr (cddr file-descr))))))
-
        (defun my-emms-covers (dir type)
 	 "Choose album cover in DIR deppending on TYPE.
-Small cover should be less than 100000 bytes.
+Small cover should be less than 80000 bytes.
 Medium - less than 120000 bytes."
-	 (let* ((pics (sort (directory-files-and-attributes
-			     dir t "\\.\\(jpg\\|jpeg\\|png\\)$" t)
-			    (lambda (p1 p2)
-			      (< (file-size p1) (file-size p2)))))
-		(small (car pics)))
-	   (if (<= (or (file-size small) 100001) 100000)
-	       (let ((medium (cadr pics)))
-		 (car (cond ((eq type 'small) small)
-			    ((eq type 'medium)
-			     (if (<= (or (file-size medium) 120001)
-				     120000)
-				 medium
-			       small))
-			    ((eq type 'large) (or (car (cddr pics))
-						  medium small))))))))
+	 (let* ((pics (directory-files-and-attributes
+		       dir t "\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$" t))
+		(pic (car pics))
+		(pic-size (car (cddr (cddr (cddr (cddr pic)))))))
+	   (let (temp)
+	     (cond
+	      ((eq type 'small)
+	       (while (setq temp (cadr pics))
+		 (let ((temp-size (car (cddr (cddr (cddr
+						    (cddr temp)))))))
+		   (if (< temp-size pic-size)
+		       (setq pic temp
+			     pic-size temp-size)))
+		 (setq pics (cdr pics)))
+	       (if (<= (or pic-size 80001) 80000)
+		   (car pic)))
+	      ((eq type 'medium)
+	       (if (and pic (setq temp (cadr pics)))
+		   (progn
+		     (setq pics (cdr pics))
+		     (let ((temp-size (car (cddr
+					    (cddr
+					     (cddr (cddr temp)))))))
+		       (let ((small temp)
+			     (small-size temp-size))
+			 (if (< pic-size small-size)
+			     (setq small pic
+				   small-size pic-size
+				   pic temp
+				   pic-size temp-size))
+			 (while (setq temp (cadr pics))
+			   (setq temp-size
+				 (car (cddr (cddr (cddr
+						   (cddr temp))))))
+			   (cond
+			    ((< temp-size small-size)
+			     (setq pic small
+				   pic-size small-size
+				   small temp
+				   small-size temp-size))
+			    ((< temp-size pic-size)
+			     (setq pic temp
+				   pic-size temp-size)))
+			   (setq pics (cdr pics)))
+			 (car (if (<= pic-size 120000) pic
+				small)))))
+		 (car pic)))
+	      ((eq type 'large)
+	       (while (setq temp (cadr pics))
+		 (let ((temp-size (car (cddr (cddr (cddr
+						    (cddr temp)))))))
+		   (if (> temp-size pic-size)
+		       (setq pic temp
+			     pic-size temp-size)))
+		 (setq pics (cdr pics)))
+	       (car pic))))))
 
        (byte-compile 'my-emms-track-description-function)
        (byte-compile 'my-emms-covers)
@@ -1897,9 +1898,7 @@ Medium - less than 120000 bytes."
 		     (emms-playlist-current-selected-track))))))))
 
        (global-set-key [XF86AudioPlay] 'emms-pause)
-       (unless (fboundp 'ergoemacs-mode)
-	 (global-set-key (kbd "s-r") 'emms-pause)
-	 (global-set-key (kbd "<lwindow>-r") 'emms-pause))
+       (global-set-key "\C-cp" 'emms-pause)
 
        ,@(win-or-nix
 	  nil
@@ -1918,9 +1917,7 @@ Medium - less than 120000 bytes."
 
 ;;; Dictionary
 (when-library nil dictionary
-	      (global-set-key (kbd "C-s-w") 'dictionary-search)
-	      (global-set-key (kbd "<C-lwindow> C-w")
-			      'dictionary-search))
+	      (global-set-key "\C-cd" 'dictionary-search))
 
 ;;; chess
 (when-library nil chess			; from ELPA
