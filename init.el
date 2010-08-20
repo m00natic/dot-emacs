@@ -42,10 +42,10 @@
 ;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 ;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-;;   Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
+;;   Dictionary http://www.myrkr.in-berlin.de/dictionary
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
-;;   sudoku http://www.columbia.edu/~jr2075/elisp/index.html
+;;   sudoku http://www.columbia.edu/~jr2075/elisp
 ;;   GoMode http://www.emacswiki.org/emacs/GoMode
 
 ;;; Code:
@@ -69,7 +69,6 @@ NIX forms are executed on all other platforms."
 
 ;; Set some path constants.
 (win-or-nix (defconst +win-path+ "C:/" "Windows root path."))
-
 (defconst +home-path+
   (win-or-nix
    (cond ((string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
@@ -79,12 +78,10 @@ NIX forms are executed on all other platforms."
 	 (t (eval-when-compile (concat (getenv "HOME") "/"))))
    (eval-when-compile (concat (getenv "HOME") "/")))
   "Home path.")
-
 (setq user-emacs-directory (win-or-nix
 			    (concat +home-path+ ".emacs.d/")
 			    (eval-when-compile
 			      (concat +home-path+ ".emacs.d/"))))
-
 (defconst +extras-path+ (win-or-nix
 			 (concat user-emacs-directory "extras/")
 			 (eval-when-compile
@@ -98,28 +95,22 @@ NIX forms are executed on all other platforms."
   (if (fboundp 'normal-top-level-add-subdirs-to-load-path)
       (let ((default-directory +extras-path+))
 	(normal-top-level-add-subdirs-to-load-path))))
-
+;; add custom bin to path
 (let ((bin-path (win-or-nix
 		 (concat +extras-path+ "bin")
 		 (eval-when-compile (concat +extras-path+ "bin")))))
   (if (file-exists-p bin-path) (add-to-list 'exec-path bin-path)))
-
 ;; set default directory for `*scratch*'
 (setq default-directory (win-or-nix +home-path+
 				    (eval-when-compile +home-path+)))
-
-(setenv "EMAIL" "m00naticus@gmail.com")
-
 (win-or-nix
- nil
- (if (boundp 'Info-directory-list)
-     (add-to-list 'Info-directory-list "/usr/local/share/info")))
+ nil (if (boundp 'Info-directory-list)
+	 (add-to-list 'Info-directory-list "/usr/local/share/info")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; mode a bit emacs
 (custom-set-variables
- '(add-log-full-name "Andrey Kotlarski")
  '(browse-url-firefox-new-window-is-tab t)
  '(browse-url-mozilla-new-window-is-tab t)
  '(browse-url-new-window-flag t)
@@ -135,7 +126,7 @@ NIX forms are executed on all other platforms."
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-mode t)
- '(frame-title-format "emacs - %b (%f)" t)
+ '(frame-title-format "emacs - %b (%f)")
  '(gdb-many-windows t)
  '(global-highlight-changes-mode t)
  '(global-hl-line-mode t)
@@ -154,6 +145,7 @@ NIX forms are executed on all other platforms."
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
+ '(line-number-mode nil)
  '(major-mode 'org-mode)
  '(menu-bar-mode nil)
  '(mouse-avoidance-mode 'jump)
@@ -614,30 +606,17 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 			(tramp-file-name-host
 			 (tramp-dissect-file-name
 			  default-directory)))))
-     (if host-name
-	 (setq host-name
-	       (concat (if (string-match "^[^0-9][^.]*\\(\\..*\\)"
-					 host-name)
-			   (substring host-name 0 (match-beginning 1))
-			 host-name)
-		       ":")))
-     (if (string-match "^/su\\(do\\)?:" default-directory)
-	 (progn
-	   (make-local-variable 'mode-line-buffer-identification)
-	   (setq mode-line-buffer-identification
-		 (cons
-		  (propertize
-		   (concat host-name "su"
-			   (match-string 1 default-directory) ": ")
-		   'face 'font-lock-warning-face)
-		  (default-value 'mode-line-buffer-identification))))
-       (when host-name
-	 (make-local-variable 'mode-line-buffer-identification)
-	 (setq mode-line-buffer-identification
-	       (cons
-		(propertize host-name 'face 'font-lock-warning-face)
-		(default-value
-		  'mode-line-buffer-identification)))))))
+     (when host-name
+       (make-local-variable 'mode-line-buffer-identification)
+       (setq mode-line-buffer-identification
+	     (cons
+	      (propertize
+	       (if (string-match "^/su\\(do\\)?:" default-directory)
+		   (concat "su" (match-string 1 default-directory)
+			   "@" host-name)
+		 host-name)
+	       'face 'font-lock-warning-face)
+	      (default-value 'mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook))
@@ -656,8 +635,8 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (when-library
  t gnus
  (defvar *gnus-new-mail-count* "" "Unread messages count.")
- (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
  (put '*gnus-new-mail-count* 'risky-local-variable t)
+ (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
 
  (eval-after-load "gnus"
    `(progn
@@ -668,15 +647,12 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 		      (nnimap-authinfo-file ,(concat +home-path+
 						     ".authinfo.gpg")))
 	      (nnml "yahoo"))
-	    gnus-ignored-newsgroups
-	    "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]"
 	    message-send-mail-function 'smtpmail-send-it
 	    smtpmail-starttls-credentials '(("smtp.gmail.com"
 					     587 nil nil))
 	    smtpmail-auth-credentials '(("smtp.gmail.com" 587
 					 "m00naticus@gmail.com" nil))
 	    smtpmail-default-smtp-server "smtp.gmail.com"
-	    smtpmail-smtp-server "smtp.gmail.com"
 	    smtpmail-smtp-service 587
 	    mail-sources '((pop :server "pop.mail.yahoo.co.uk"
 				:port 995 :stream ssl
@@ -691,8 +667,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	    (dolist (server-status gnus-opened-servers)
 	      (let* ((server (car server-status))
 		     (backend (car server)))
-		(and (not (eq backend 'nnshimbun))
-		     (gnus-check-backend-function
+		(and (gnus-check-backend-function
 		      'request-scan backend)
 		     (or (gnus-server-opened server)
 			 (gnus-open-server server))
@@ -739,31 +714,24 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 				      (substring unread-groups 2))
 			      unread-count
 			      (if (= unread-count 1) "" "s"))))))
-
 		    (propertize (format "%d" unread-count)
 				'face 'font-lock-warning-face))))))
 
       (byte-compile 'my-gnus-demon-scan-mail)
-
       ;; run (gnus-demon-init) to track emails
       (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)
-
       (add-hook 'kill-emacs-hook (byte-compile
 				  (lambda () "Quit Gnus."
 				    (setq gnus-interactive-exit nil)
-				    (gnus-group-exit))))))
-
- (when-library nil nnshimbun
-	       (eval-after-load "gnus-group"
-		 '(define-key gnus-group-mode-map "Gn"
-		    'gnus-group-make-shimbun-group))))
+				    (gnus-group-exit)))))))
 
 (when-library
  nil fortune
  (when (executable-find "fortune")
-   (setq fortune-dir (concat user-emacs-directory "fortune/")
-	 fortune-file (concat fortune-dir "sigs"))
-
+   (let ((fortune-d (concat user-emacs-directory "fortune/")))
+     (if (file-exists-p fortune-d)
+	 (setq fortune-dir fortune-d
+	       fortune-file (concat fortune-dir "sigs"))))
    (add-hook 'message-signature-setup-hook 'fortune-to-signature)))
 
 (when-library
@@ -817,27 +785,26 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")
-
- (defun browse-apropos-url (text &optional new-window)
-   "Search for TEXT by some search engine.
+ (global-set-key
+  [f6]
+  (lambda (text &optional new-window)
+    "Search for TEXT by some search engine.
 Open in new tab if NEW-WINDOW."
-   (interactive (browse-url-interactive-arg
-		 (concat "Location" (if current-prefix-arg
-					" (new tab)")
-			 ": ")))
-   (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
-			  (split-string text) " "))
-	 (apropo-reg "^$"))
-     (let ((url (assoc-default text +apropos-url-alist+
-			       (lambda (a b) (if (string-match a b)
-					    (setq apropo-reg a)))
-			       text)))
-       (browse-url (replace-regexp-in-string
-		    " " "+"
-		    (replace-regexp-in-string apropo-reg url text))
-		   (not new-window)))))
-
- (global-set-key [f6] 'browse-apropos-url))
+    (interactive (browse-url-interactive-arg
+		  (concat "Location" (if current-prefix-arg
+					 " (new tab)")
+			  ": ")))
+    (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
+			   (split-string text) " "))
+	  (apropo-reg "^$"))
+      (let ((url (assoc-default text +apropos-url-alist+
+				(lambda (a b) (if (string-match a b)
+					     (setq apropo-reg a)))
+				text)))
+	(browse-url (replace-regexp-in-string
+		     " " "+"
+		     (replace-regexp-in-string apropo-reg url text))
+		    (not new-window)))))))
 
 ;;; LaTeX beamer allow for export=>beamer by placing
 ;; #+LaTeX_CLASS: beamer in org files
@@ -845,7 +812,6 @@ Open in new tab if NEW-WINDOW."
  t org
  (or (boundp 'org-export-latex-classes)
      (setq org-export-latex-classes nil))
-
  (add-to-list 'org-export-latex-classes
 	      '("beamer"
 		"\\documentclass[11pt]{beamer}\n
@@ -930,29 +896,18 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
-  (defmacro def-interactive-arg (fun comment on-no-prefix on-prefix
-				     &optional do-always)
-    "Create a one-argument interactive function FUN with COMMENT.
-ON-NO-PREFIX is executed if no prefix is given, ON-PREFIX otherwise.
-DO-ALWAYS is always executed beforehand."
-    `(defun ,fun (arg)
-       ,comment
-       (interactive "P")
-       ,do-always
-       (if (null arg) ,on-no-prefix
-	 ,on-prefix)))
-
-  (def-interactive-arg tabbar-move-next
-    "Go to next tab. With prefix, next group."
-    (tabbar-forward-tab) (tabbar-forward-group))
-  (def-interactive-arg tabbar-move-prev
-    "Go to previous tab. With prefix, previous group."
-    (tabbar-backward-tab) (tabbar-backward-group))
-
-  (global-set-key (kbd "C-<tab>") 'tabbar-move-next)
+  (global-set-key (kbd "C-<tab>")
+		  (lambda (arg) "Go to next tab. With prefix, next group."
+		    (interactive "P")
+		    (if arg (tabbar-forward-group)
+		      (tabbar-forward-tab))))
   (global-set-key (win-or-nix (kbd "C-S-<tab>")
 			      (kbd "<C-S-iso-lefttab>"))
-		  'tabbar-move-prev)
+		  (lambda (arg)
+		    "Go to previous tab. With prefix, previous group."
+		    (interactive "P")
+		    (if arg (tabbar-backward-group)
+		      (tabbar-backward-tab))))
 
   (when-library
    t org
@@ -962,7 +917,6 @@ DO-ALWAYS is always executed beforehand."
 		 (kbd "C-<tab>") nil
 		 (win-or-nix (kbd "C-S-<tab>")
 			     (kbd "<C-S-iso-lefttab>")) nil))))
-
   ;; remove buffer name from modeline as it now becomes redundant
   (setq-default mode-line-buffer-identification ""))
 
@@ -976,7 +930,6 @@ DO-ALWAYS is always executed beforehand."
    (autoload 'wget-cd-download-dir "wget"
      "Change directory to wget download dir.")
    (autoload 'wget-uri "wget" "Wget URI asynchronously.")
-
    (setq
     wget-download-directory-filter 'wget-download-dir-filter-regexp
     wget-download-directory
@@ -1001,7 +954,6 @@ Make links point to local files."
  (autoload 'anything "anything" "Select anything.")
  (defalias 'my-anything 'anything)
  (global-set-key (kbd "<f5> m") 'my-anything)
-
  (when-library
   nil anything-config
   (autoload 'anything-for-files "anything-config"
@@ -1010,14 +962,11 @@ Make links point to local files."
     "Preconfigured `anything' for searching info at point.")
   (autoload 'anything-show-kill-ring "anything-config"
     "Preconfigured `anything' for `kill-ring'.")
-
   (unless (fboundp 'ergoemacs-mode)
     (global-set-key "\M-y" 'anything-show-kill-ring)
     (define-key minibuffer-local-map "\M-y" 'yank-pop))
-
   (global-set-key (kbd "<f5> f") 'anything-for-files)
   (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
-
   (win-or-nix
    nil (when (eval-when-compile
 	       (string-match "gentoo\\|funtoo"
@@ -1058,8 +1007,8 @@ Make links point to local files."
        (define-key isearch-mode-map ergoemacs-recenter-key
 	 'recenter-top-bottom))
    (define-keys ergoemacs-keymap
-     "\M-3" 'move-cursor-previous-pane
-     "\M-#" 'move-cursor-next-pane
+     "\M-2" 'move-cursor-previous-pane
+     "\M-@" 'move-cursor-next-pane
      "\C-f" 'search-forward-regexp)
 
    ;; workaround arrows not active in terminal with ErgoEmacs active
@@ -1124,8 +1073,7 @@ Make links point to local files."
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
      (interactive (list (completing-read "Enter layout (default us): "
-					 '("us" "dv" "sp" "it" "gb"
-					   "gb-dv" "colemak")
+					 '("us" "dv" "colemak")
 					 nil t nil nil "us")))
      (unless (equal layout ergoemacs-keyboard-layout)
        (ergoemacs-mode 0)
@@ -1139,6 +1087,7 @@ Make links point to local files."
     nil anything-config
     (defvar ergoemacs-minibuffer-keymap
       (copy-keymap ergoemacs-keymap))
+
     (defadvice ergoemacs-minibuffer-setup-hook
       (after ergoemacs-minibuffer-yank-pop activate compile)
       (define-key ergoemacs-minibuffer-keymap
@@ -1191,7 +1140,6 @@ Make links point to local files."
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
-
 (or (fboundp 'ergoemacs-mode)
     (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
@@ -1218,9 +1166,8 @@ Make links point to local files."
 ;;; Qi
 (when-library
  nil qi-mode
- (autoload 'qi-mode "qi-mode" "Major mode for editing Qi progams" t)
+ (autoload 'qi-mode "qi-mode" "Qi editing mode." t)
  (autoload 'run-qi "qi-mode" "Run an inferior Qi process." t)
-
  (add-to-list 'auto-mode-alist '("\\.qi\\'" . qi-mode))
  (eval-after-load "qi-mode"
    `(progn
@@ -1244,12 +1191,10 @@ Make links point to local files."
 			''(slime-fancy slime-banner slime-indentation)
 			''(slime-fancy slime-banner slime-indentation
 				       slime-asdf)))
-
 	 (add-to-list 'slime-lisp-implementations
 		      (list ',(win-or-nix 'clisp 'sbcl)
 			    ',(split-string inferior-lisp-program
 					    " +")))
-
 	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
 	       slime-complete-symbol*-fancy t
 	       slime-complete-symbol-function
@@ -1261,7 +1206,6 @@ Make links point to local files."
 	       (find-if 'slime-find-coding-system
 			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
 				     binary)))
-
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
 	 (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
 
@@ -1270,7 +1214,6 @@ Make links point to local files."
  nil clojure-mode			; from ELPA
  (eval-after-load "clojure-mode"
    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
-
  (when-library
   nil (slime swank-clojure)
   (autoload 'swank-clojure-init "swank-clojure"
@@ -1283,7 +1226,6 @@ Make links point to local files."
     "Add clojure to slime implementations")
   (autoload 'swank-clojure-project "swank-clojure"
     "Invoke clojure with a project path" t)
-
   (eval-after-load "slime"
     '(progn
        (setq
@@ -1311,7 +1253,6 @@ Make links point to local files."
 	     (slime-repl-return)
 	     (other-window 1))))
 
-;;; Local JavaDoc to Slime
        (defun slime-browse-local-javadoc (ci-name)
 	 "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
 	 (interactive
@@ -1349,7 +1290,6 @@ Make links point to local files."
 
        (byte-compile 'slime-java-describe)
        (byte-compile 'slime-browse-local-javadoc)
-
        (define-keys slime-mode-map
 	 "\C-cd" 'slime-java-describe
 	 "\C-cD" 'swank-clojure-javadoc
@@ -1358,7 +1298,6 @@ Make links point to local files."
 	 "\C-cd" 'slime-java-describe
 	 "\C-cD" 'swank-clojure-javadoc
 	 "\C-cb" 'slime-browse-local-javadoc)
-
        (add-hook 'slime-connected-hook
 		 (byte-compile
 		  (lambda () "Turn off slime-autodoc for clojure."
@@ -1373,11 +1312,9 @@ Make links point to local files."
  nil quack
  (autoload 'quack-scheme-mode-hookfunc "quack")
  (autoload 'quack-inferior-scheme-mode-hookfunc "quack")
-
  (add-hook 'scheme-mode-hook 'quack-scheme-mode-hookfunc)
  (add-hook 'inferior-scheme-mode-hook
 	   'quack-inferior-scheme-mode-hookfunc)
-
  (setq quack-global-menu-p nil)
  (eval-after-load "quack"
    `(setq quack-default-program "gsi"
@@ -1389,16 +1326,13 @@ Make links point to local files."
 ;;; CLIPS
 (when-library
  nil inf-clips
- (autoload 'clips-mode "clips-mode"
-   "Major mode for editing Clips code." t)
+ (autoload 'clips-mode "clips-mode" "Clips editing mode." t)
  (autoload 'run-clips "inf-clips" "Run an inferior Clips process." t)
  (add-to-list 'auto-mode-alist '("\\.clp$" . clips-mode))
-
  (eval-after-load "clips-mode"
    '(add-hook 'clips-mode-hook (byte-compile
 				(lambda () (activate-lisp-minor-modes)
 				  (setq indent-region-function nil)))))
-
  (eval-after-load "inf-clips"
    `(progn
       (setq inferior-clips-program
@@ -1407,7 +1341,6 @@ Make links point to local files."
 		(concat +win-path+
 			"Program Files/CLIPS/Bin/CLIPSDOS.exe"))
 	      "clips"))
-
       (add-hook 'inferior-clips-mode-hook
 		(byte-compile
 		 (lambda () (activate-lisp-minor-modes)
@@ -1417,10 +1350,8 @@ Make links point to local files."
  nil prog/prolog
  (fset 'run-prolog '(autoload "prog/prolog"
 		      "Start a Prolog sub-process." t nil))
- (autoload 'prolog-mode "prog/prolog"
-   "Major mode for editing Prolog programs." t)
- (autoload 'mercury-mode "prog/prolog"
-   "Major mode for editing Mercury programs." t)
+ (autoload 'prolog-mode "prog/prolog" "Prolog editing mode." t)
+ (autoload 'mercury-mode "prog/prolog" "Mercury editing mode." t)
  (setq prolog-system 'swi
        auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
 				("\\.m$" . mercury-mode))
@@ -1429,7 +1360,7 @@ Make links point to local files."
 ;;; Oz
 (when-library
  nil oz
- (autoload 'oz-mode "oz" "Major mode for editing Oz code." t)
+ (autoload 'oz-mode "oz" "Oz editing mode." t)
  (autoload 'ozm-mode "mozart"
    "Major mode for displaying Oz machine code." t)
  (autoload 'oz-gump-mode "oz"
@@ -1450,7 +1381,7 @@ Make links point to local files."
 (when-library
  nil tuareg
  (autoload 'tuareg-mode "tuareg"
-   "Major mode for editing Caml code" t)
+   "(O)Caml editing mode." t)
  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
  (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
@@ -1472,8 +1403,7 @@ Make links point to local files."
 ;;; C#
 (when-library
  nil csharp-mode
- (autoload 'csharp-mode "csharp-mode"
-   "Major mode for editing C# code." t)
+ (autoload 'csharp-mode "csharp-mode" "C# editing mode." t)
  (add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode)))
 
 ;;; cc-mode - hide functions
@@ -1516,7 +1446,6 @@ Make links point to local files."
  nil yasnippet
  (autoload 'yas/global-mode "yasnippet"
    "Activate yasnippet global mode." t)
-
  (eval-after-load "yasnippet"
    `(progn
       (yas/load-directory ,(win-or-nix
@@ -1575,7 +1504,6 @@ Make links point to local files."
  nil auto-install
  (autoload 'auto-install-from-directory "auto-install"
    "Update elisp files under DIRECTORY from EmacsWiki." t)
-
  (eval-after-load "auto-install"
    `(setq auto-install-directory ,(win-or-nix
 				   (concat +extras-path+
@@ -1603,13 +1531,6 @@ Make links point to local files."
      ("\\.tv" . ,browse-url-browser-function)
      ("youtube" . ,browse-url-browser-function)
      ("." . w3m-browse-url)))
-
-  ;; integration with other packages
-  (when-library
-   t gnus
-   (autoload 'gnus-group-mode-map "nnshimbun"
-     "Add shimbun group to Gnus." t))
-
   (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
   (add-hook 'dired-load-hook
 	    (lambda () "Add w3m key for opening files in dired."
@@ -1617,10 +1538,8 @@ Make links point to local files."
 		(lambda () "Open a file with w3m."
 		  (interactive)
 		  (w3m-find-file (dired-get-filename))))))
-
   (when-library nil w3m-wget (if (executable-find "w3m")
 				 (require 'w3m-wget nil t)))
-
   ;; Conkeror style anchor numbering on actions
   (add-hook 'w3m-mode-hook 'w3m-link-numbering-mode)
 
@@ -1633,12 +1552,10 @@ Make links point to local files."
 			       (concat "file://" +home-path+
 				       ".w3m/bookmark.html")))
 	     w3m-use-cookies t)
-
        (define-keys w3m-mode-map
 	 (if w3m-key-binding "t" "i") 'w3m-linknum-save-image
 	 "z" 'w3m-horizontal-recenter
 	 "\C-cs" 'w3m-session-select)
-
        ,(when-library
 	 nil ergoemacs-mode
 	 '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
@@ -1709,16 +1626,10 @@ With optional prefix ARG ask for url."
 ;;; mldonkey
 (when-library
  nil mldonkey
- (autoload 'mldonkey "mldonkey" "Run the MlDonkey interface." t)
-
- (eval-after-load "mldonkey"
-   '(setq mldonkey-host "localhost"
-	  mldonkey-port 4000)))
+ (autoload 'mldonkey "mldonkey" "Run the MlDonkey interface." t))
 
 ;;; EMMS
 (when (require 'emms-auto nil t)
-  (autoload 'emms-smart-browse "emms-browser"
-    "Display browser and playlist." t)
   (autoload 'emms-browser "emms-browser"
     "Launch or switch to the EMMS Browser." t)
   (autoload 'emms "emms-playlist-mode"
@@ -1728,13 +1639,10 @@ With optional prefix ARG ask for url."
     `(progn
        (emms-devel)
        (emms-default-players)
-
        (if (require 'emms-info-libtag nil t)
 	   (add-to-list 'emms-info-functions 'emms-info-libtag
 			nil 'eq))
-
        (require 'emms-mark nil t)
-
        ;; swap time and other track info
        (let ((new-global-mode-string nil))
 	 (while (and (not (memq (car global-mode-string)
@@ -1746,18 +1654,17 @@ With optional prefix ARG ask for url."
 	 (push 'emms-playing-time-string new-global-mode-string)
 	 (push 'emms-mode-line-string new-global-mode-string)
 	 (setq global-mode-string (nreverse new-global-mode-string)))
-
        (add-hook 'emms-player-started-hook 'emms-show)
 
-       (defun my-emms-default-info ()
+       (defun my-emms-default-info (track)
+	 "Get some generic meta data."
 	 (concat
 	  "(" (number-to-string
 	       (or (emms-track-get track 'play-count) 0))
 	  ", " (emms-last-played-format-date
 		(or (emms-track-get track 'last-played) '(0 0 0)))
 	  ")" (let ((time (emms-track-get track 'info-playing-time)))
-		(if time
-		    (format " %d:%02d" (/ time 60) (mod time 60))
+		(if time (format " %d:%02d" (/ time 60) (mod time 60))
 		  ""))))
 
        (defun my-emms-track-description-function (track)
@@ -1782,13 +1689,13 @@ With optional prefix ARG ask for url."
 						     'info-year)))
 			   (if year (concat year " - ")))
 		    (or (emms-track-get track 'info-album) "unknown")
-		    "]" (my-emms-default-info))
+		    "]" (my-emms-default-info track))
 		 (concat (emms-track-name track)
-			 (my-emms-default-info)))))
+			 (my-emms-default-info track)))))
 	    ((eq 'url type)
 	     (emms-format-url-track-name (emms-track-name track)))
-	    (t (concat (symbol-name type) ": "
-		       (emms-track-name track) (my-emms-default-info))))))
+	    (t (concat (symbol-name type) ": " (emms-track-name track)
+		       (my-emms-default-info track))))))
 
        (defun my-emms-covers (dir type)
 	 "Choose album cover in DIR deppending on TYPE.
@@ -1851,23 +1758,15 @@ Medium - less than 120000 bytes."
 		 (setq pics (cdr pics)))
 	       (car pic))))))
 
+       (byte-compile 'my-emms-default-info)
        (byte-compile 'my-emms-track-description-function)
        (byte-compile 'my-emms-covers)
-
        (setq emms-show-format "EMMS: %s"
 	     emms-mode-line-format "%s"
-	     emms-info-asynchronously t
-	     later-do-interval 0.0001
 	     emms-source-file-default-directory
 	     ,(win-or-nix
 	       (concat +home-path+ "Music/")
 	       (eval-when-compile (concat +home-path+ "Music/")))
-	     emms-last-played-format-alist
-	     '(((emms-last-played-seconds-today) . "%a %H:%M")
-	       (604800 . "%a %H:%M")	; this week
-	       ((emms-last-played-seconds-month) . "%d")
-	       ((emms-last-played-seconds-year) . "%d/%m")
-	       (t . "%d/%m/%Y"))
 	     emms-track-description-function
 	     'my-emms-track-description-function
 	     emms-browser-covers 'my-emms-covers)
@@ -1883,7 +1782,6 @@ Medium - less than 120000 bytes."
 	 (add-to-list 'emms-player-list 'emms-player-mpd nil 'eq)
 	 (setq emms-player-mpd-music-directory
 	       emms-source-file-default-directory)
-
 	 ,(win-or-nix
 	   nil
 	   (when-library
@@ -1899,21 +1797,19 @@ Medium - less than 120000 bytes."
 
        (global-set-key [XF86AudioPlay] 'emms-pause)
        (global-set-key "\C-cp" 'emms-pause)
-
-       ,@(win-or-nix
-	  nil
-	  (when-library
-	   nil notify
-	   '((defun my-emms-notify ()
-	       "Notify on new track."
-	       (emms-next-noerror)
-	       (if emms-player-playing-p
-		   (notify "EMMS"
-			   (emms-track-description
-			    (emms-playlist-current-selected-track)))))
-
-	     (byte-compile 'my-emms-notify)
-	     (setq emms-player-next-function 'my-emms-notify)))))))
+       ,(win-or-nix
+	 nil
+	 (when-library
+	  nil notify
+	  '(setq emms-player-next-function
+		 (byte-compile
+		  (lambda () "Notify on new track."
+		    (emms-next-noerror)
+		    (if emms-player-playing-p
+			(notify
+			 "EMMS"
+			 (emms-track-description
+			  (emms-playlist-current-selected-track))))))))))))
 
 ;;; Dictionary
 (when-library nil dictionary
