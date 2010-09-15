@@ -5,8 +5,6 @@
 ;;  Anything related:
 ;;   Anything http://www.emacswiki.org/emacs/Anything
 ;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
-;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
-;;   anything-auto-install
 ;;  Programming languages related:
 ;;   SLIME http://common-lisp.net/project/slime
 ;;   Quack http://www.neilvandyke.org/quack
@@ -41,6 +39,7 @@
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
 ;;   notify http://www.emacswiki.org/emacs/notify.el
+;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   Dictionary http://www.myrkr.in-berlin.de/dictionary
 ;;   EMMS http://www.gnu.org/software/emms
@@ -92,9 +91,8 @@ NIX forms are executed on all other platforms."
 (when (and (file-exists-p +extras-path+)
 	   (not (member +extras-path+ 'load-path)))
   (push +extras-path+ load-path)
-  (if (fboundp 'normal-top-level-add-subdirs-to-load-path)
-      (let ((default-directory +extras-path+))
-	(normal-top-level-add-subdirs-to-load-path))))
+  (let ((default-directory +extras-path+))
+    (normal-top-level-add-subdirs-to-load-path)))
 ;; add custom bin to path
 (let ((bin-path (win-or-nix
 		 (concat +extras-path+ "bin")
@@ -111,13 +109,10 @@ NIX forms are executed on all other platforms."
 
 ;;;; mode a bit emacs
 (custom-set-variables
- '(browse-url-firefox-new-window-is-tab t)
- '(browse-url-mozilla-new-window-is-tab t)
  '(browse-url-new-window-flag t)
  '(calendar-latitude 42.68)
  '(calendar-longitude 23.31)
  '(column-number-mode t)
- '(completion-ignore-case t t)
  '(cua-enable-cua-keys nil)
  '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
@@ -148,7 +143,6 @@ NIX forms are executed on all other platforms."
  '(line-number-mode nil)
  '(major-mode 'org-mode)
  '(menu-bar-mode nil)
- '(mouse-avoidance-mode 'jump)
  '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
@@ -159,9 +153,7 @@ NIX forms are executed on all other platforms."
 			 (concat user-emacs-directory "recentf"))))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
- '(show-paren-delay 0)
  '(show-paren-mode t)
- '(show-paren-style 'parenthesis)
  '(size-indication-mode t)
  '(tool-bar-mode nil)
  '(uniquify-buffer-name-style 'post-forward nil (uniquify))
@@ -581,22 +573,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  (global-set-key (kbd "<M-prior>") 'highlight-changes-previous-change)
  (global-set-key (kbd "<M-next>") 'highlight-changes-next-change))
 
-;; Ido
-(when-library
- t ido
- (defadvice completing-read (around use-ido-when-possible
-				    activate compile)
-   "Replace completing-read wherever possible."
-   (if (boundp 'ido-cur-list)	; Avoid infinite loop
-       ad-do-it			; from ido calling this
-     (let ((allcomp (all-completions "" collection predicate)))
-       (if allcomp
-	   (setq ad-return-value
-		 (ido-completing-read prompt allcomp nil
-				      require-match initial-input
-				      hist def))
-	 ad-do-it)))))
-
 ;;; tramp-ing
 (when-library
  t tramp
@@ -962,7 +938,7 @@ Make links point to local files."
     "Preconfigured `anything' for searching info at point.")
   (autoload 'anything-show-kill-ring "anything-config"
     "Preconfigured `anything' for `kill-ring'.")
-  (unless (fboundp 'ergoemacs-mode)
+  (unless (featurep 'ergoemacs-mode)
     (global-set-key "\M-y" 'anything-show-kill-ring)
     (define-key minibuffer-local-map "\M-y" 'yank-pop))
   (global-set-key (kbd "<f5> f") 'anything-for-files)
@@ -1140,7 +1116,7 @@ Make links point to local files."
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
-(or (fboundp 'ergoemacs-mode)
+(or (featurep 'ergoemacs-mode)
     (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
 ;; common lisp hyperspec info look-up
@@ -1380,8 +1356,7 @@ Make links point to local files."
 ;;; Caml
 (when-library
  nil tuareg
- (autoload 'tuareg-mode "tuareg"
-   "(O)Caml editing mode." t)
+ (autoload 'tuareg-mode "tuareg" "(O)Caml editing mode." t)
  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
  (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
@@ -1480,7 +1455,7 @@ Make links point to local files."
 (when (load "auctex" t)
   (load "preview-latex" t)
   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (or (fboundp 'ergoemacs-mode)
+  (or (featurep 'ergoemacs-mode)
       (eval-after-load "tex"
 	'(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
@@ -1507,14 +1482,10 @@ Make links point to local files."
  (eval-after-load "auto-install"
    `(setq auto-install-directory ,(win-or-nix
 				   (concat +extras-path+
-					   "auto-install-dir/")
+					   "auto-install/")
 				   (eval-when-compile
 				     (concat +extras-path+
-					     "auto-install-dir/")))))
- (when-library
-  nil (anything anything-auto-install)
-  (autoload 'anything-auto-install "anything-auto-install"
-    "All-in-one command for elisp installation." t)))
+					     "auto-install/"))))))
 
 (if (executable-find "conkeror")
     (setq browse-url-browser-function 'browse-url-generic

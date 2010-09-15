@@ -17,8 +17,6 @@ links:
 Anything related:
 Anything http://www.emacswiki.org/emacs/Anything
 anything-match http://www.emacswiki.org/emacs/AnythingPlugins
-auto-install http://www.emacswiki.org/emacs/AutoInstall
-anything-auto-install
 
 Programming languages related:
 SLIME http://common-lisp.net/project/slime
@@ -47,7 +45,7 @@ Redshank http://www.foldr.org/~michaelw/emacs/redshank
 
 networking:
 emacs-w3m http://emacs-w3m.namazu.org
-emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
+emacs-wget (modified) http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
 
 misc:
@@ -56,6 +54,7 @@ AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
 TabBar http://www.emacswiki.org/emacs/TabBarMode
 sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
+auto-install http://www.emacswiki.org/emacs/AutoInstall
 notify http://www.emacswiki.org/emacs/notify.el
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
