@@ -49,14 +49,14 @@
 
 ;;; Code:
 ;; do some OS recognition and set main parameters
-(defconst +winp+ (eval-when-compile
-		   (memq system-type '(windows-nt ms-dos)))
+(defconst +win-p+ (eval-when-compile
+		    (memq system-type '(windows-nt ms-dos)))
   "Windows detection.")
 
 (defmacro win-or-nix (win &rest nix)
   "OS conditional.  WIN may be a list and is executed on windows systems.
 NIX forms are executed on all other platforms."
-  (if +winp+
+  (if +win-p+
       (if (consp win)
 	  (let ((form (car win)))
 	    (cond ((not (consp form)) win)
@@ -89,7 +89,7 @@ NIX forms are executed on all other platforms."
 
 ;; add `+extras-path+' and subdirs to `load-path'
 (when (and (file-exists-p +extras-path+)
-	   (not (member +extras-path+ 'load-path)))
+	   (not (member +extras-path+ load-path)))
   (push +extras-path+ load-path)
   (let ((default-directory +extras-path+))
     (normal-top-level-add-subdirs-to-load-path)))
@@ -141,7 +141,6 @@ NIX forms are executed on all other platforms."
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
  '(line-number-mode nil)
- '(major-mode 'org-mode)
  '(menu-bar-mode nil)
  '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
@@ -156,8 +155,7 @@ NIX forms are executed on all other platforms."
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(tool-bar-mode nil)
- '(uniquify-buffer-name-style 'post-forward nil (uniquify))
- '(uniquify-separator ":")
+ '(uniquify-buffer-name-style 'forward nil (uniquify))
  '(version-control t)
  '(winner-mode t)
  '(word-wrap t))
@@ -641,10 +639,9 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	  ;; fetch new messages
 	  (let ((nnmail-fetched-sources (list t)))
 	    (dolist (server-status gnus-opened-servers)
-	      (let* ((server (car server-status))
-		     (backend (car server)))
+	      (let ((server (car server-status)))
 		(and (gnus-check-backend-function
-		      'request-scan backend)
+		      'request-scan (car server))
 		     (or (gnus-server-opened server)
 			 (gnus-open-server server))
 		     (gnus-request-scan nil server)))))
@@ -1742,10 +1739,14 @@ Medium - less than 120000 bytes."
 	     'my-emms-track-description-function
 	     emms-browser-covers 'my-emms-covers)
 
-       (when (require 'emms-lastfm nil t)
-	 (setq emms-lastfm-username "m00natic"
-	       emms-lastfm-password "very-secret")
-	 (emms-lastfm 1))
+       (when (require 'emms-lastfm-client nil t)
+	 (setq emms-lastfm-client-username "m00natic"
+	       emms-lastfm-client-api-key
+	       "very-secret"
+	       emms-lastfm-client-api-secret-key
+	       "very-secret")
+	 ;; (emms-lastfm-scrobbler-enable)
+	 )
 
        (when (and (executable-find "mpd")
 		  (require 'emms-player-mpd nil t))
@@ -1831,5 +1832,3 @@ Medium - less than 120000 bytes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (win-or-nix (server-start))	  ; using --daemon on *nix
-
-;;; init.el ends here
