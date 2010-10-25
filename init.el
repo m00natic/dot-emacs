@@ -9,7 +9,6 @@
 ;;   SLIME http://common-lisp.net/project/slime
 ;;   Quack http://www.neilvandyke.org/quack
 ;;   clojure-mode http://github.com/technomancy/clojure-mode
-;;   swank-clojure http://github.com/technomancy/swank-clojure
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
@@ -1168,19 +1167,23 @@ Make links point to local files."
 		      (list ',(win-or-nix 'clisp 'sbcl)
 			    ',(split-string inferior-lisp-program
 					    " +")))
+	 (if (file-exists-p ,(concat "file://" +home-path+
+				     "Documents/HyperSpec/"))
+	     (setq common-lisp-hyperspec-root
+		   ,(concat "file://" +home-path+
+			    "Documents/HyperSpec/")))
 	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
 	       slime-complete-symbol*-fancy t
 	       slime-complete-symbol-function
 	       'slime-fuzzy-complete-symbol
-	       common-lisp-hyperspec-root
-	       ,(eval-when-compile (concat "file://" +home-path+
-					   "Documents/HyperSpec/"))
 	       slime-net-coding-system
 	       (find-if 'slime-find-coding-system
 			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
 				     binary)))
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	 (define-key slime-mode-map "\M-g" 'slime-complete-symbol))))
+	 (or (featurep 'ergoemacs-mode)
+	     (define-key slime-mode-map "\M-g"
+	       'slime-complete-symbol)))))
 
 ;;; Clojure
 (when-library
@@ -1188,97 +1191,67 @@ Make links point to local files."
  (eval-after-load "clojure-mode"
    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
  (when-library
-  nil (slime swank-clojure)
-  (autoload 'swank-clojure-init "swank-clojure"
-    "Initialize clojure for swank")
-  (autoload 'swank-clojure-cmd "swank-clojure"
-    "Command to start clojure")
-  (autoload 'swank-clojure-slime-mode-hook "swank-clojure"
-    "Swank to Slime hook")
-  (autoload 'slime-read-interactive-args "swank-clojure"
-    "Add clojure to slime implementations")
-  (autoload 'swank-clojure-project "swank-clojure"
-    "Invoke clojure with a project path" t)
+  nil (slime)
   (eval-after-load "slime"
-    '(progn
-       (setq
-	swank-clojure-extra-vm-args
-	'("-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8888"
-	  "-server" "-Xdebug"))
-       (add-to-list 'slime-lisp-implementations
-		    (list 'clojure (swank-clojure-cmd)
-			  :init 'swank-clojure-init))))
-
-  (eval-after-load "swank-clojure"
     `(progn
-       ;; Online JavaDoc to Slime
-       (defun slime-java-describe (symbol-name)
-	 "Get details on Java class/instance at point SYMBOL-NAME."
-	 (interactive
-	  (list (slime-read-symbol-name "Java Class/instance: ")))
-	 (or symbol-name (error "No symbol given"))
-	 (with-current-buffer (slime-output-buffer)
-	   (or (eq (current-buffer) (window-buffer))
-	       (pop-to-buffer (current-buffer) t))
-	   (goto-char (point-max))
-	   (insert (concat "(show " symbol-name ")"))
-	   (when symbol-name
-	     (slime-repl-return)
-	     (other-window 1))))
+       (when (file-exists-p
+	      ,(win-or-nix (concat +home-path+ "Documents/javadoc")
+			   "/usr/share/doc/java-sdk-docs-1.6.0.18"))
+	 (defun slime-browse-local-javadoc (ci-name)
+	   "Browse local JavaDoc documentation on class/interface CI-NAME."
+	   (interactive
+	    (list (slime-read-symbol-name "Class/Interface name: ")))
+	   (or ci-name (error "No name given"))
+	   (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+		 (path (concat
+			,(win-or-nix
+			  (concat +home-path+ "Documents/javadoc")
+			  "/usr/share/doc/java-sdk-docs-1.6.0.18/html")
+			"/api/")))
+	     (with-temp-buffer
+	       (insert-file-contents
+		(concat path "allclasses-noframe.html"))
+	       (let ((l (delq
+			 nil
+			 (mapcar (lambda (rgx)
+				   (let* ((r (concat
+					      "\\.?\\(" rgx
+					      "[^./]+\\)[^.]*\\.?$"))
+					  (n (if (string-match r name)
+						 (match-string 1 name)
+					       name)))
+				     (if (re-search-forward
+					  (concat
+					   "<A HREF=\"\\(.+\\)\" +.*>"
+					   n "<.*/A>")
+					  nil t)
+					 (match-string 1)
+				       nil)))
+				 '("[^.]+\\." "")))))
+		 (if l (browse-url (concat "file://" path (car l)))
+		   (error (concat "Not found: " ci-name)))))))
 
-       (defun slime-browse-local-javadoc (ci-name)
-	 "Browse local JavaDoc documentation on Java class/Interface at point CI-NAME."
-	 (interactive
-	  (list (slime-read-symbol-name "Class/Interface name: ")))
-	 (or ci-name (error "No name given"))
-	 (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-	       (path (concat
-		      (expand-file-name
-		       ,(win-or-nix
-			 (concat +home-path+ "Documents/javadoc")
-			 "/usr/share/doc/java-sdk-docs-1.6.0.18/html"))
-		      "/api/")))
-	   (with-temp-buffer
-	     (insert-file-contents
-	      (concat path "allclasses-noframe.html"))
-	     (let ((l (delq
-		       nil
-		       (mapcar (lambda (rgx)
-				 (let* ((r (concat
-					    "\\.?\\(" rgx
-					    "[^./]+\\)[^.]*\\.?$"))
-					(n (if (string-match r name)
-					       (match-string 1 name)
-					     name)))
-				   (if (re-search-forward
-					(concat
-					 "<A HREF=\"\\(.+\\)\" +.*>"
-					 n "<.*/A>")
-					nil t)
-				       (match-string 1)
-				     nil)))
-			       '("[^.]+\\." "")))))
-	       (if l (browse-url (concat "file://" path (car l)))
-		 (error (concat "Not found: " ci-name)))))))
+	 (byte-compile 'slime-browse-local-javadoc)
+	 (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
+	 (define-key slime-repl-mode-map
+	   "\C-cb" 'slime-browse-local-javadoc))
 
-       (byte-compile 'slime-java-describe)
-       (byte-compile 'slime-browse-local-javadoc)
-       (define-keys slime-mode-map
-	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'swank-clojure-javadoc
-	 "\C-cb" 'slime-browse-local-javadoc)
-       (define-keys slime-repl-mode-map
-	 "\C-cd" 'slime-java-describe
-	 "\C-cD" 'swank-clojure-javadoc
-	 "\C-cb" 'slime-browse-local-javadoc)
-       (add-hook 'slime-connected-hook
-		 (byte-compile
-		  (lambda () "Turn off slime-autodoc for clojure."
-		    (if (equal (cadr slime-inferior-lisp-args) "java")
-			(custom-set-variables
-			 '(slime-use-autodoc-mode nil))
-		      (custom-set-variables
-		       '(slime-use-autodoc-mode t))))))))))
+       (add-hook 'slime-repl-mode-hook
+		 (lambda () "Clojure REPL hook."
+		   (if (and (string-equal "clojure"
+					  (slime-connection-name))
+			    (require 'clojure-mode))
+		       (progn
+			 (if (slime-inferior-process)
+			     (slime-redirect-inferior-output))
+			 (custom-set-variables
+			  '(slime-use-autodoc-mode nil))
+			 (set-syntax-table clojure-mode-syntax-table)
+			 (clojure-mode-font-lock-setup)
+			 (setq lisp-indent-function
+			       'clojure-indent-function))
+		     (custom-set-variables
+		      '(slime-use-autodoc-mode t)))))))))
 
 ;;; Quack
 (when-library
@@ -1413,25 +1386,6 @@ Make links point to local files."
 	       (if (= 0 (call-process "global" nil nil nil "-p"))
 		   (gtags-mode t))))))
 
-;;; yasnippet
-(when-library
- nil yasnippet
- (autoload 'yas/global-mode "yasnippet"
-   "Activate yasnippet global mode." t)
- (eval-after-load "yasnippet"
-   `(progn
-      (yas/load-directory ,(win-or-nix
-			    (concat +extras-path+
-				    "prog/yasnippet/snippets")
-			    (eval-when-compile
-			      (concat +extras-path+
-				      "prog/yasnippet/snippets"))))
-      (if (require 'ido nil t)
-	  (setq yas/prompt-functions
-		'(yas/ido-prompt yas/completing-prompt yas/x-prompt
-				 yas/dropdown-prompt
-				 yas/no-prompt))))))
-
 ;;; Emacs Code Browser
 (when-library
  t semantic
@@ -1448,13 +1402,15 @@ Make links point to local files."
 
 ;;;; Auxiliary extensions
 
-;;; AUCTeX
-(when (load "auctex" t)
-  (load "preview-latex" t)
-  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
-  (or (featurep 'ergoemacs-mode)
-      (eval-after-load "tex"
-	'(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
+;;; AUCTeX from ELPA
+(when-library
+ nil auctex-autoloads
+ (eval-after-load "latex"
+   '(progn (load "preview" t)
+	   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)))
+ (or (featurep 'ergoemacs-mode)
+     (eval-after-load "tex"
+       '(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
 
 ;;; Ditaa
 (let ((ditaa-path (win-or-nix
@@ -1745,8 +1701,7 @@ Medium - less than 120000 bytes."
 	       "very-secret"
 	       emms-lastfm-client-api-secret-key
 	       "very-secret")
-	 ;; (emms-lastfm-scrobbler-enable)
-	 )
+	 (emms-lastfm-scrobbler-enable))
 
        (when (and (executable-find "mpd")
 		  (require 'emms-player-mpd nil t))
@@ -1832,3 +1787,5 @@ Medium - less than 120000 bytes."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (win-or-nix (server-start))	  ; using --daemon on *nix
+
+;;; init.el ends here

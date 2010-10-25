@@ -22,7 +22,6 @@ Programming languages related:
 SLIME http://common-lisp.net/project/slime
 Quack http://www.neilvandyke.org/quack
 clojure-mode http://github.com/technomancy/clojure-mode
-swank-clojure http://github.com/techkomancy/swank-clojure
 clips-mode (modified) http://www.cs.us.es/software/clips
 Prolog http://bruda.ca/emacs-prolog
 haskell-mode http://projects.haskell.org/haskellmode-emacs
@@ -32,7 +31,6 @@ Qi-mode (modified) http://code.google.com/p/qilang
 python-mode https://launchpad.net/python-mode
 CSharpMode https://code.google.com/p/csharpmode
 VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
-Yasnippet http://www.emacswiki.org/emacs/Yasnippet
 Emacs Code Browser http://ecb.sourceforge.net
 gtags http://www.gnu.org/software/global
 
