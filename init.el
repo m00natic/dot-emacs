@@ -15,11 +15,7 @@
 ;;   tuareg-mode http://tuareg.forge.ocamlcore.org
 ;;   Oz-mode http://www.mozart-oz.org
 ;;   Qi-mode http://code.google.com/p/qilang
-;;   python-mode https://launchpad.net/python-mode
 ;;   CSharpMode https://code.google.com/p/csharpmode
-;;   VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
-;;   gtags http://www.gnu.org/software/global
-;;   Yasnippet http://www.emacswiki.org/emacs/Yasnippet
 ;;   ECB http://ecb.sourceforge.net
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
@@ -66,7 +62,6 @@ NIX forms are executed on all other platforms."
       (car nix))))
 
 ;; Set some path constants.
-(win-or-nix (defconst +win-path+ "C:/" "Windows root path."))
 (defconst +home-path+
   (win-or-nix
    (cond ((string-match "\\(.*[/\\]home[/\\]\\)" exec-directory)
@@ -76,10 +71,12 @@ NIX forms are executed on all other platforms."
 	 (t (eval-when-compile (concat (getenv "HOME") "/"))))
    (eval-when-compile (concat (getenv "HOME") "/")))
   "Home path.")
-(setq user-emacs-directory (win-or-nix
-			    (concat +home-path+ ".emacs.d/")
-			    (eval-when-compile
-			      (concat +home-path+ ".emacs.d/"))))
+
+(win-or-nix
+ ((defconst +win-path+ "C:/" "Windows root path.")
+  (setq user-emacs-directory (concat +home-path+ ".emacs.d/")
+	default-directory +home-path+)))
+
 (defconst +extras-path+ (win-or-nix
 			 (concat user-emacs-directory "extras/")
 			 (eval-when-compile
@@ -97,12 +94,6 @@ NIX forms are executed on all other platforms."
 		 (concat +extras-path+ "bin")
 		 (eval-when-compile (concat +extras-path+ "bin")))))
   (if (file-exists-p bin-path) (add-to-list 'exec-path bin-path)))
-;; set default directory for `*scratch*'
-(setq default-directory (win-or-nix +home-path+
-				    (eval-when-compile +home-path+)))
-(win-or-nix
- nil (if (boundp 'Info-directory-list)
-	 (add-to-list 'Info-directory-list "/usr/local/share/info")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -224,7 +215,7 @@ KEYS is alternating list of key-value."
      ,(when-library nil hl-sexp '(hl-sexp-mode 1))
      ,(when-library nil highlight-parentheses ; from ELPA
 		    '(highlight-parentheses-mode 1))
-     ,(when-library nil paredit '(paredit-mode 1))))
+     ,(when-library nil paredit '(paredit-mode +1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -501,10 +492,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (global-set-key (kbd "<C-M-prior>") 'previous-error)
 (global-set-key (kbd "<C-M-next>") 'next-error)
 
-;;; clipboard
-(global-set-key "\C-cv" 'clipboard-yank)
-(global-set-key "\C-cc" 'clipboard-kill-ring-save)
-
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -777,42 +764,6 @@ Open in new tab if NEW-WINDOW."
 		     " " "+"
 		     (replace-regexp-in-string apropo-reg url text))
 		    (not new-window)))))))
-
-;;; LaTeX beamer allow for export=>beamer by placing
-;; #+LaTeX_CLASS: beamer in org files
-(when-library
- t org
- (or (boundp 'org-export-latex-classes)
-     (setq org-export-latex-classes nil))
- (add-to-list 'org-export-latex-classes
-	      '("beamer"
-		"\\documentclass[11pt]{beamer}\n
-\\mode<presentation>\n
-\\usetheme{Antibes}\n
-\\usecolortheme{lily}\n
-\\beamertemplateballitem\n
-\\setbeameroption{show notes}
-\\usepackage[utf8]{inputenc}\n
-\\usepackage[bulgarian]{babel}\n
-\\usepackage{hyperref}\n
-\\usepackage{color}
-\\usepackage{listings}
-\\lstset{numbers=none,language=[ISO]C++,tabsize=4,
-  frame=single,
-  basicstyle=\\small,
-  showspaces=false,showstringspaces=false,
-  showtabs=false,
-  keywordstyle=\\color{blue}\\bfseries,
-  commentstyle=\\color{red},
-  }\n
-\\usepackage{verbatim}\n
-\\institute{Sofia University, FMI}\n
-\\subject{RMRF}\n"
-		("\\section{%s}" . "\\section*{%s}")
-		("\\begin{frame}[fragile]\\frametitle{%s}"
-		 "\\end{frame}"
-		 "\\begin{frame}[fragile]\\frametitle{%s}"
-		 "\\end{frame}"))))
 
 ;;; ELPA
 (if (require 'package nil t) (package-initialize))
@@ -1330,21 +1281,6 @@ Make links point to local files."
  (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
  (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
-;;; Python
-(when-library
- nil python-mode
- (autoload 'python-mode "python-mode" "Python editing mode." t)
- (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
- (add-to-list 'interpreter-mode-alist '("python" . python-mode)))
-
-;;; VB
-(when-library nil visual-basic-mode
-	      (autoload 'visual-basic-mode "visual-basic-mode"
-		"Visual Basic mode." t)
-	      (add-to-list 'auto-mode-alist
-			   '("\\.\\(frm\\|bas\\|cls\\|rvb\\|vbs\\)$"
-			     . visual-basic-mode)))
-
 ;;; C#
 (when-library
  nil csharp-mode
@@ -1353,38 +1289,9 @@ Make links point to local files."
 
 ;;; cc-mode - hide functions
 (add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
+				(hl-sexp-mode 1)
 				(local-set-key [backtab]
 					       'hs-toggle-hiding)))
-
-;;; Global tags
-(when-library
- nil gtags
- (when (executable-find "global")
-   (autoload 'gtags-mode "gtags"
-     "Minor mode for utilizing global tags." t)
-
-   (defun gtags-create-or-update ()
-     "Create or update the gnu global tag file."
-     (interactive)
-     (if (= 0 (call-process "global" nil nil nil "-p"))
-	 ;; tagfile already exists; update it
-	 (start-process "global" "*GTags*" "global" "-u")
-       (let ((olddir default-directory)
-	     (topdir (read-directory-name "GTags:top of source tree: "
-					  nil nil t)))
-	 (cd topdir)
-	 (start-process "gtags" "*GTags*" "gtags")
-	 (cd olddir)))
-     (display-buffer "*GTags*"))
-
-   (add-hook 'gtags-mode-hook (lambda ()
-				(local-set-key "\M-." 'gtags-find-tag)
-				(local-set-key "\M-,"
-					       'gtags-find-rtag)))
-   (add-hook 'c-mode-common-hook
-	     (lambda () ;; (gtags-create-or-update)
-	       (if (= 0 (call-process "global" nil nil nil "-p"))
-		   (gtags-mode t))))))
 
 ;;; Emacs Code Browser
 (when-library
@@ -1744,7 +1651,6 @@ Medium - less than 120000 bytes."
 
 ;;; chess
 (when-library nil chess			; from ELPA
-	      ;;(autoload 'chess "chess" "Play a game of chess" t)
 	      (setq chess-sound-play-function nil))
 
 ;;; go

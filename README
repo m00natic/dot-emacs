@@ -28,11 +28,8 @@ haskell-mode http://projects.haskell.org/haskellmode-emacs
 tuareg-mode http://tuareg.forge.ocamlcore.org
 Oz-mode http://www.mozart-oz.org
 Qi-mode (modified) http://code.google.com/p/qilang
-python-mode https://launchpad.net/python-mode
 CSharpMode https://code.google.com/p/csharpmode
-VisualBasicMode http://www.emacswiki.org/emacs/VisualBasicMode
 Emacs Code Browser http://ecb.sourceforge.net
-gtags http://www.gnu.org/software/global
 
 Lisp goodies:
 highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
