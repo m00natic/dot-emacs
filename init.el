@@ -113,10 +113,8 @@ NIX forms are executed on all other platforms."
  '(display-time-mode t)
  '(frame-title-format "emacs - %b (%f)")
  '(gdb-many-windows t)
- '(global-highlight-changes-mode t)
  '(global-hl-line-mode t)
  '(global-linum-mode 1)
- '(highlight-changes-visibility-initial-state nil)
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
@@ -260,23 +258,6 @@ KEYS is alternating list of key-value."
       (((class color) (min-colors 88) (background dark))
        :background "honeydew4" :weight extrabold)
       (t :background "green" :weight normal)))
-   '(highlight-changes ((((class color) (min-colors 88))
-			 :background "#382f2f")
-			(t :background "orange")))
-   '(highlight-changes-delete ((((class color) (min-colors 88))
-				:background "#916868")
-			       (t :background "red")))
-   '(highlight ((((class color) (min-colors 88) (background light))
-		 :background "darkseagreen2")
-		(((class color) (min-colors 88) (background dark))
-		 :background "SeaGreen")
-		(((class color) (min-colors 16) (background light))
-		 :background "darkseagreen2")
-		(((class color) (min-colors 16) (background dark))
-		 :background "darkolivegreen")
-		(((class color) (min-colors 8))
-		 :background "green" :foreground "black")
-		(t :inverse-video t)))
    '(region ((((class color) (min-colors 88) (background dark))
 	      :background "#333" :foreground nil)
 	     (((class color) (min-colors 88) (background light))
@@ -546,17 +527,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	      ad-return-value))
       (setq battery-mode-line-format "[%b%p%%,%dC]")))
 
-;;; highlight changes in documents
-(when-library
- t hilit-chg
- ;; toggle changes visibility
- (global-set-key [f7] 'highlight-changes-visible-mode)
- ;; remove the change-highlight in region
- (global-set-key (kbd "S-<f7>") 'highlight-changes-remove-highlight)
- ;; alt-pgup/pgdown jump to the previous/next change
- (global-set-key (kbd "<M-prior>") 'highlight-changes-previous-change)
- (global-set-key (kbd "<M-next>") 'highlight-changes-next-change))
-
 ;;; tramp-ing
 (when-library
  t tramp
@@ -581,16 +551,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook))
 
-(when-library t epg
-;;; bypass gpg graphical pop-up on passphrase
-	      (defadvice epg--start (around advice-epg-disable-agent
-					    activate compile)
-		"Make epg--start not able to find a gpg-agent."
-		(let ((agent (getenv "GPG_AGENT_INFO")))
-		  (setenv "GPG_AGENT_INFO" nil)
-		  ad-do-it
-		  (setenv "GPG_AGENT_INFO" agent))))
-
 ;;; Gnus
 (when-library
  t gnus
@@ -605,8 +565,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	    `((nnimap "gmail" (nnimap-address "imap.gmail.com")
 		      (nnimap-server-port 993) (nnimap-stream ssl)
 		      (nnimap-authinfo-file ,(concat +home-path+
-						     ".authinfo.gpg")))
-	      (nnml "yahoo"))
+						     ".authinfo.gpg"))))
 	    message-send-mail-function 'smtpmail-send-it
 	    smtpmail-starttls-credentials '(("smtp.gmail.com"
 					     587 nil nil))
@@ -614,9 +573,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 					 "m00naticus@gmail.com" nil))
 	    smtpmail-default-smtp-server "smtp.gmail.com"
 	    smtpmail-smtp-service 587
-	    mail-sources '((pop :server "pop.mail.yahoo.co.uk"
-				:port 995 :stream ssl
-				:user "m00natic@yahoo.co.uk"))
 	    epa-file-cache-passphrase-for-symmetric-encryption t)
 
       (defun my-gnus-demon-scan-mail ()
@@ -634,8 +590,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	  ;; scan for new mail
 	  (let ((unread-count 0)
 		unread-groups)
-	    (dolist (group '("nnml+yahoo:mail.misc"
-			     "nnimap+gmail:INBOX"))
+	    (dolist (group '("nnimap+gmail:INBOX"))
 	      (gnus-group-remove-mark group)
 	      (let ((method (gnus-find-method-for-group group)))
 		;; Bypass any previous denials from the server.
@@ -698,16 +653,9 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  (defconst +apropos-url-alist+
    '(("^s:? +\\(.*\\)" .
       "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=\\1")
-     ("^gw?:? +\\(.*\\)" .
+     ("^g:? +\\(.*\\)" .
       "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
      ("^gs:? +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
-     ("^g!:? +\\(.*\\)" .		; Google Lucky
-      "http://www.google.com/search?btnI=I%27m+Feeling+Lucky&q=\\1")
-     ("^gl:? +\\(.*\\)" . "http://www.google.com/linux?q=\\1")
-     ("^gi:? +\\(.*\\)" .		; Google Images
-      "http://images.google.com/images?sa=N&tab=wi&q=\\1")
-     ("^gv:? +\\(.*\\)" . "http://video.google.com/videosearch?q=\\1")
-     ("^gg:? +\\(.*\\)" . "http://groups.google.com/groups?q=\\1")
      ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
       "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
      ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
@@ -718,26 +666,14 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw:? +\\(.*\\)" .		; Wikipedia bg
       "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^yt:? +\\(.*\\)" .		; YouTube
-      "http://www.youtube.com/results?search_query=\\1")
-     ("^/\\.:? +\\(.*\\)" .		; Slashdot search
-      "http://www.osdn.com/osdnsearch.pl?site=Slashdot&query=\\1")
-     ("^fm:? +\\(.*\\)" . "http://www.freshmeat.net/search?q=\\1")
      ("^rd:? +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
-     ("^ewiki:? +\\(.*\\)" .		; Emacs Wiki Search
-      "http://www.emacswiki.org/cgi-bin/wiki?search=\\1")
-     ("^ewiki2:? +\\(.*\\)" .		; Google Emacs Wiki
+     ("^imdb:? +\\(.*\\)" . "http://imdb.com/find?q=\\1")
+     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
+      "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
+     ("^ewiki:? +\\(.*\\)" .		; Google Emacs Wiki
       "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
      ("^cliki:? +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/admin/search?words=\\1")
-     ("^hayoo:? +\\(.*\\)" .		; Hayoo
-      "http://holumbus.fh-wedel.de/hayoo/hayoo.html?query=\\1")
-     ("^imdb:? +\\(.*\\)" . "http://imdb.com/find?q=\\1")
-     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
-      ;;"http://www.metal-archives.com/search.php?type=band&string=\\1"
-      "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
-     ("^aur:? +\\(.*\\)" .		; Arch Linux's Aur packages
-      "http://aur.archlinux.org/packages.php?&K=\\1")
      ("^fp:? +\\(.*\\)" .		; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
      ("^nnm:? +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
@@ -746,7 +682,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  (autoload 'browse-url-interactive-arg "browse-url")
  (global-set-key
   [f6]
-  (lambda (text &optional new-window)
+  (lambda (text &optional new-window)	; browse-apropos-url
     "Search for TEXT by some search engine.
 Open in new tab if NEW-WINDOW."
     (interactive (browse-url-interactive-arg
@@ -779,8 +715,6 @@ Open in new tab if NEW-WINDOW."
 
 ;;; TabBar
 (when (require 'tabbar nil t)
-  (tabbar-mode 1)
-
   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path
 					      activate compile)
     "Attach full file path to help message.
@@ -809,8 +743,6 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Anything")))
      ((string-match "^emms" (symbol-name major-mode))
       (setq ad-return-value (list "EMMS")))
-     ((string-match "^\\(wl\\|mime\\)" (symbol-name major-mode))
-      (setq ad-return-value (list "Mail")))
      ((string-match "^*inferior" (buffer-name))
       (setq ad-return-value (list "Process")))
      ((string-match "^*slime" (buffer-name))
@@ -819,29 +751,31 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
-  (global-set-key (kbd "C-<tab>")
-		  (lambda (arg) "Go to next tab. With prefix, next group."
-		    (interactive "P")
-		    (if arg (tabbar-forward-group)
-		      (tabbar-forward-tab))))
+  (tabbar-mode 1)
+  (setq-default mode-line-buffer-identification "")
+
+  (defun next-tab (arg)
+    "Go to next tab. With prefix, next group."
+    (interactive "P")
+    (if arg (tabbar-forward-group)
+      (tabbar-forward-tab)))
+
+  (defun prev-tab (arg)
+    "Go to previous tab. With prefix, previous group."
+    (interactive "P")
+    (if arg (tabbar-backward-group)
+      (tabbar-backward-tab)))
+
+  (global-set-key (kbd "C-<tab>") 'next-tab)
   (global-set-key (win-or-nix (kbd "C-S-<tab>")
 			      (kbd "<C-S-iso-lefttab>"))
-		  (lambda (arg)
-		    "Go to previous tab. With prefix, previous group."
-		    (interactive "P")
-		    (if arg (tabbar-backward-group)
-		      (tabbar-backward-tab))))
+		  'prev-tab)
 
   (when-library
    t org
    (add-hook 'org-load-hook
-	     (lambda () "Allow tabbar keys in org."
-	       (define-keys org-mode-map
-		 (kbd "C-<tab>") nil
-		 (win-or-nix (kbd "C-S-<tab>")
-			     (kbd "<C-S-iso-lefttab>")) nil))))
-  ;; remove buffer name from modeline as it now becomes redundant
-  (setq-default mode-line-buffer-identification ""))
+	     (lambda () "Allow tabbar keys in Org."
+	       (define-key org-mode-map (kbd "C-<tab>") nil)))))
 
 ;; Wget
 (when-library
@@ -868,8 +802,9 @@ Make links point to local files."
 				     (thing-at-point-url-at-point))))
      (let ((dir (wget-cd-download-dir t uri)))
        (if dir (if (string= uri "") (error "There is no uri")
-		 (wget-uri uri dir '("-krmnp" "-E" "-X/page,/message"
-				     "--no-check-certificate"))))))))
+		 (wget-uri uri dir '("-pkrmnp" "-E" "-X/page,/message"
+				     "--no-check-certificate" "-w" "1"
+				     "--random-wait"))))))))
 
 ;;; Anything
 (when-library
