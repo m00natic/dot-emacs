@@ -130,6 +130,9 @@ NIX forms are executed on all other platforms."
  '(ispell-dictionary "en")
  '(line-number-mode nil)
  '(menu-bar-mode nil)
+ '(package-archives '(("elpa" . "http://tromey.com/elpa/")
+		      ("techno" . "http://repo.technomancy.us/emacs/")
+		      ("gnu" . "http://elpa.gnu.org/packages/")))
  '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
@@ -178,7 +181,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-					     (list fn)))
+						  (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -435,6 +438,13 @@ Execute once in the first graphical FRAME."
     (if *fullscreen-p*
 	(set-frame-parameter nil 'fullscreen 'fullboth))))
 
+(defun browse-ftp-tramp (url &optional new-window)
+  "Open ftp URL in NEW-WINDOW with TRAMP."
+  (if (string-match "\\(.*?\\)\\(\\/.*\\)" url 6)
+      (find-file (concat "/ftp:anonymous@" (match-string 1 url)
+			 ":" (match-string 2 url)))
+    (find-file (concat "/ftp:anonymous@" (substring url 6) ":/"))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; appearance
@@ -464,14 +474,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (global-set-key "\C-cl" 'goto-line)
 
 ;;; autoindent
-(global-set-key (kbd "M-RET") (lambda () "Newline and indent."
-				(interactive)
-				(newline)
-				(indent-according-to-mode)))
-
-;;; jump through errors/results
-(global-set-key (kbd "<C-M-prior>") 'previous-error)
-(global-set-key (kbd "<C-M-next>") 'next-error)
+(global-set-key (kbd "M-RET") 'newline-and-indent)
 
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -680,26 +683,27 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")
- (global-set-key
-  [f6]
-  (lambda (text &optional new-window)	; browse-apropos-url
-    "Search for TEXT by some search engine.
+
+ (defun browse-apropos-url (text &optional new-window)
+   "Search for TEXT by some search engine.
 Open in new tab if NEW-WINDOW."
-    (interactive (browse-url-interactive-arg
-		  (concat "Location" (if current-prefix-arg
-					 " (new tab)")
-			  ": ")))
-    (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
-			   (split-string text) " "))
-	  (apropo-reg "^$"))
-      (let ((url (assoc-default text +apropos-url-alist+
-				(lambda (a b) (if (string-match a b)
-					     (setq apropo-reg a)))
-				text)))
-	(browse-url (replace-regexp-in-string
-		     " " "+"
-		     (replace-regexp-in-string apropo-reg url text))
-		    (not new-window)))))))
+   (interactive (browse-url-interactive-arg
+		 (concat "Location" (if current-prefix-arg
+					" (new tab)")
+			 ": ")))
+   (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
+			  (split-string text) " "))
+	 (apropo-reg "^$"))
+     (let ((url (assoc-default text +apropos-url-alist+
+			       (lambda (a b) (if (string-match a b)
+					    (setq apropo-reg a)))
+			       text)))
+       (browse-url (replace-regexp-in-string
+		    " " "+"
+		    (replace-regexp-in-string apropo-reg url text))
+		   (not new-window)))))
+
+ (global-set-key [f6] 'browse-apropos-url))
 
 ;;; ELPA
 (if (require 'package nil t) (package-initialize))
@@ -878,6 +882,20 @@ Make links point to local files."
 		      (kbd "C-M-d") 'anything-next-source
 		      (kbd "C-M-u") 'anything-previous-source)))
 
+   (when-library
+    t doc-view
+    (add-hook 'doc-view-mode-hook
+	      (lambda () "Set some Ergo keys."
+		(ergoemacs-local-set-key
+		 ergoemacs-isearch-forward-key 'doc-view-search)
+		(define-keys ergoemacs-local-keymap
+		  ergoemacs-isearch-backward-key
+		  'doc-view-search-backward
+		  ergoemacs-next-line-key
+		  'doc-view-next-line-or-next-page
+		  ergoemacs-previous-line-key
+		  'doc-view-previous-line-or-previous-page))))
+
    (defmacro ergoemacs-fix (layout)
      "Fix some keybindings when using ErgoEmacs."
      `(progn
@@ -922,7 +940,6 @@ Make links point to local files."
 		      '(define-keys slime-mode-map
 			 "\M-N" 'slime-previous-note
 			 "\M-p" nil)))))
-
 	  ,(when-library
 	    nil anything-config
 	    '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
@@ -1290,22 +1307,27 @@ Make links point to local files."
 (when (and (executable-find "w3m") (require 'w3m-load nil t))
   (setq ;; make w3m default for most URLs
    browse-url-browser-function
-   `(("^ftp:/.*" . (lambda (url &optional nf)
-		     (call-interactively
-		      'find-file-at-point url)))
+   `(("^ftp://.*" . browse-ftp-tramp)
      ("video" . ,browse-url-browser-function)
      ("\\.tv" . ,browse-url-browser-function)
      ("youtube" . ,browse-url-browser-function)
      ("." . w3m-browse-url)))
+
   (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
+
+  (defun w3m-dired-open ()
+    "Open a file with w3m."
+    (interactive)
+    (w3m-find-file (dired-get-filename)))
+
   (add-hook 'dired-load-hook
 	    (lambda () "Add w3m key for opening files in dired."
-	      (define-key dired-mode-map "\C-cw"
-		(lambda () "Open a file with w3m."
-		  (interactive)
-		  (w3m-find-file (dired-get-filename))))))
+	      (define-key dired-mode-map "\C-cw" 'w3m-dired-open)))
+
+  ;; wget integration
   (when-library nil w3m-wget (if (executable-find "w3m")
 				 (require 'w3m-wget nil t)))
+
   ;; Conkeror style anchor numbering on actions
   (add-hook 'w3m-mode-hook 'w3m-link-numbering-mode)
 
@@ -1384,9 +1406,7 @@ With optional prefix ARG ask for url."
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
     (setq browse-url-browser-function
-	  `(("^ftp:/.*" . (lambda (url &optional nf)
-			    (call-interactively
-			     'find-file-at-point url)))
+	  `(("^ftp://.*" . browse-ftp-tramp)
 	    ("." . ,browse-url-browser-function))))
 
 ;;; mldonkey
