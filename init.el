@@ -181,7 +181,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-						  (list fn)))
+					     (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -228,135 +228,57 @@ KEYS is alternating list of key-value."
       (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
     (error (ignore-errors (set-face-font 'default "terminus"))))
   (custom-set-faces
-   '(font-lock-comment-face
-     ((((class grayscale) (background light))
-       :foreground "DimGray" :weight bold :slant italic)
-      (((class grayscale) (background dark))
-       :foreground "LightGray" :weight bold :slant italic)
-      (((class color) (min-colors 88) (background light))
-       :foreground "Firebrick")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "chocolate1")
-      (((class color) (background light)) :foreground "red")
-      (((class color) (background dark)) :foreground "red1")
-      (t :weight bold :slant italic)))
    '(mode-line
-     ((default :box (:line-width 1 :style "none")
-	:width condensed :height 90 :family "neep")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "black" :background "DarkSlateGray")
-      (((class color) (min-colors 88) (background light))
-       :foreground "white" :background "DarkSlateGray")
-      (t :background "green")))
-   '(mode-line-inactive
-     ((default :box (:line-width 1 :style "none")
-	:width condensed :height 80 :family "neep")
+     ((default :width condensed :family "neep")
       (((class color) (min-colors 88))
-       :foreground "DarkSlateGray" :background "honeydew4")
-      (t :foreground "white" :background "black")))
-   '(mode-line-buffer-id
-     ((default :inherit mode-line :foreground "black")
+       :box (:line-width -1 :style released-button)
+       :background "grey75" :foreground "black")
+      (t :background "cyan")))
+   '(mode-line-inactive
+     ((default :inherit mode-line)
       (((class color) (min-colors 88) (background light))
-       :background "CadetBlue" :weight extrabold)
+       :weight light :box (:line-width -1 :color "grey75")
+       :foreground "grey20" :background "grey90")
       (((class color) (min-colors 88) (background dark))
-       :background "honeydew4" :weight extrabold)
-      (t :background "green" :weight normal)))
-   '(region ((((class color) (min-colors 88) (background dark))
-	      :background "#333" :foreground nil)
-	     (((class color) (min-colors 88) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 16) (background dark))
-	      :background "blue3" :foreground nil)
-	     (((class color) (min-colors 16) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 8))
-	      :background "cyan" :foreground "white")
-	     (((type tty) (class mono)) :inverse-video t)
-	     (t :background "gray")))
-   '(hl-line ((((class color) (min-colors 88) (background light))
-	       :background "darkseagreen2")
-	      (((class color) (min-colors 88) (background dark))
-	       :background "#123")
-	      (((class color) (min-colors 16) (background light))
-	       :background "darkseagreen2")
-	      (((background dark)) :background "blue")
-	      (t :inherit highlight)))
-   '(cursor ((((class color)) :background "DeepSkyBlue")
-	     (((background light)) :background "black")
-	     (t :background "white")))
-   '(show-paren-match-face
-     ((((class color) (background dark)) :background "DarkRed")
-      (((class color) (background light)) :background "red")
-      (((background dark)) :background "grey50")
-      (t :background "gray"))))
+       :weight light :box (:line-width -1 :color "grey40")
+       :foreground "grey80" :background "grey30")
+      (t :inverse-video t))))
   (when-library
    nil tabbar
    (custom-set-faces
-    '(tabbar-default ((t :inherit variable-pitch)))
     '(tabbar-selected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background light))
-	:background "white" :foreground "DeepSkyblue"
-	:box (:line-width 1 :color "LightGray"))
-       (((class color) (min-colors 88) (background dark))
-	:background "black" :foreground "DeepSkyBlue"
-	:box (:line-width 1 :color "black"))
-       (((background dark)) :background "black"	:foreground "white")
-       (t :background "white" :foreground "cyan")))
+      ((default :inherit tabbar-default :weight bold)
+       (((background dark)) :background "black" :foreground "white")
+       (t :background "white" :foreground "black")))
     '(tabbar-unselected
       ((default :inherit tabbar-default)
        (((class color) (min-colors 88) (background light))
-	:background "gray" :foreground "DarkSlateGray"
-	:box (:line-width 2 :color "white"))
+  	:background "gray75" :foreground "white"
+  	:box (:line-width 2 :color "white"))
        (((class color) (min-colors 88) (background dark))
-	:background "#222" :foreground "DarkCyan"
-	:box (:line-width 2 :color "#090909"))
-       (((background dark)) :background "white" :foreground "black")
-       (t :background "black" :foreground "cyan")))
+  	:background "gray50" :foreground "black"
+  	:box (:line-width 2 :color "black"))
+       (t :inverse-video t)))
     '(tabbar-button
-      ((default (:inherit tabbar-default))
-       (((background dark)) :background "black"
-	:foreground "#0c0"
-	:box (:line-width 2 :color "black"))
-       (t :background "white" :foreground "black"
-	  :box (:line-width 2 :color "LightGray"))))
-    '(tabbar-separator ((t :background "#111")))))
+      ((((background dark)) :background "black"	:foreground "gray50")
+       (t :background "white" :foreground "gray75")))))
   (when-library
    nil sml-modeline
    (custom-set-faces
-    '(sml-modeline-vis-face ((default (:inherit hl-line))
-			     (((class color) (min-colors 88))
-			      :foreground "green"
-			      :box (:line-width 1))
-			     (t :foreground "SeaGreen")))
-    '(sml-modeline-end-face ((t :inherit default
-				:box (:line-width 1)))))))
+    '(sml-modeline-end-face ((t :inherit default))))))
 
 (defun switch-faces (light)
   "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
   (if light (custom-set-faces
-	     '(default ((t (:foreground "black" :height 80
-					:background "cornsilk")))))
+	     '(default ((default :foreground "black" :height 80)
+			(((class color) (min-colors 88))
+			 :background "cornsilk")
+			(t :background "white"))))
     (custom-set-faces
-     '(default ((default (:background "black" :height 80))
-		(((class color) (min-colors 88))
-		 (:foreground "wheat"))
-		(t (:foreground "white"))))))
-  ;; region has to be reset to change right away
-  (custom-set-faces
-   '(region ((((class color) (min-colors 88) (background dark))
-	      :background "#333" :foreground nil)
-	     (((class color) (min-colors 88) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 16) (background dark))
-	      :background "blue3" :foreground nil)
-	     (((class color) (min-colors 16) (background light))
-	      :background "lightgoldenrod2" :foreground nil)
-	     (((class color) (min-colors 8))
-	      :background "cyan" :foreground "white")
-	     (((type tty) (class mono)) :inverse-video t)
-	     (t :background "gray")))))
+     '(default ((default :background "black" :height 80)
+		(((class color) (min-colors 88)) :foreground "wheat")
+		(t :foreground "white"))))))
 
 (defun solar-time-to-24 (time-str)
   "Convert solar type string TIME-STR to 24 hour format."
@@ -413,7 +335,7 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
   (active-lisp-modes))
 
 ;;; fullscreen stuff
-(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
+(defvar *fullscreen-p* t "Check if fullscreen is on or off.")
 
 (defun fullscreen-toggle ()
   "Toggle fullscreen view on and off."
@@ -450,14 +372,17 @@ Execute once in the first graphical FRAME."
 ;;;; appearance
 
 (win-or-nix
- ((if (require 'solar nil t) (my-colours-set))
-  (and *fullscreen-p* (window-system) (w32-send-sys-command 61488))
-  (global-set-key "\C-x\C-c"
-		  (lambda () "Keep emacs running hidden.
+ ((when (window-system)
+    (defun hide-frame ()
+      "Keep emacs running hidden.
 Use emacsclient -e '(make-frame-visible)' to restore it."
-		    (interactive)
-		    (server-edit)
-		    (make-frame-invisible nil t))))
+      (interactive)
+      (server-edit)
+      (make-frame-invisible nil t))
+
+    (global-set-key "\C-x\C-c" 'hide-frame))
+  (if (require 'solar nil t) (my-colours-set)))
+
  (if (window-system)
      (progn (if (require 'solar nil t) (my-colours-set))
 	    (if *fullscreen-p*
@@ -479,20 +404,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
 
-(defadvice kill-ring-save (before slick-copy activate compile)
-  "When called interactively with no active region,copy current line."
-  (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (message "Copied line.")
-     (list (line-beginning-position) (line-beginning-position 2)))))
-
-(defadvice kill-region (before slick-cut activate compile)
-  "When called interactively with no active region,kill current line."
-  (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (message "Killed line.")
-     (list (line-beginning-position) (line-beginning-position 2)))))
-
 ;;; backup
 (setq backup-directory-alist
       `(("." . ,(win-or-nix
@@ -510,25 +421,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 
 ;; Proced
 (when-library t proced (global-set-key (kbd "C-~") 'proced))
-
-;; Battery
-(when-library
- t battery
- (and (eq battery-status-function 'battery-linux-sysfs)
-      (file-readable-p "/proc/acpi/thermal_zone")
-      (defadvice battery-linux-sysfs (after battery-add-temperature
-					    activate compile)
-	"Add temperature to battery status when using `sysfs'."
-	(push (cons ?d (or (battery-search-for-one-match-in-files
-			    (mapcar (lambda (e) (concat e "/temperature"))
-				    (ignore-errors
-				      (directory-files
-				       "/proc/acpi/thermal_zone/" t
-				       "\\`[^.]")))
-			    "temperature: +\\([0-9]+\\) C$" 1)
-			   "N/A"))
-	      ad-return-value))
-      (setq battery-mode-line-format "[%b%p%%,%dC]")))
 
 ;;; tramp-ing
 (when-library
@@ -548,7 +440,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 		   (concat "su" (match-string 1 default-directory)
 			   "@" host-name)
 		 host-name)
-	       'face 'font-lock-warning-face)
+	       'face 'highlight)
 	      (default-value 'mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
@@ -654,32 +546,32 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (when-library
  t browse-url
  (defconst +apropos-url-alist+
-   '(("^s:? +\\(.*\\)" .
+   '(("^s +\\(.*\\)" .
       "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=\\1")
-     ("^g:? +\\(.*\\)" .
+     ("^g +\\(.*\\)" .
       "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
-     ("^gs:? +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
-     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
+     ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
+     ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
       "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
-     ("^gt:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
+     ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
       "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
-     ("^gd:? +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
+     ("^gd +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
       "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
-     ("^w:? +\\(.*\\)" .		; Wikipedia en
+     ("^w +\\(.*\\)" .			; Wikipedia en
       "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^bgw:? +\\(.*\\)" .		; Wikipedia bg
+     ("^bgw +\\(.*\\)" .		; Wikipedia bg
       "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^rd:? +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
-     ("^imdb:? +\\(.*\\)" . "http://imdb.com/find?q=\\1")
-     ("^ma:? +\\(.*\\)" .	       ; Encyclopaedia Metallum, bands
+     ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
+     ("^imdb +\\(.*\\)" . "http://imdb.com/find?q=\\1")
+     ("^ma +\\(.*\\)" .		       ; Encyclopaedia Metallum, bands
       "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
-     ("^ewiki:? +\\(.*\\)" .		; Google Emacs Wiki
-      "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1&sa=Search")
-     ("^cliki:? +\\(.*\\)" .		; Common Lisp wiki
+     ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
+      "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1")
+     ("^cliki +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/admin/search?words=\\1")
-     ("^fp:? +\\(.*\\)" .		; FreeBSD's FreshPorts
+     ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-     ("^nnm:? +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
+     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")
@@ -1313,6 +1205,7 @@ Make links point to local files."
      ("youtube" . ,browse-url-browser-function)
      ("." . w3m-browse-url)))
 
+  (win-or-nix (setq w3m-imagick-convert-program nil))
   (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
 
   (defun w3m-dired-open ()
@@ -1557,7 +1450,12 @@ Medium - less than 120000 bytes."
 	     'my-emms-track-description-function
 	     emms-browser-covers 'my-emms-covers)
 
-       (when (require 'emms-lastfm-client nil t)
+       (when (and (let ((url-request-method "GET"))
+		    (condition-case nil	;check for internet connection
+			(url-retrieve-synchronously
+			 "http://post.audioscrobbler.com")
+		      (error nil)))
+		  (require 'emms-lastfm-client nil t))
 	 (setq emms-lastfm-client-username "m00natic"
 	       emms-lastfm-client-api-key
 	       "very-secret"
@@ -1647,6 +1545,8 @@ Medium - less than 120000 bytes."
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(win-or-nix (server-start))	  ; using --daemon on *nix
+(win-or-nix ((server-start)		; using --daemon on *nix
+	     (and *fullscreen-p* (window-system)
+		  (w32-send-sys-command 61488))))
 
 ;;; init.el ends here
