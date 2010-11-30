@@ -181,7 +181,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-					     (list fn)))
+						  (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -196,7 +196,7 @@ Each function may be an atom or a list with parameters."
 
 (defmacro define-keys (mode &rest keys)
   "Define cascade of keys for a MODE.
-KEYS is alternating list of key-value."
+KEYS is alternating key-value list."
   `(progn ,@(let ((res nil))
 	      (while keys
 		(push `(define-key ,mode ,(car keys) ,(cadr keys))
@@ -222,51 +222,6 @@ KEYS is alternating list of key-value."
 
 ;;;; extension independent functions
 
-(defun faces-generic ()
-  "My prefered faces which differ from default."
-  (condition-case nil
-      (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
-    (error (ignore-errors (set-face-font 'default "terminus"))))
-  (custom-set-faces
-   '(mode-line
-     ((default :width condensed :family "neep")
-      (((class color) (min-colors 88))
-       :box (:line-width -1 :style released-button)
-       :background "grey75" :foreground "black")
-      (t :background "cyan")))
-   '(mode-line-inactive
-     ((default :inherit mode-line)
-      (((class color) (min-colors 88) (background light))
-       :weight light :box (:line-width -1 :color "grey75")
-       :foreground "grey20" :background "grey90")
-      (((class color) (min-colors 88) (background dark))
-       :weight light :box (:line-width -1 :color "grey40")
-       :foreground "grey80" :background "grey30")
-      (t :inverse-video t))))
-  (when-library
-   nil tabbar
-   (custom-set-faces
-    '(tabbar-selected
-      ((default :inherit tabbar-default :weight bold)
-       (((background dark)) :background "black" :foreground "white")
-       (t :background "white" :foreground "black")))
-    '(tabbar-unselected
-      ((default :inherit tabbar-default)
-       (((class color) (min-colors 88) (background light))
-  	:background "gray75" :foreground "white"
-  	:box (:line-width 2 :color "white"))
-       (((class color) (min-colors 88) (background dark))
-  	:background "gray50" :foreground "black"
-  	:box (:line-width 2 :color "black"))
-       (t :inverse-video t)))
-    '(tabbar-button
-      ((((background dark)) :background "black"	:foreground "gray50")
-       (t :background "white" :foreground "gray75")))))
-  (when-library
-   nil sml-modeline
-   (custom-set-faces
-    '(sml-modeline-end-face ((t :inherit default))))))
-
 (defun switch-faces (light)
   "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
@@ -291,7 +246,7 @@ KEYS is alternating list of key-value."
     time-str))
 
 (defun my-colours-set ()
-  "Set colors of new FRAME according to time of day.
+  "Set colours of new FRAME according to time of day.
 Set timer that runs on next sunset or sunrise, whichever sooner."
   (if (and calendar-latitude calendar-longitude calendar-time-zone)
       (let ((solar-info (solar-sunrise-sunset
@@ -356,7 +311,9 @@ Execute once in the first graphical FRAME."
   (when (window-system)
     (remove-hook 'after-make-frame-functions 'reset-frame-faces)
     (if (require 'solar nil t) (my-colours-set))
-    (faces-generic)
+    (condition-case nil
+	(set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
+      (error (ignore-errors (set-face-font 'default "terminus"))))
     (if *fullscreen-p*
 	(set-frame-parameter nil 'fullscreen 'fullboth))))
 
@@ -389,7 +346,53 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 		(set-frame-parameter nil 'fullscreen 'fullboth)))
    (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
-(faces-generic)
+;; Change some faces
+(condition-case nil
+    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
+  (error (ignore-errors (set-face-font 'default "terminus"))))
+
+(custom-set-faces
+ '(mode-line
+   ((default :width condensed :family "neep")
+    (((class color) (min-colors 88))
+     :box (:line-width -1 :style released-button)
+     :background "grey75" :foreground "black")
+    (t :background "cyan")))
+ '(mode-line-inactive
+   ((default :inherit mode-line)
+    (((class color) (min-colors 88) (background light))
+     :weight light :box (:line-width -1 :color "grey75")
+     :foreground "grey20" :background "grey90")
+    (((class color) (min-colors 88) (background dark))
+     :weight light :box (:line-width -1 :color "grey40")
+     :foreground "grey80" :background "grey30")
+    (t :inverse-video t))))
+
+(when-library
+ nil tabbar
+ (custom-set-faces
+  '(tabbar-selected
+    ((default :inherit tabbar-default :weight bold)
+     (((background dark)) :background "black" :foreground "white")
+     (t :background "white" :foreground "black")))
+  '(tabbar-unselected
+    ((default :inherit tabbar-default)
+     (((class color) (min-colors 88) (background light))
+      :background "gray75" :foreground "white"
+      :box (:line-width 2 :color "white"))
+     (((class color) (min-colors 88) (background dark))
+      :background "gray50" :foreground "black"
+      :box (:line-width 2 :color "black"))
+     (t :inverse-video t)))
+  '(tabbar-button
+    ((((background dark)) :background "black"	:foreground "gray50")
+     (t :background "white" :foreground "gray75")))))
+
+(when-library
+ nil sml-modeline
+ (custom-set-faces
+  '(sml-modeline-end-face
+    ((t :inherit default :width condensed)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -577,7 +580,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  (autoload 'browse-url-interactive-arg "browse-url")
 
  (defun browse-apropos-url (text &optional new-window)
-   "Search for TEXT by some search engine.
+   "Search for TEXT by some search engine in `+apropos-url-alist+'.
 Open in new tab if NEW-WINDOW."
    (interactive (browse-url-interactive-arg
 		 (concat "Location" (if current-prefix-arg
@@ -587,13 +590,18 @@ Open in new tab if NEW-WINDOW."
 			  (split-string text) " "))
 	 (apropo-reg "^$"))
      (let ((url (assoc-default text +apropos-url-alist+
-			       (lambda (a b) (if (string-match a b)
+			       (lambda (a b) (if (string-match-p a b)
 					    (setq apropo-reg a)))
 			       text)))
-       (browse-url (replace-regexp-in-string
-		    " " "+"
-		    (replace-regexp-in-string apropo-reg url text))
-		   (not new-window)))))
+       (browse-url
+       	(if (and (equal apropo-reg "^$")	; no match
+       		 (string-match-p ".* .*" text))	; multiple words
+       	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
+       		    (replace-regexp-in-string " " "+" text))
+       	  (replace-regexp-in-string
+       	   " " "+"
+       	   (replace-regexp-in-string apropo-reg url text)))
+       	(not new-window)))))
 
  (global-set-key [f6] 'browse-apropos-url))
 
@@ -633,15 +641,15 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Help")))
      ((eq major-mode 'asdf-mode)
       (setq ad-return-value (list "Lisp")))
-     ((string-match "^*tramp" (buffer-name))
+     ((string-match-p "^*tramp" (buffer-name))
       (setq ad-return-value (list "Tramp")))
-     ((string-match "^*anything" (buffer-name))
+     ((string-match-p "^*anything" (buffer-name))
       (setq ad-return-value (list "Anything")))
-     ((string-match "^emms" (symbol-name major-mode))
+     ((string-match-p "^emms" (symbol-name major-mode))
       (setq ad-return-value (list "EMMS")))
-     ((string-match "^*inferior" (buffer-name))
+     ((string-match-p "^*inferior" (buffer-name))
       (setq ad-return-value (list "Process")))
-     ((string-match "^*slime" (buffer-name))
+     ((string-match-p "^*slime" (buffer-name))
       (setq ad-return-value (list "Slime")))
      ((memq major-mode '(fundamental-mode org-mode))
       (setq ad-return-value (list "Common")))
@@ -723,8 +731,8 @@ Make links point to local files."
   (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
   (win-or-nix
    nil (when (eval-when-compile
-	       (string-match "gentoo\\|funtoo"
-			     (shell-command-to-string "uname -r")))
+	       (string-match-p "gentoo\\|funtoo"
+			       (shell-command-to-string "uname -r")))
 	 (autoload 'anything-gentoo "anything-config"
 	   "Preconfigured `anything' for gentoo linux.")
 	 (global-set-key (kbd "<f5> a g") 'anything-gentoo)))
@@ -986,7 +994,7 @@ Make links point to local files."
  (eval-after-load "clojure-mode"
    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
  (when-library
-  nil (slime)
+  nil slime
   (eval-after-load "slime"
     `(progn
        (when (file-exists-p
@@ -1114,6 +1122,7 @@ Make links point to local files."
 
 ;;; Haskell
 (if (load "haskell-site-file" t)
+
     (hook-modes ((haskell-indentation-mode t)
 		 turn-on-haskell-doc-mode)
 		haskell-mode-hook))
@@ -1159,9 +1168,20 @@ Make links point to local files."
  (eval-after-load "latex"
    '(progn (load "preview" t)
 	   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)))
- (or (featurep 'ergoemacs-mode)
-     (eval-after-load "tex"
-       '(define-key TeX-mode-map "\M-g" 'TeX-complete-symbol))))
+ (eval-after-load "tex"
+   '(progn
+      (and
+       (executable-find "latex")
+       (executable-find "dvips")
+       (executable-find "ps2pdf")
+       (add-to-list
+	'TeX-command-list
+	'("Optimized LaTeX"
+	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true -dOptimize=true -dUseFlateCompression=true %s.ps"
+	  TeX-run-command nil (latex-mode)
+	  :help "Produce optimized pdf")))
+      (or (featurep 'ergoemacs-mode)
+	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
 ;;; Ditaa
 (let ((ditaa-path (win-or-nix

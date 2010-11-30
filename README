@@ -6,13 +6,12 @@ supposed to be tolerant to missing packages without complaining and
 errors.  Whenever possible, extensions are autoloaded on demand for a
 quicker start-up and smaller memory footprint.  It's somewhat
 personalized, thus if someone is to try it out, some glitches
-(obviously personal data and paths eventually) may have to be tuned.
-The download section contains a relevant set of extensions which is
-kept up to date (as much as possible) at time of upload.  It's
-expected to be untared in ~/.emacs.d/ to run out of the box.  There
-are just elisp sources which should be byte compiled.  Here's a list
-of extensions that this .emacs is somewhat aware of in some order and
-links:
+(paths mostly) may have to be tuned.  The download section contains a
+relevant set of extensions which is kept up to date (as much as
+possible) at time of upload.  It's expected to be untared in
+~/.emacs.d/ to run out of the box.  There are just elisp sources which
+should be byte compiled.  Here's a list of extensions that this .emacs
+is somewhat aware of in some order and links:
 
 Anything related:
 Anything http://www.emacswiki.org/emacs/Anything
