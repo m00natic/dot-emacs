@@ -16,6 +16,7 @@
 ;;   Oz-mode http://www.mozart-oz.org
 ;;   Qi-mode http://code.google.com/p/qilang
 ;;   CSharpMode https://code.google.com/p/csharpmode
+;;   ESS http://ess.r-project.org
 ;;   ECB http://ecb.sourceforge.net
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
@@ -43,6 +44,8 @@
 ;;   GoMode http://www.emacswiki.org/emacs/GoMode
 
 ;;; Code:
+(if (boundp '+win-p+) (error "Trying to re-initialize"))
+
 ;; do some OS recognition and set main parameters
 (defconst +win-p+ (eval-when-compile
 		    (memq system-type '(windows-nt ms-dos)))
@@ -111,6 +114,10 @@ NIX forms are executed on all other platforms."
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-mode t)
+ `(eshell-directory-name
+   ,(win-or-nix (concat user-emacs-directory ".eshell/")
+		(eval-when-compile
+		  (concat user-emacs-directory ".eshell/"))))
  '(frame-title-format "emacs - %b (%f)")
  '(gdb-many-windows t)
  '(global-hl-line-mode t)
@@ -118,12 +125,10 @@ NIX forms are executed on all other platforms."
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
- `(ido-save-directory-list-file ,(win-or-nix
-				  (concat user-emacs-directory
-					  ".ido.last")
-				  (eval-when-compile
-				    (concat user-emacs-directory
-					    ".ido.last"))))
+ `(ido-save-directory-list-file
+   ,(win-or-nix (concat user-emacs-directory ".ido.last")
+		(eval-when-compile
+		  (concat user-emacs-directory ".ido.last"))))
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
@@ -137,10 +142,10 @@ NIX forms are executed on all other platforms."
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
- `(recentf-save-file ,(win-or-nix
-		       (concat user-emacs-directory "recentf")
-		       (eval-when-compile
-			 (concat user-emacs-directory "recentf"))))
+ `(recentf-save-file
+   ,(win-or-nix (concat user-emacs-directory "recentf")
+		(eval-when-compile
+		  (concat user-emacs-directory "recentf"))))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
  '(show-paren-mode t)
@@ -226,12 +231,12 @@ KEYS is alternating key-value list."
   "Set dark faces.  With prefix, LIGHT."
   (interactive "P")
   (if light (custom-set-faces
-	     '(default ((default :foreground "black" :height 80)
+	     '(default ((default :foreground "black")
 			(((class color) (min-colors 88))
 			 :background "cornsilk")
 			(t :background "white"))))
     (custom-set-faces
-     '(default ((default :background "black" :height 80)
+     '(default ((default :background "black")
 		(((class color) (min-colors 88)) :foreground "wheat")
 		(t :foreground "white"))))))
 
@@ -239,7 +244,7 @@ KEYS is alternating key-value list."
   "Convert solar type string TIME-STR to 24 hour format."
   (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)" time-str)
       (format "%02d:%s"
-	      (if (equal (match-string 3 time-str) "p")
+	      (if (string-equal (match-string 3 time-str) "p")
 		  (+ 12 (string-to-number (match-string 1 time-str)))
 		(string-to-number (match-string 1 time-str)))
 	      (match-string 2 time-str))
@@ -346,7 +351,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 		(set-frame-parameter nil 'fullscreen 'fullboth)))
    (add-hook 'after-make-frame-functions 'reset-frame-faces)))
 
-;; Change some faces
+;;; Change some faces
 (condition-case nil
     (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
   (error (ignore-errors (set-face-font 'default "terminus"))))
@@ -354,17 +359,18 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (custom-set-faces
  '(mode-line
    ((default :width condensed :family "neep")
-    (((class color) (min-colors 88))
-     :box (:line-width -1 :style released-button)
-     :background "grey75" :foreground "black")
+    (((class color) (min-colors 88) (background dark))
+     :foreground "black" :background "DarkSlateGray")
+    (((class color) (min-colors 88) (background light))
+     :foreground "white" :background "DarkSlateGray")
     (t :background "cyan")))
  '(mode-line-inactive
-   ((default :inherit mode-line)
+   ((default :inherit mode-line :weight light)
     (((class color) (min-colors 88) (background light))
-     :weight light :box (:line-width -1 :color "grey75")
+     :box (:line-width -1 :color "grey75")
      :foreground "grey20" :background "grey90")
     (((class color) (min-colors 88) (background dark))
-     :weight light :box (:line-width -1 :color "grey40")
+     :box (:line-width -1 :color "grey40")
      :foreground "grey80" :background "grey30")
     (t :inverse-video t))))
 
@@ -372,9 +378,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
  nil tabbar
  (custom-set-faces
   '(tabbar-selected
-    ((default :inherit tabbar-default :weight bold)
-     (((background dark)) :background "black" :foreground "white")
-     (t :background "white" :foreground "black")))
+    ((t :inherit default :weight bold)))
   '(tabbar-unselected
     ((default :inherit tabbar-default)
      (((class color) (min-colors 88) (background light))
@@ -385,14 +389,14 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       :box (:line-width 2 :color "black"))
      (t :inverse-video t)))
   '(tabbar-button
-    ((((background dark)) :background "black"	:foreground "gray50")
+    ((((background dark)) :background "black" :foreground "gray50")
      (t :background "white" :foreground "gray75")))))
 
 (when-library
  nil sml-modeline
  (custom-set-faces
   '(sml-modeline-end-face
-    ((t :inherit default :width condensed)))))
+    ((t :family "neep" :inherit default :width condensed)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -594,7 +598,7 @@ Open in new tab if NEW-WINDOW."
 					    (setq apropo-reg a)))
 			       text)))
        (browse-url
-       	(if (and (equal apropo-reg "^$")	; no match
+       	(if (and (string-equal apropo-reg "^$")	; no match
        		 (string-match-p ".* .*" text))	; multiple words
        	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
        		    (replace-regexp-in-string " " "+" text))
@@ -819,14 +823,14 @@ Make links point to local files."
 		    ergoemacs-kill-line-key 'paredit-kill
 		    ergoemacs-recenter-key nil
 		    "\M-R" 'paredit-raise-sexp)
-		  (if (equal ,layout "colemak")
+		  (if (string-equal ,layout "colemak")
 		      (define-keys paredit-mode-map
 			"\M-r" 'paredit-splice-sexp
 			ergoemacs-next-line-key nil
 			"\M-g" nil)))))
 	  ,(when-library
 	    nil slime
-	    '(cond ((equal ergo-layout "colemak")
+	    '(cond ((string-equal ergo-layout "colemak")
 		    (eval-after-load "slime"
 		      '(define-keys slime-mode-map
 			 "\M-k" 'slime-next-note
@@ -835,7 +839,7 @@ Make links point to local files."
 			 "\M-p" nil))
 		    (eval-after-load "slime-repl"
 		      '(define-key slime-repl-mode-map "\M-n" nil)))
-		   ((equal ergo-layout "en")
+		   ((string-equal ergo-layout "en")
 		    (eval-after-load "slime"
 		      '(define-keys slime-mode-map
 			 "\M-N" 'slime-previous-note
@@ -850,7 +854,7 @@ Make links point to local files."
      (interactive (list (completing-read "Enter layout (default us): "
 					 '("us" "dv" "colemak")
 					 nil t nil nil "us")))
-     (unless (equal layout ergoemacs-keyboard-layout)
+     (unless (string-equal layout ergoemacs-keyboard-layout)
        (ergoemacs-mode 0)
        (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
        (setq ergoemacs-keyboard-layout layout)
@@ -1122,7 +1126,6 @@ Make links point to local files."
 
 ;;; Haskell
 (if (load "haskell-site-file" t)
-
     (hook-modes ((haskell-indentation-mode t)
 		 turn-on-haskell-doc-mode)
 		haskell-mode-hook))
@@ -1131,7 +1134,7 @@ Make links point to local files."
 (when-library
  nil tuareg
  (autoload 'tuareg-mode "tuareg" "(O)Caml editing mode." t)
- (autoload 'camldebug "camldebug" "Run the Caml debugger" t)
+ (autoload 'camldebug "camldebug" "Run the Caml debugger." t)
  (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
 ;;; C#
@@ -1145,6 +1148,17 @@ Make links point to local files."
 				(hl-sexp-mode 1)
 				(local-set-key [backtab]
 					       'hs-toggle-hiding)))
+
+;;; Emacs Speaks Statistics
+(when-library
+ nil ess-site
+ (autoload 'R "ess-site" "'GNU S' system from the R Foundation." t)
+ (autoload 'R-mode "ess-site" "Major mode for editing R source." t)
+ (autoload 'Rd-mode "ess-site"
+   "Major mode for editing R documentation source files." t)
+ (setq auto-mode-alist (nconc '(("\\.[rR]$" . R-mode)
+				("\\.Rd$" . Rd-mode))
+			      auto-mode-alist)))
 
 ;;; Emacs Code Browser
 (when-library
@@ -1171,12 +1185,11 @@ Make links point to local files."
  (eval-after-load "tex"
    '(progn
       (and
+       (executable-find "ps2pdf") (executable-find "dvips")
        (executable-find "latex")
-       (executable-find "dvips")
-       (executable-find "ps2pdf")
        (add-to-list
 	'TeX-command-list
-	'("Optimized LaTeX"
+	'("Optimized PDF"
 	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true -dOptimize=true -dUseFlateCompression=true %s.ps"
 	  TeX-run-command nil (latex-mode)
 	  :help "Produce optimized pdf")))

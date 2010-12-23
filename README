@@ -28,6 +28,7 @@ tuareg-mode http://tuareg.forge.ocamlcore.org
 Oz-mode http://www.mozart-oz.org
 Qi-mode (modified) http://code.google.com/p/qilang
 CSharpMode https://code.google.com/p/csharpmode
+Emacs Speaks Statistics http://ess.r-project.org
 Emacs Code Browser http://ecb.sourceforge.net
 
 Lisp goodies:
