@@ -135,9 +135,11 @@ NIX forms are executed on all other platforms."
  '(ispell-dictionary "en")
  '(line-number-mode nil)
  '(menu-bar-mode nil)
- '(package-archives '(("elpa" . "http://tromey.com/elpa/")
+ '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+		      ("elpa" . "http://tromey.com/elpa/")
 		      ("techno" . "http://repo.technomancy.us/emacs/")
-		      ("gnu" . "http://elpa.gnu.org/packages/")))
+		      ("marmalade" .
+		       "http://marmalade-repo.org/packages/")))
  '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
@@ -974,11 +976,10 @@ Make links point to local files."
 		      (list ',(win-or-nix 'clisp 'sbcl)
 			    ',(split-string inferior-lisp-program
 					    " +")))
-	 (if (file-exists-p ,(concat "file://" +home-path+
+	 (if (file-exists-p ,(concat +home-path+
 				     "Documents/HyperSpec/"))
 	     (setq common-lisp-hyperspec-root
-		   ,(concat "file://" +home-path+
-			    "Documents/HyperSpec/")))
+		   ,(concat +home-path+ "Documents/HyperSpec/")))
 	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
 	       slime-complete-symbol*-fancy t
 	       slime-complete-symbol-function
