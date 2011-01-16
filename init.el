@@ -979,8 +979,7 @@ Make links point to local files."
 	 (if (file-exists-p ,(concat +home-path+
 				     "Documents/HyperSpec/"))
 	     (setq common-lisp-hyperspec-root
-		   ,(concat "file://" +home-path+
-			    "Documents/HyperSpec/")))
+		   ,(concat +home-path+ "Documents/HyperSpec/")))
 	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
 	       slime-complete-symbol*-fancy t
 	       slime-complete-symbol-function
