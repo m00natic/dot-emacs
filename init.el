@@ -118,7 +118,7 @@ NIX forms are executed on all other platforms."
    ,(win-or-nix (concat user-emacs-directory ".eshell/")
 		(eval-when-compile
 		  (concat user-emacs-directory ".eshell/"))))
- '(frame-title-format "emacs - %b (%f)")
+ '(frame-title-format "emacs %@ %b (%f)")
  '(gdb-many-windows t)
  '(global-hl-line-mode t)
  '(global-linum-mode 1)
@@ -188,7 +188,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-						  (list fn)))
+					     (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -225,22 +225,71 @@ KEYS is alternating key-value list."
 		    '(highlight-parentheses-mode 1))
      ,(when-library nil paredit '(paredit-mode +1))))
 
+(defmacro switch-faces (&optional light)
+  "Set dark faces.  With prefix, LIGHT."
+  (if light '(enable-theme 'andr)
+    '(enable-theme 'andr-dark)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent functions
 
-(defun switch-faces (light)
-  "Set dark faces.  With prefix, LIGHT."
-  (interactive "P")
-  (if light (custom-set-faces
-	     '(default ((default :foreground "black")
-			(((class color) (min-colors 88))
-			 :background "cornsilk")
-			(t :background "white"))))
-    (custom-set-faces
-     '(default ((default :background "black")
-		(((class color) (min-colors 88)) :foreground "wheat")
-		(t :foreground "white"))))))
+;;; themes
+(deftheme andr "My corrections over default theme.")
+(deftheme andr-dark "My corrections over default dark theme.")
+
+(defun andr-themes ()
+  "Define my custom themes.  Should be done in graphical frame."
+  (condition-case nil
+      (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
+    (error (ignore-errors (set-face-font 'default "terminus"))))
+  (let ((class '((class color) (min-colors 88))))
+    (custom-theme-set-faces
+     'andr
+     `(default ((default :foreground "black")
+		(,class :background "cornsilk")
+		(t :background "white")))
+     `(mode-line
+       ((default :width condensed :family "neep")
+	(,class :foreground "white" :background "DarkSlateGray")
+	(t :background "cyan")))
+     `(mode-line-inactive
+       ((default :inherit mode-line :weight light)
+	(,class :box (:line-width -1 :color "grey75")
+		:foreground "grey20" :background "grey90")
+	(t :inverse-video t)))
+     '(tabbar-selected ((t :inherit default :weight bold)))
+     `(tabbar-unselected ((default :inherit tabbar-default)
+			  (,class
+			   :background "gray75" :foreground "white"
+			   :box (:line-width 2 :color "white"))
+			  (t :inverse-video t)))
+     '(tabbar-button ((t :background "white" :foreground "gray75")))
+     '(sml-modeline-end-face ((t :family "neep" :inherit default
+				 :width condensed))))
+    (custom-theme-set-faces
+     'andr-dark
+     `(default ((default :background "black")
+		(,class :foreground "wheat")
+		(t :foreground "white")))
+     `(mode-line
+       ((default :width condensed :family "neep")
+	(,class :foreground "black" :background "DarkSlateGray")
+	(t :background "cyan")))
+     `(mode-line-inactive
+       ((default :inherit mode-line :weight light)
+	(,class :box (:line-width -1 :color "grey40")
+		:foreground "grey80" :background "grey30")
+	(t :inverse-video t)))
+     '(tabbar-selected ((t :inherit default :weight bold)))
+     `(tabbar-unselected ((default :inherit tabbar-default)
+			  (,class
+			   :background "gray50" :foreground "black"
+			   :box (:line-width 2 :color "black"))
+			  (t :inverse-video t)))
+     '(tabbar-button ((t :background "black" :foreground "gray50")))
+     '(sml-modeline-end-face ((t :family "neep" :inherit default
+				 :width condensed))))))
 
 (defun solar-time-to-24 (time-str)
   "Convert solar type string TIME-STR to 24 hour format."
@@ -268,11 +317,11 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
 	  (cond
 	   ((string-lessp current-time-string ; before dawn
 			  (solar-time-to-24 sunrise-string))
-	    (switch-faces nil)
+	    (switch-faces)
 	    (run-at-time sunrise-string nil 'my-colours-set))
 	   ((not (string-lessp current-time-string ; evening
 			       (solar-time-to-24 sunset-string)))
-	    (switch-faces nil)
+	    (switch-faces)
 	    (run-at-time
 	     (let ((tomorrow (calendar-current-date 1)))
 	       (let* ((next-solar-rise (car (solar-sunrise-sunset
@@ -311,16 +360,19 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
      (set-frame-parameter nil 'width 100)
      (set-frame-parameter nil 'fullscreen 'fullheight))))
 
-(defun reset-frame-faces (frame)
-  "Reset some faces which --daemon doesn't quite set and remove hook.
-Execute once in the first graphical FRAME."
-  (select-frame frame)
-  (when (window-system)
-    (remove-hook 'after-make-frame-functions 'reset-frame-faces)
+(defun set-frame-faces (&optional frame)
+  "Load my custom themes.  Execute once in the first graphical FRAME."
+  (if frame
+      (progn
+	(select-frame frame)
+	(when (window-system)
+	  (remove-hook 'after-make-frame-functions 'set-frame-faces)
+	  (andr-themes)
+	  (if (require 'solar nil t) (my-colours-set))
+	  (if *fullscreen-p*
+	      (set-frame-parameter nil 'fullscreen 'fullboth))))
+    (andr-themes)
     (if (require 'solar nil t) (my-colours-set))
-    (condition-case nil
-	(set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
-      (error (ignore-errors (set-face-font 'default "terminus"))))
     (if *fullscreen-p*
 	(set-frame-parameter nil 'fullscreen 'fullboth))))
 
@@ -345,60 +397,11 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       (make-frame-invisible nil t))
 
     (global-set-key "\C-x\C-c" 'hide-frame))
-  (if (require 'solar nil t) (my-colours-set)))
+  (set-frame-faces))
 
  (if (window-system)
-     (progn (if (require 'solar nil t) (my-colours-set))
-	    (if *fullscreen-p*
-		(set-frame-parameter nil 'fullscreen 'fullboth)))
-   (add-hook 'after-make-frame-functions 'reset-frame-faces)))
-
-;;; Change some faces
-(condition-case nil
-    (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
-  (error (ignore-errors (set-face-font 'default "terminus"))))
-
-(custom-set-faces
- '(mode-line
-   ((default :width condensed :family "neep")
-    (((class color) (min-colors 88) (background dark))
-     :foreground "black" :background "DarkSlateGray")
-    (((class color) (min-colors 88) (background light))
-     :foreground "white" :background "DarkSlateGray")
-    (t :background "cyan")))
- '(mode-line-inactive
-   ((default :inherit mode-line :weight light)
-    (((class color) (min-colors 88) (background light))
-     :box (:line-width -1 :color "grey75")
-     :foreground "grey20" :background "grey90")
-    (((class color) (min-colors 88) (background dark))
-     :box (:line-width -1 :color "grey40")
-     :foreground "grey80" :background "grey30")
-    (t :inverse-video t))))
-
-(when-library
- nil tabbar
- (custom-set-faces
-  '(tabbar-selected
-    ((t :inherit default :weight bold)))
-  '(tabbar-unselected
-    ((default :inherit tabbar-default)
-     (((class color) (min-colors 88) (background light))
-      :background "gray75" :foreground "white"
-      :box (:line-width 2 :color "white"))
-     (((class color) (min-colors 88) (background dark))
-      :background "gray50" :foreground "black"
-      :box (:line-width 2 :color "black"))
-     (t :inverse-video t)))
-  '(tabbar-button
-    ((((background dark)) :background "black" :foreground "gray50")
-     (t :background "white" :foreground "gray75")))))
-
-(when-library
- nil sml-modeline
- (custom-set-faces
-  '(sml-modeline-end-face
-    ((t :family "neep" :inherit default :width condensed)))))
+     (set-frame-faces)
+   (add-hook 'after-make-frame-functions 'set-frame-faces)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -769,7 +772,7 @@ Make links point to local files."
 ;;; ErgoEmacs minor mode
 (when-library
  nil ergoemacs-mode
- (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "en")
+ (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
  (when (require 'ergoemacs-mode nil t)
    (if (fboundp 'recenter-top-bottom)
        (define-key isearch-mode-map ergoemacs-recenter-key
@@ -979,7 +982,8 @@ Make links point to local files."
 	 (if (file-exists-p ,(concat +home-path+
 				     "Documents/HyperSpec/"))
 	     (setq common-lisp-hyperspec-root
-		   ,(concat +home-path+ "Documents/HyperSpec/")))
+		   ,(concat "file://" +home-path+
+			    "Documents/HyperSpec/")))
 	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
 	       slime-complete-symbol*-fancy t
 	       slime-complete-symbol-function
