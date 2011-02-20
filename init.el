@@ -150,6 +150,10 @@ NIX forms are executed on all other platforms."
 		  (concat user-emacs-directory "recentf"))))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
+ `(save-place-file
+   ,(win-or-nix (concat user-emacs-directory ".emacs-places")
+		(eval-when-compile
+		  (concat user-emacs-directory ".emacs-places"))))
  '(show-paren-mode t)
  '(size-indication-mode t)
  '(tool-bar-mode nil)
@@ -1168,14 +1172,15 @@ Make links point to local files."
 ;;; Emacs Code Browser
 (when-library
  t semantic
- (if (require 'ecb-autoloads nil t)
-     (eval-after-load "ecb"
-       `(progn (custom-set-variables '(ecb-options-version "2.40"))
-	       (let ((prog-path ,(win-or-nix
-				  (concat +home-path+ "Programs")
-				  (eval-when-compile
-				    (concat +home-path+ "Programs")))))
-		 (ecb-add-source-path prog-path prog-path t))))))
+ (when-library
+  nil ecb
+  (eval-after-load "ecb"
+    `(progn (custom-set-variables '(ecb-options-version "2.40"))
+	    (let ((prog-path ,(win-or-nix
+			       (concat +home-path+ "Programs")
+			       (eval-when-compile
+				 (concat +home-path+ "Programs")))))
+	      (ecb-add-source-path prog-path prog-path t))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1575,11 +1580,7 @@ Medium - less than 120000 bytes."
      (setenv "CYGWIN" "nodosfilewarning")
      (when (require 'cygwin-mount nil t)
        (cygwin-mount-activate)
-       (setq w32shell-cygwin-bin cygwin-dir))))
-
-;;; Desktop notifications
- (when-library nil notify
-	       (autoload 'notify "notify" "Notify TITLE, BODY.")))
+       (setq w32shell-cygwin-bin cygwin-dir)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
