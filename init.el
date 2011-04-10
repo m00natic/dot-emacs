@@ -10,9 +10,7 @@
 ;;   Quack http://www.neilvandyke.org/quack
 ;;   clojure-mode http://github.com/technomancy/clojure-mode
 ;;   clips-mode http://www.cs.us.es/software/clips
-;;   Prolog http://bruda.ca/emacs-prolog
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
-;;   tuareg-mode http://tuareg.forge.ocamlcore.org
 ;;   Oz-mode http://www.mozart-oz.org
 ;;   Qi-mode http://code.google.com/p/qilang
 ;;   CSharpMode https://code.google.com/p/csharpmode
@@ -141,6 +139,7 @@ NIX forms are executed on all other platforms."
 		      ("marmalade" .
 		       "http://marmalade-repo.org/packages/")))
  '(proced-format 'medium)
+ '(prolog-system 'swi)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
@@ -473,10 +472,16 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
    `(progn
       (setq gnus-select-method '(nntp "news.gmane.org")
 	    gnus-secondary-select-methods
-	    `((nnimap "gmail" (nnimap-address "imap.gmail.com")
-		      (nnimap-server-port 993) (nnimap-stream ssl)
-		      (nnimap-authinfo-file ,(concat +home-path+
-						     ".authinfo.gpg"))))
+	    `((nnimap
+	       "gmail" (nnimap-address "imap.gmail.com")
+	       (nnimap-server-port 993) (nnimap-stream ssl)
+	       (nnimap-authinfo-file ,(concat +home-path+
+					      ".authinfo.gpg")))
+	      (nnimap
+	       "vayant" (nnimap-address "imap.gmail.com")
+	       (nnimap-server-port 993) (nnimap-stream ssl)
+	       (nnimap-authinfo-file ,(concat +home-path+
+					      ".authinfo.gpg"))))
 	    message-send-mail-function 'smtpmail-send-it
 	    smtpmail-starttls-credentials '(("smtp.gmail.com"
 					     587 nil nil))
@@ -501,7 +506,8 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	  ;; scan for new mail
 	  (let ((unread-count 0)
 		unread-groups)
-	    (dolist (group '("nnimap+gmail:INBOX"))
+	    (dolist (group '("nnimap+gmail:INBOX"
+			     "nnimap+vayant:INBOX"))
 	      (gnus-group-remove-mark group)
 	      (let ((method (gnus-find-method-for-group group)))
 		;; Bypass any previous denials from the server.
@@ -525,20 +531,20 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	    ;; show popup on new mail and change mode line
 	    (setq *gnus-new-mail-count*
 		  (if (null unread-groups) ""
-		    ,(win-or-nix
-		      nil
-		      (when-library
-		       nil notify
-		       '(if (> unread-count
-			       (string-to-number
-				*gnus-new-mail-count*))
-			    (notify
-			     "Gnus"
-			     (format
-			      (concat "%d new mail%s in "
-				      (substring unread-groups 2))
-			      unread-count
-			      (if (= unread-count 1) "" "s"))))))
+		    (win-or-nix
+		     nil
+		     (when-library
+		      nil notify
+		      (if (> unread-count
+			     (string-to-number
+			      *gnus-new-mail-count*))
+			  (notify
+			   "Gnus"
+			   (format
+			    (concat "%d new mail%s in "
+				    (substring unread-groups 2))
+			    unread-count
+			    (if (= unread-count 1) "" "s"))))))
 		    (propertize (format "%d" unread-count)
 				'face 'font-lock-warning-face))))))
 
@@ -744,7 +750,7 @@ Make links point to local files."
   (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
   (win-or-nix
    nil (when (eval-when-compile
-	       (string-match-p "gentoo\\|funtoo"
+	       (string-match-p "\\(ge\\|fu\\)ntoo"
 			       (shell-command-to-string "uname -r")))
 	 (autoload 'anything-gentoo "anything-config"
 	   "Preconfigured `anything' for gentoo linux.")
@@ -1012,7 +1018,7 @@ Make links point to local files."
     `(progn
        (when (file-exists-p
 	      ,(win-or-nix (concat +home-path+ "Documents/javadoc")
-			   "/usr/share/doc/java-sdk-docs-1.6.0.18"))
+			   "/usr/share/doc/java-sdk-docs-1.6.0.23"))
 	 (defun slime-browse-local-javadoc (ci-name)
 	   "Browse local JavaDoc documentation on class/interface CI-NAME."
 	   (interactive
@@ -1022,7 +1028,7 @@ Make links point to local files."
 		 (path (concat
 			,(win-or-nix
 			  (concat +home-path+ "Documents/javadoc")
-			  "/usr/share/doc/java-sdk-docs-1.6.0.18/html")
+			  "/usr/share/doc/java-sdk-docs-1.6.0.23/html")
 			"/api/")))
 	     (with-temp-buffer
 	       (insert-file-contents
@@ -1108,17 +1114,6 @@ Make links point to local files."
 		 (lambda () (activate-lisp-minor-modes)
 		   (setq indent-region-function nil)))))))
 
-(when-library
- nil prog/prolog
- (fset 'run-prolog '(autoload "prog/prolog"
-		      "Start a Prolog sub-process." t nil))
- (autoload 'prolog-mode "prog/prolog" "Prolog editing mode." t)
- (autoload 'mercury-mode "prog/prolog" "Mercury editing mode." t)
- (setq prolog-system 'swi
-       auto-mode-alist (nconc '(("\\.pl$" . prolog-mode)
-				("\\.m$" . mercury-mode))
-			      auto-mode-alist)))
-
 ;;; Oz
 (when-library
  nil oz
@@ -1138,13 +1133,6 @@ Make links point to local files."
     (hook-modes ((haskell-indentation-mode t)
 		 turn-on-haskell-doc-mode)
 		haskell-mode-hook))
-
-;;; Caml
-(when-library
- nil tuareg
- (autoload 'tuareg-mode "tuareg" "(O)Caml editing mode." t)
- (autoload 'camldebug "camldebug" "Run the Caml debugger." t)
- (add-to-list 'auto-mode-alist '("\\.ml[iylp]?" . tuareg-mode)))
 
 ;;; C#
 (when-library
@@ -1172,6 +1160,9 @@ Make links point to local files."
 ;;; Emacs Code Browser
 (when-library
  t semantic
+ (eval-after-load "semantic"
+   '(progn (global-semantic-decoration-mode 1)
+	   (global-semantic-idle-summary-mode 1)))
  (when-library
   nil ecb
   (eval-after-load "ecb"
@@ -1504,7 +1495,7 @@ Medium - less than 120000 bytes."
 	       "very-secret"
 	       emms-lastfm-client-api-secret-key
 	       "very-secret")
-	 (emms-lastfm-scrobbler-enable))
+	 (ignore-errors (emms-lastfm-scrobbler-enable)))
 
        (when (and (executable-find "mpd")
 		  (require 'emms-player-mpd nil t))
