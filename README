@@ -29,6 +29,7 @@ Qi-mode (modified) http://code.google.com/p/qilang
 CSharpMode https://code.google.com/p/csharpmode
 Emacs Speaks Statistics http://ess.r-project.org
 Emacs Code Browser http://ecb.sourceforge.net
+AutoComplete http://cx4a.org/software/auto-complete
 
 Lisp goodies:
 highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
@@ -47,12 +48,12 @@ ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
 TabBar http://www.emacswiki.org/emacs/TabBarMode
-sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
+sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
 auto-install http://www.emacswiki.org/emacs/AutoInstall
 notify http://www.emacswiki.org/emacs/notify.el
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 EMMS http://www.gnu.org/software/emms
 Emacs Chess http://github.com/jwiegley/emacs-chess
-sudoku http://www.columbia.edu/~jr2075/elisp/index.html
+sudoku http://sourceforge.net/projects/sudoku-elisp
 GoMode http://www.emacswiki.org/emacs/GoMode

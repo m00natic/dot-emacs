@@ -16,6 +16,7 @@
 ;;   CSharpMode https://code.google.com/p/csharpmode
 ;;   ESS http://ess.r-project.org
 ;;   ECB http://ecb.sourceforge.net
+;;   AutoComplete http://cx4a.org/software/auto-complete
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
@@ -31,14 +32,14 @@
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
-;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head%3A/util/sml-modeline.el
+;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
 ;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   Dictionary http://www.myrkr.in-berlin.de/dictionary
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
-;;   sudoku http://www.columbia.edu/~jr2075/elisp
+;;   sudoku http://sourceforge.net/projects/sudoku-elisp
 ;;   GoMode http://www.emacswiki.org/emacs/GoMode
 
 ;;; Code:
@@ -119,7 +120,7 @@ NIX forms are executed on all other platforms."
  '(frame-title-format "emacs %@ %b (%f)")
  '(gdb-many-windows t)
  '(global-hl-line-mode t)
- '(global-linum-mode 1)
+ '(global-linum-mode t)
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
@@ -135,7 +136,6 @@ NIX forms are executed on all other platforms."
  '(menu-bar-mode nil)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
-		      ("techno" . "http://repo.technomancy.us/emacs/")
 		      ("marmalade" .
 		       "http://marmalade-repo.org/packages/")))
  '(proced-format 'medium)
@@ -226,7 +226,7 @@ KEYS is alternating key-value list."
      ,(when-library nil hl-sexp '(hl-sexp-mode 1))
      ,(when-library nil highlight-parentheses ; from ELPA
 		    '(highlight-parentheses-mode 1))
-     ,(when-library nil paredit '(paredit-mode +1))))
+     ,(when-library nil paredit '(paredit-mode 1))))
 
 (defmacro switch-faces (&optional light)
   "Set dark faces.  With prefix, LIGHT."
@@ -410,10 +410,8 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 
 ;;;; useful stuff
 
-;;; goto-line
+;;; some keybindings
 (global-set-key "\C-cl" 'goto-line)
-
-;;; autoindent
 (global-set-key (kbd "M-RET") 'newline-and-indent)
 
 ;;; Use y or n instead of yes or no
@@ -557,7 +555,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 				    (gnus-group-exit)))))))
 
 (when-library
- nil fortune
+ t fortune
  (when (executable-find "fortune")
    (let ((fortune-d (concat user-emacs-directory "fortune/")))
      (if (file-exists-p fortune-d)
@@ -591,6 +589,8 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1")
      ("^cliki +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/admin/search?words=\\1")
+     ("^hoog +\\(.*\\)" .		; Hoogle
+      "http://haskell.org/hoogle/?hoogle=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
      ("^nnm +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
@@ -1002,10 +1002,13 @@ Make links point to local files."
 	       (find-if 'slime-find-coding-system
 			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
 				     binary)))
+
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
 	 (or (featurep 'ergoemacs-mode)
 	     (define-key slime-mode-map "\M-g"
-	       'slime-complete-symbol)))))
+	       'slime-complete-symbol))
+	 (when-library nil autopair
+		       (autopair-global-mode 0)))))
 
 ;;; Clojure
 (when-library
@@ -1172,6 +1175,18 @@ Make links point to local files."
 			       (eval-when-compile
 				 (concat +home-path+ "Programs")))))
 	      (ecb-add-source-path prog-path prog-path t))))))
+
+;;; AutoComplete
+(when (require 'auto-complete-config nil t)
+  (push (win-or-nix
+	 (concat user-emacs-directory
+		 "elpa/auto-complete-1.4.20110207/dict")
+	 (eval-when-compile
+	   (concat user-emacs-directory
+		   "elpa/auto-complete-1.4.20110207/dict")))
+	ac-dictionary-directories)
+  (ac-config-default)
+  (ac-flyspell-workaround))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
