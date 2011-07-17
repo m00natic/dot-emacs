@@ -470,24 +470,12 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
    `(progn
       (setq gnus-select-method '(nntp "news.gmane.org")
 	    gnus-secondary-select-methods
-	    `((nnimap
+	    '((nnimap
 	       "gmail" (nnimap-address "imap.gmail.com")
-	       (nnimap-server-port 993) (nnimap-stream ssl)
-	       (nnimap-authinfo-file ,(concat +home-path+
-					      ".authinfo.gpg")))
+	       (nnimap-server-port 993) (nnimap-stream ssl))
 	      (nnimap
 	       "vayant" (nnimap-address "imap.gmail.com")
-	       (nnimap-server-port 993) (nnimap-stream ssl)
-	       (nnimap-authinfo-file ,(concat +home-path+
-					      ".authinfo.gpg"))))
-	    message-send-mail-function 'smtpmail-send-it
-	    smtpmail-starttls-credentials '(("smtp.gmail.com"
-					     587 nil nil))
-	    smtpmail-auth-credentials '(("smtp.gmail.com" 587
-					 "m00naticus@gmail.com" nil))
-	    smtpmail-default-smtp-server "smtp.gmail.com"
-	    smtpmail-smtp-service 587
-	    epa-file-cache-passphrase-for-symmetric-encryption t)
+	       (nnimap-server-port 993) (nnimap-stream ssl))))
 
       (defun my-gnus-demon-scan-mail ()
 	"Rescan just mail and notify on new messages."
@@ -555,6 +543,12 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 				    (gnus-group-exit)))))))
 
 (when-library
+ t sendmail
+ (setq message-send-mail-function 'smtpmail-send-it
+       smtpmail-default-smtp-server "smtp.gmail.com"
+       smtpmail-smtp-service 587))
+
+(when-library
  t fortune
  (when (executable-find "fortune")
    (let ((fortune-d (concat user-emacs-directory "fortune/")))
@@ -593,7 +587,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       "http://haskell.org/hoogle/?hoogle=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?q=\\1"))
+     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")
