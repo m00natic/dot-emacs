@@ -33,6 +33,7 @@
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
 ;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
+;;   Ace Jump http://www.emacswiki.org/emacs/AceJump
 ;;   notify http://www.emacswiki.org/emacs/notify.el
 ;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
@@ -477,66 +478,54 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 	       "vayant" (nnimap-address "imap.gmail.com")
 	       (nnimap-server-port 993) (nnimap-stream ssl))))
 
-      (defun my-gnus-demon-scan-mail ()
-	"Rescan just mail and notify on new messages."
-	(save-excursion
-	  ;; fetch new messages
-	  (let ((nnmail-fetched-sources (list t)))
-	    (dolist (server-status gnus-opened-servers)
-	      (let ((server (car server-status)))
-		(and (gnus-check-backend-function
-		      'request-scan (car server))
-		     (or (gnus-server-opened server)
-			 (gnus-open-server server))
-		     (gnus-request-scan nil server)))))
-	  ;; scan for new mail
-	  (let ((unread-count 0)
-		unread-groups)
-	    (dolist (group '("nnimap+gmail:INBOX"
-			     "nnimap+vayant:INBOX"))
-	      (gnus-group-remove-mark group)
-	      (let ((method (gnus-find-method-for-group group)))
-		;; Bypass any previous denials from the server.
-		(gnus-remove-denial method)
-		(when (gnus-activate-group group 'scan nil method)
-		  (let ((info (gnus-get-info group))
-			(active (gnus-active group)))
-		    (if info (gnus-request-update-info info method))
-		    (gnus-get-unread-articles-in-group info active)
-		    (or (gnus-virtual-group-p group)
-			(gnus-close-group group))
-		    (if gnus-agent
-			(gnus-agent-save-group-info
-			 method (gnus-group-real-name group) active))
-		    (gnus-group-update-group group))
-		  (let ((unread (gnus-group-unread group)))
-		    (and (numberp unread) (> unread 0)
-			 (setq unread-count (+ unread-count unread)
-			       unread-groups (concat unread-groups
-						     ", " group)))))))
-	    ;; show popup on new mail and change mode line
-	    (setq *gnus-new-mail-count*
-		  (if (null unread-groups) ""
-		    (win-or-nix
-		     nil
-		     (when-library
-		      nil notify
-		      (if (> unread-count
-			     (string-to-number
-			      *gnus-new-mail-count*))
-			  (notify
-			   "Gnus"
-			   (format
-			    (concat "%d new mail%s in "
-				    (substring unread-groups 2))
-			    unread-count
-			    (if (= unread-count 1) "" "s"))))))
-		    (propertize (format "%d" unread-count)
-				'face 'font-lock-warning-face))))))
+      (defun gnus-demon-notify (&optional notify)
+	"When NOTIFY check for more unread mails.
+Otherwise check for less."
+	(and (or notify (not (equal *gnus-new-mail-count* "")))
+	     (gnus-alive-p)
+	     (let ((unread-count 0)
+		   unread-groups)
+	       (dolist (group '("nnimap+gmail:INBOX"
+				"nnimap+vayant:INBOX"))
+		 (let ((unread (gnus-group-unread group)))
+		   (and (numberp unread) (> unread 0)
+			(setq unread-count (+ unread-count unread)
+			      unread-groups (concat unread-groups
+						    ", " group)))))
+	       (setq *gnus-new-mail-count*
+		     (if (null unread-groups) ""
+		       (win-or-nix
+			nil
+			(when-library
+			 nil notify
+			 (if (> unread-count (string-to-number
+					      *gnus-new-mail-count*))
+			     (notify
+			      "Gnus"
+			      (format
+			       "%d new mail%s in %s"
+			       unread-count
+			       (if (= unread-count 1) "" "s")
+			       (substring unread-groups 2))))))
+		       (propertize (format "%d" unread-count)
+				   'face 'font-lock-warning-face))))))
 
-      (byte-compile 'my-gnus-demon-scan-mail)
+      (defun gnus-demon-scan-important ()
+	"Check for new messages in level 1 and notify in modeline."
+	(let ((win (current-window-configuration)))
+	  (unwind-protect
+	      (save-window-excursion
+		(when (gnus-alive-p)
+		  (with-current-buffer gnus-group-buffer
+		    (gnus-group-get-new-news 1))
+		  (gnus-demon-notify t)))
+	    (set-window-configuration win))))
+
+      (byte-compile 'gnus-demon-notify)
+      (byte-compile 'gnus-demon-scan-important)
       ;; run (gnus-demon-init) to track emails
-      (gnus-demon-add-handler 'my-gnus-demon-scan-mail 10 nil)
+      (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
+      (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
       (add-hook 'kill-emacs-hook (byte-compile
 				  (lambda () "Quit Gnus."
 				    (setq gnus-interactive-exit nil)
@@ -577,10 +566,10 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
      ("^imdb +\\(.*\\)" . "http://imdb.com/find?q=\\1")
-     ("^ma +\\(.*\\)" .		       ; Encyclopaedia Metallum, bands
-      "http://www.google.com/search?q=\\1&as_sitesearch=metal-archives.com")
+     ("^ma +\\(.*\\)" .		       ; Encyclopaedia Metallum
+      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=site:metal-archives.com+\\1")
      ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
-      "http://www.google.com/cse?cx=004774160799092323420%3A6-ff2s0o6yi&q=\\1")
+      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=site:emacswiki.org+\\1")
      ("^cliki +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/admin/search?words=\\1")
      ("^hoog +\\(.*\\)" .		; Hoogle
@@ -608,7 +597,8 @@ Open in new tab if NEW-WINDOW."
 			       text)))
        (browse-url
        	(if (and (string-equal apropo-reg "^$")	; no match
-       		 (string-match-p ".* .*" text))	; multiple words
+       		 (or (string-match-p ".+ .+" text) ; multiple words
+		     (not (string-match-p ".+\\..+" text))))
        	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
        		    (replace-regexp-in-string " " "+" text))
        	  (replace-regexp-in-string
@@ -624,6 +614,10 @@ Open in new tab if NEW-WINDOW."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; external extensions
+
+;;; Ace Jump
+(if (require 'ace-jump-mode)
+    (define-key global-map "\C-c " 'ace-jump-mode))
 
 ;;; sml-modeline
 (when (require 'sml-modeline nil t)
@@ -894,8 +888,13 @@ Make links point to local files."
 
 ;;; autopairs
 (when (require 'autopair nil t)
-  (setq autopair-autowrap t
-	autopair-blink nil)
+  (setq	autopair-blink nil)
+  (set-default 'autopair-dont-activate
+	       (lambda () "Turn off autopair for some modes."
+		 (eq major-mode 'sldb-mode)))
+  (hook-modes ((setq autopair-dont-activate t))
+	      term-mode-hook)
+
   (autopair-global-mode 1))
 
 ;;; Paredit
@@ -1000,9 +999,7 @@ Make links point to local files."
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
 	 (or (featurep 'ergoemacs-mode)
 	     (define-key slime-mode-map "\M-g"
-	       'slime-complete-symbol))
-	 (when-library nil autopair
-		       (autopair-global-mode 0)))))
+	       'slime-complete-symbol)))))
 
 ;;; Clojure
 (when-library
@@ -1275,7 +1272,8 @@ Make links point to local files."
 			     (eval-when-compile
 			       (concat "file://" +home-path+
 				       ".w3m/bookmark.html")))
-	     w3m-use-cookies t)
+	     w3m-use-cookies t
+	     w3m-link-numbering-quick-browsing 'quick-numbers)
        (define-keys w3m-mode-map
 	 (if w3m-key-binding "t" "i") 'w3m-linknum-save-image
 	 "z" 'w3m-horizontal-recenter
