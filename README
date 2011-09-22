@@ -34,7 +34,6 @@ Lisp goodies:
 highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
 ParEdit http://www.emacswiki.org/emacs/ParEdit
-autopair http://code.google.com/p/autopair
 Redshank http://www.foldr.org/~michaelw/emacs/redshank
 
 networking:

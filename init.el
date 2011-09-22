@@ -21,7 +21,6 @@
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
 ;;   ParEdit http://www.emacswiki.org/emacs/ParEdit
-;;   autopair http://code.google.com/p/autopair
 ;;   Redshank http://www.foldr.org/~michaelw/emacs/redshank
 ;;  networking:
 ;;   emacs-w3m http://emacs-w3m.namazu.org
@@ -114,6 +113,7 @@ NIX forms are executed on all other platforms."
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-mode t)
+ '(electric-pair-mode t)
  `(eshell-directory-name
    ,(win-or-nix (concat user-emacs-directory ".eshell/")
 		(eval-when-compile
@@ -534,6 +534,7 @@ Otherwise check for less."
 (when-library
  t sendmail
  (setq message-send-mail-function 'smtpmail-send-it
+       smtpmail-smtp-user "m00naticus@gmail.com"
        smtpmail-default-smtp-server "smtp.gmail.com"
        smtpmail-smtp-service 587))
 
@@ -574,6 +575,8 @@ Otherwise check for less."
       "http://www.cliki.net/admin/search?words=\\1")
      ("^hoog +\\(.*\\)" .		; Hoogle
       "http://haskell.org/hoogle/?hoogle=\\1")
+     ("^clj +\\(.*\\)" .		; ClojureDocs
+      "http://clojuredocs.org/search?q=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
      ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
@@ -885,17 +888,6 @@ Make links point to local files."
 (when-library nil hl-sexp
 	      (autoload 'hl-sexp-mode "hl-sexp"
 		"Highlight s-expressions minor mode." t))
-
-;;; autopairs
-(when (require 'autopair nil t)
-  (setq	autopair-blink nil)
-  (set-default 'autopair-dont-activate
-	       (lambda () "Turn off autopair for some modes."
-		 (eq major-mode 'sldb-mode)))
-  (hook-modes ((setq autopair-dont-activate t))
-	      term-mode-hook)
-
-  (autopair-global-mode 1))
 
 ;;; Paredit
 (when-library
@@ -1262,7 +1254,7 @@ Make links point to local files."
 				 (require 'w3m-wget nil t)))
 
   ;; Conkeror style anchor numbering on actions
-  (add-hook 'w3m-mode-hook 'w3m-link-numbering-mode)
+  (add-hook 'w3m-mode-hook 'w3m-lnum-mode)
 
   (eval-after-load "w3m"
     `(progn
@@ -1273,9 +1265,9 @@ Make links point to local files."
 			       (concat "file://" +home-path+
 				       ".w3m/bookmark.html")))
 	     w3m-use-cookies t
-	     w3m-link-numbering-quick-browsing 'quick-numbers)
+	     w3m-lnum-quick-browsing 'quick-numbers)
        (define-keys w3m-mode-map
-	 (if w3m-key-binding "t" "i") 'w3m-linknum-save-image
+	 (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	 "z" 'w3m-horizontal-recenter
 	 "\C-cs" 'w3m-session-select)
        ,(when-library
@@ -1292,7 +1284,7 @@ Make links point to local files."
 			  (if arg
 			      (read-string
 			       "URI: " (thing-at-point-url-at-point))
-			    (car (w3m-linknum-get-action
+			    (car (w3m-lnum-get-action
 				  "Curl on: " 1))))))
 	     (if (stringp url)
 		 (let ((olddir default-directory))
@@ -1318,7 +1310,7 @@ With optional prefix ARG ask for url."
 	    (if arg
 		(read-string "URI: " (thing-at-point-url-at-point))
 	      (or (w3m-anchor) (w3m-image)
-		  (car (w3m-linknum-get-action
+		  (car (w3m-lnum-get-action
 			(concat browse-url-generic-program
 				" on link: ") 1))))))
 
