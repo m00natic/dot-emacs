@@ -245,7 +245,7 @@ KEYS is alternating key-value list."
 (defun andr-themes ()
   "Define my custom themes.  Should be done in graphical frame."
   (condition-case nil
-      (set-face-font 'default (win-or-nix "Consolas" "Inconsolata"))
+      (set-face-font 'default (win-or-nix "Consolas" "Anonymous Pro"))
     (error (ignore-errors (set-face-font 'default "terminus"))))
   (let ((class '((class color) (min-colors 88))))
     (custom-theme-set-faces
@@ -536,7 +536,20 @@ Otherwise check for less."
  (setq message-send-mail-function 'smtpmail-send-it
        smtpmail-smtp-user "m00naticus@gmail.com"
        smtpmail-default-smtp-server "smtp.gmail.com"
-       smtpmail-smtp-service 587))
+       smtpmail-smtp-service 587)
+
+ (defadvice smtpmail-via-smtp (before smtpmail-via-smtp-change-smtp
+                                      (recipient
+				       smtpmail-text-buffer))
+   "Change smtp account according to current `from' field."
+   (with-current-buffer smtpmail-text-buffer
+     (let ((from (save-restriction (message-narrow-to-headers)
+                                   (message-fetch-field "from"))))
+       (if (string-match "[^ <]*@[^ >]*" from)
+           (setq smtpmail-smtp-user
+                 (match-string-no-properties 0 from))))))
+
+ (ad-activate 'smtpmail-via-smtp t))
 
 (when-library
  t fortune
