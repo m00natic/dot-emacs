@@ -10,44 +10,42 @@ out, some glitches (paths mostly) may have to be tuned.  The download
 section contains a relevant set of extensions which is kept up to date
 (as much as possible) at time of upload.  It's expected to be untared
 in ~/.emacs.d/ to run out of the box.  There are just elisp sources
-which should be byte compiled.  Here's a list of extensions that this
-.emacs is somewhat aware of in some order and links:
+which should be byte compiled.  You can just load compile-extras.el to
+do this.  Here's a list of extensions that this .emacs is somewhat
+aware of in some order and links:
 
-Anything related:
+* Anything related
 Anything http://www.emacswiki.org/emacs/Anything
 anything-match http://www.emacswiki.org/emacs/AnythingPlugins
 
-Programming languages related:
+* Programming languages related
 SLIME http://common-lisp.net/project/slime
 Quack http://www.neilvandyke.org/quack
 clojure-mode http://github.com/technomancy/clojure-mode
-clips-mode (modified) http://www.cs.us.es/software/clips
+clips-mode http://www.cs.us.es/software/clips
 haskell-mode http://projects.haskell.org/haskellmode-emacs
+ghc-mod http://www.mew.org/~kazu/proj/ghc-mod/en
 Oz-mode http://www.mozart-oz.org
-Qi-mode (modified) http://code.google.com/p/qilang
-CSharpMode https://code.google.com/p/csharpmode
 Emacs Speaks Statistics http://ess.r-project.org
 Emacs Code Browser http://ecb.sourceforge.net
 AutoComplete http://cx4a.org/software/auto-complete
 
-Lisp goodies:
+* Lisp goodies
 highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
 ParEdit http://www.emacswiki.org/emacs/ParEdit
 Redshank http://www.foldr.org/~michaelw/emacs/redshank
 
-networking:
+* networking
 emacs-w3m http://emacs-w3m.namazu.org
-emacs-wget (modified) http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
-MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
+emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 
-misc:
+* misc
 ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 AUCTeX http://www.gnu.org/software/auctex
 Ditaa http://ditaa.sourceforge.net
 TabBar http://www.emacswiki.org/emacs/TabBarMode
 sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
-auto-install http://www.emacswiki.org/emacs/AutoInstall
 Ace Jump http://www.emacswiki.org/emacs/AceJump
 notify http://www.emacswiki.org/emacs/notify.el
 cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
@@ -55,4 +53,8 @@ Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
 EMMS http://www.gnu.org/software/emms
 Emacs Chess http://github.com/jwiegley/emacs-chess
 sudoku http://sourceforge.net/projects/sudoku-elisp
-GoMode http://www.emacswiki.org/emacs/GoMode
+
+* Additional packages that come from ELPA repositories
+gnugo
+mldonkey
+shen-mode

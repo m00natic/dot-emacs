@@ -11,9 +11,8 @@
 ;;   clojure-mode http://github.com/technomancy/clojure-mode
 ;;   clips-mode http://www.cs.us.es/software/clips
 ;;   haskell-mode http://projects.haskell.org/haskellmode-emacs
+;;   ghc-mod http://www.mew.org/~kazu/proj/ghc-mod/en
 ;;   Oz-mode http://www.mozart-oz.org
-;;   Qi-mode http://code.google.com/p/qilang
-;;   CSharpMode https://code.google.com/p/csharpmode
 ;;   ESS http://ess.r-project.org
 ;;   ECB http://ecb.sourceforge.net
 ;;   AutoComplete http://cx4a.org/software/auto-complete
@@ -25,7 +24,6 @@
 ;;  networking:
 ;;   emacs-w3m http://emacs-w3m.namazu.org
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
-;;   MLDonkey-el http://www.emacswiki.org/emacs/MlDonkey
 ;;  misc:
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   AUCTeX http://www.gnu.org/software/auctex
@@ -34,13 +32,11 @@
 ;;   sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
 ;;   Ace Jump http://www.emacswiki.org/emacs/AceJump
 ;;   notify http://www.emacswiki.org/emacs/notify.el
-;;   auto-install http://www.emacswiki.org/emacs/AutoInstall
 ;;   cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
 ;;   Dictionary http://www.myrkr.in-berlin.de/dictionary
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   sudoku http://sourceforge.net/projects/sudoku-elisp
-;;   GoMode http://www.emacswiki.org/emacs/GoMode
 
 ;;; Code:
 (if (boundp '+win-p+) (error "Trying to re-initialize"))
@@ -129,14 +125,17 @@ NIX forms are executed on all other platforms."
    ,(win-or-nix (concat user-emacs-directory ".ido.last")
 		(eval-when-compile
 		  (concat user-emacs-directory ".ido.last"))))
+ '(ido-use-virtual-buffers t)
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
  '(line-number-mode nil)
  '(menu-bar-mode nil)
+ '(org-src-fontify-natively t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
+		      ("melpa" . "http://melpa.milkbox.net/packages/")
 		      ("marmalade" .
 		       "http://marmalade-repo.org/packages/")))
  '(proced-format 'medium)
@@ -156,9 +155,12 @@ NIX forms are executed on all other platforms."
 		  (concat user-emacs-directory ".emacs-places"))))
  '(show-paren-mode t)
  '(size-indication-mode t)
+ '(global-subword-mode t)
  '(tool-bar-mode nil)
- '(uniquify-buffer-name-style 'forward nil (uniquify))
+ '(uniquify-buffer-name-style 'post-forward-angle-brackets
+			      nil (uniquify))
  '(version-control t)
+ '(view-read-only t)
  '(winner-mode t)
  '(word-wrap t))
 
@@ -192,7 +194,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-					     (list fn)))
+						  (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -231,14 +233,21 @@ KEYS is alternating key-value list."
 
 (defmacro switch-faces (&optional light)
   "Set dark faces.  With prefix, LIGHT."
-  (if light '(enable-theme 'andr)
-    '(enable-theme 'andr-dark)))
+  (if light '(progn (or (disable-theme 'wombat)
+			(disable-theme 'andr-dark))
+		    (enable-theme 'andr))
+    '(progn (enable-theme 'andr-dark)
+	    (condition-case nil
+		(enable-theme 'wombat)
+	      (error (enable-theme 'andr-dark))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; extension independent functions
 
 ;;; themes
+(if (ignore-errors (load-theme 'wombat))
+    (disable-theme 'wombat))
 (deftheme andr "My corrections over default theme.")
 (deftheme andr-dark "My corrections over default dark theme.")
 
@@ -273,17 +282,17 @@ KEYS is alternating key-value list."
 				 :width condensed))))
     (custom-theme-set-faces
      'andr-dark
-     `(default ((default :background "black")
-		(,class :foreground "wheat")
+     `(default ((default :background "#242424")
+		(,class :foreground "#f6f3e8")
 		(t :foreground "white")))
      `(mode-line
        ((default :width condensed :family "neep")
-	(,class :foreground "black" :background "DarkSlateGray")
+	(,class :background "#444444" :foreground "#f6f3e8")
 	(t :background "cyan")))
      `(mode-line-inactive
        ((default :inherit mode-line :weight light)
 	(,class :box (:line-width -1 :color "grey40")
-		:foreground "grey80" :background "grey30")
+		:background "#444444" :foreground "#857b6f")
 	(t :inverse-video t)))
      '(tabbar-selected ((t :inherit default :weight bold)))
      `(tabbar-unselected ((default :inherit tabbar-default)
@@ -436,6 +445,11 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 ;; Proced
 (when-library t proced (global-set-key (kbd "C-~") 'proced))
 
+;;; ido and subword
+(when-library t (ido subword)
+	      (add-hook 'ido-minibuffer-setup-hook
+			(lambda () (subword-mode -1))))
+
 ;;; tramp-ing
 (when-library
  t tramp
@@ -445,17 +459,16 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 			(tramp-file-name-host
 			 (tramp-dissect-file-name
 			  default-directory)))))
-     (when host-name
-       (make-local-variable 'mode-line-buffer-identification)
-       (setq mode-line-buffer-identification
-	     (cons
-	      (propertize
-	       (if (string-match "^/su\\(do\\)?:" default-directory)
-		   (concat "su" (match-string 1 default-directory)
-			   "@" host-name)
-		 host-name)
-	       'face 'highlight)
-	      (default-value 'mode-line-buffer-identification))))))
+     (if host-name
+	 (setq mode-line-buffer-identification
+	       (cons
+		(propertize
+		 (if (string-match "^/su\\(do\\)?:" default-directory)
+		     (concat "su" (match-string 1 default-directory)
+			     "@" host-name)
+		   host-name)
+		 'face 'highlight)
+		(default-value 'mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook))
@@ -539,15 +552,15 @@ Otherwise check for less."
        smtpmail-smtp-service 587)
 
  (defadvice smtpmail-via-smtp (before smtpmail-via-smtp-change-smtp
-                                      (recipient
+				      (recipient
 				       smtpmail-text-buffer))
    "Change smtp account according to current `from' field."
    (with-current-buffer smtpmail-text-buffer
      (let ((from (save-restriction (message-narrow-to-headers)
-                                   (message-fetch-field "from"))))
+				   (message-fetch-field "from"))))
        (if (string-match "[^ <]*@[^ >]*" from)
-           (setq smtpmail-smtp-user
-                 (match-string-no-properties 0 from))))))
+	   (setq smtpmail-smtp-user
+		 (match-string-no-properties 0 from))))))
 
  (ad-activate 'smtpmail-via-smtp t))
 
@@ -609,18 +622,18 @@ Open in new tab if NEW-WINDOW."
 	 (apropo-reg "^$"))
      (let ((url (assoc-default text +apropos-url-alist+
 			       (lambda (a b) (if (string-match-p a b)
-					    (setq apropo-reg a)))
+						 (setq apropo-reg a)))
 			       text)))
        (browse-url
-       	(if (and (string-equal apropo-reg "^$")	; no match
-       		 (or (string-match-p ".+ .+" text) ; multiple words
+	(if (and (string-equal apropo-reg "^$")	; no match
+		 (or (string-match-p ".+ .+" text) ; multiple words
 		     (not (string-match-p ".+\\..+" text))))
-       	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
-       		    (replace-regexp-in-string " " "+" text))
-       	  (replace-regexp-in-string
-       	   " " "+"
-       	   (replace-regexp-in-string apropo-reg url text)))
-       	(not new-window)))))
+	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
+		    (replace-regexp-in-string " " "+" text))
+	  (replace-regexp-in-string
+	   " " "+"
+	   (replace-regexp-in-string apropo-reg url text)))
+	(not new-window)))))
 
  (global-set-key [f6] 'browse-apropos-url))
 
@@ -632,7 +645,7 @@ Open in new tab if NEW-WINDOW."
 ;;;; external extensions
 
 ;;; Ace Jump
-(if (require 'ace-jump-mode)
+(if (require 'ace-jump-mode nil t)
     (define-key global-map "\C-c " 'ace-jump-mode))
 
 ;;; sml-modeline
@@ -708,9 +721,6 @@ If not a file, attach current directory."
 (when-library
  nil wget
  (when (executable-find "wget")
-   (autoload 'wget "wget" "Wget interface for Emacs." t)
-   (autoload 'wget-web-page "wget"
-     "Wget interface to download whole web page." t)
    (autoload 'wget-cd-download-dir "wget"
      "Change directory to wget download dir.")
    (autoload 'wget-uri "wget" "Wget URI asynchronously.")
@@ -736,29 +746,20 @@ Make links point to local files."
 ;;; Anything
 (when-library
  nil anything
- (autoload 'anything "anything" "Select anything.")
  (defalias 'my-anything 'anything)
  (global-set-key (kbd "<f5> m") 'my-anything)
  (when-library
   nil anything-config
-  (autoload 'anything-for-files "anything-config"
-    "Preconfigured `anything' for opening files.")
-  (autoload 'anything-info-at-point "anything-config"
-    "Preconfigured `anything' for searching info at point.")
-  (autoload 'anything-show-kill-ring "anything-config"
-    "Preconfigured `anything' for `kill-ring'.")
-  (unless (featurep 'ergoemacs-mode)
+  (unless (featurep 'ergoemacs-keybindings)
     (global-set-key "\M-y" 'anything-show-kill-ring)
     (define-key minibuffer-local-map "\M-y" 'yank-pop))
   (global-set-key (kbd "<f5> f") 'anything-for-files)
   (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
   (win-or-nix
-   nil (when (eval-when-compile
-	       (string-match-p "\\(ge\\|fu\\)ntoo"
-			       (shell-command-to-string "uname -r")))
-	 (autoload 'anything-gentoo "anything-config"
-	   "Preconfigured `anything' for gentoo linux.")
-	 (global-set-key (kbd "<f5> a g") 'anything-gentoo)))
+   nil (if (eval-when-compile
+	     (string-match-p "\\(ge\\|fu\\)ntoo"
+			     (shell-command-to-string "uname -r")))
+	   (global-set-key (kbd "<f5> a g") 'anything-gentoo)))
 
   (eval-after-load "anything"
     '(when (require 'anything-config nil t)
@@ -785,9 +786,9 @@ Make links point to local files."
 
 ;;; ErgoEmacs minor mode
 (when-library
- nil ergoemacs-mode
+ nil ergoemacs-keybindings
  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
- (when (require 'ergoemacs-mode nil t)
+ (when (require 'ergoemacs-keybindings nil t)
    (if (fboundp 'recenter-top-bottom)
        (define-key isearch-mode-map ergoemacs-recenter-key
 	 'recenter-top-bottom))
@@ -877,7 +878,7 @@ Make links point to local files."
        (ergoemacs-mode 0)
        (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
        (setq ergoemacs-keyboard-layout layout)
-       (load "ergoemacs-mode")
+       (load "ergoemacs-keybindings")
        (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
        (ergoemacs-mode 1)))
 
@@ -897,10 +898,6 @@ Make links point to local files."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Lisp goodies
-
-(when-library nil hl-sexp
-	      (autoload 'hl-sexp-mode "hl-sexp"
-		"Highlight s-expressions minor mode." t))
 
 ;;; Paredit
 (when-library
@@ -932,7 +929,7 @@ Make links point to local files."
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
-(or (featurep 'ergoemacs-mode)
+(or (featurep 'ergoemacs-keybindings)
     (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
 ;; common lisp hyperspec info look-up
@@ -954,26 +951,6 @@ Make links point to local files."
 ;;;; extensions
 
 ;;; Lisp
-
-;;; Qi
-(when-library
- nil qi-mode
- (autoload 'qi-mode "qi-mode" "Qi editing mode." t)
- (autoload 'run-qi "qi-mode" "Run an inferior Qi process." t)
- (add-to-list 'auto-mode-alist '("\\.qi\\'" . qi-mode))
- (eval-after-load "qi-mode"
-   `(progn
-      (setq inferior-qi-program
-	    ,(eval-when-compile
-	       (win-or-nix
-		(concat inferior-lisp-program
-			" -M " +home-path+
-			"bin/Qi.mem -q")
-		(concat inferior-lisp-program
-			" --core " +home-path+
-			"Programs/Qi/Qi.core"))))
-      (hook-modes activate-lisp-minor-modes
-		  qi-mode-hook inferior-qi-mode-hook))))
 
 ;;; Set up SLIME
 (if (require 'slime-autoloads nil t)
@@ -1002,7 +979,7 @@ Make links point to local files."
 				     binary)))
 
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	 (or (featurep 'ergoemacs-mode)
+	 (or (featurep 'ergoemacs-keybindings)
 	     (define-key slime-mode-map "\M-g"
 	       'slime-complete-symbol)))))
 
@@ -1093,10 +1070,7 @@ Make links point to local files."
 ;;; CLIPS
 (when-library
  nil inf-clips
- (autoload 'clips-mode "clips-mode" "Clips editing mode." t)
- (autoload 'run-clips "inf-clips" "Run an inferior Clips process." t)
- (add-to-list 'auto-mode-alist '("\\.clp$" . clips-mode))
- (eval-after-load "clips-mode"
+ (eval-after-load "clips"
    '(add-hook 'clips-mode-hook (byte-compile
 				(lambda () (activate-lisp-minor-modes)
 				  (setq indent-region-function nil)))))
@@ -1128,20 +1102,21 @@ Make links point to local files."
 			      auto-mode-alist)))
 
 ;;; Haskell
-(if (load "haskell-site-file" t)
-    (hook-modes ((haskell-indentation-mode t)
-		 turn-on-haskell-doc-mode)
-		haskell-mode-hook))
-
-;;; C#
 (when-library
- nil csharp-mode
- (autoload 'csharp-mode "csharp-mode" "C# editing mode." t)
- (add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode)))
+ nil haskell-mode
+ (hook-modes ((haskell-indentation-mode t))
+	     haskell-mode-hook)
+
+ (when-library
+  nil ghc
+  (autoload 'ghc-init "ghc" nil t)
+  (add-hook 'haskell-mode-hook (lambda () (ghc-init)
+				 (flymake-mode)))))
 
 ;;; cc-mode - hide functions
 (add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
-				(hl-sexp-mode 1)
+				(when-library nil hl-sexp
+					      (hl-sexp-mode 1))
 				(local-set-key [backtab]
 					       'hs-toggle-hiding)))
 
@@ -1205,7 +1180,7 @@ Make links point to local files."
 	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true -dOptimize=true -dUseFlateCompression=true %s.ps"
 	  TeX-run-command nil (latex-mode)
 	  :help "Produce optimized pdf")))
-      (or (featurep 'ergoemacs-mode)
+      (or (featurep 'ergoemacs-keybindings)
 	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
 ;;; Ditaa
@@ -1220,21 +1195,8 @@ Make links point to local files."
       "Invoke ditaa over current buffer."
       (interactive)
       (start-process "ditaa" "*Ditaa*" "java" "-jar"
-      		     org-ditaa-jar-path buffer-file-name)
+		     org-ditaa-jar-path buffer-file-name)
       (display-buffer "*Ditaa*"))))
-
-;;; Auto Install
-(when-library
- nil auto-install
- (autoload 'auto-install-from-directory "auto-install"
-   "Update elisp files under DIRECTORY from EmacsWiki." t)
- (eval-after-load "auto-install"
-   `(setq auto-install-directory ,(win-or-nix
-				   (concat +extras-path+
-					   "auto-install/")
-				   (eval-when-compile
-				     (concat +extras-path+
-					     "auto-install/"))))))
 
 (if (executable-find "conkeror")
     (setq browse-url-browser-function 'browse-url-generic
@@ -1277,14 +1239,13 @@ Make links point to local files."
 			     (eval-when-compile
 			       (concat "file://" +home-path+
 				       ".w3m/bookmark.html")))
-	     w3m-use-cookies t
-	     w3m-lnum-quick-browsing 'quick-numbers)
+	     w3m-use-cookies t)
        (define-keys w3m-mode-map
 	 (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	 "z" 'w3m-horizontal-recenter
 	 "\C-cs" 'w3m-session-select)
        ,(when-library
-	 nil ergoemacs-mode
+	 nil ergoemacs-keybindings
 	 '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
 
        (when (executable-find "curl")
@@ -1347,11 +1308,6 @@ With optional prefix ARG ask for url."
     (setq browse-url-browser-function
 	  `(("^ftp://.*" . browse-ftp-tramp)
 	    ("." . ,browse-url-browser-function))))
-
-;;; mldonkey
-(when-library
- nil mldonkey
- (autoload 'mldonkey "mldonkey" "Run the MlDonkey interface." t))
 
 ;;; EMMS
 (when (require 'emms-auto nil t)
@@ -1551,11 +1507,6 @@ Medium - less than 120000 bytes."
 ;;; chess
 (when-library nil chess			; from ELPA
 	      (setq chess-sound-play-function nil))
-
-;;; go
-(when-library nil gnugo
-	      (if (executable-find "gnugo")
-		  (autoload 'gnugo "gnugo" "Play Go." t)))
 
 ;;; sudoku
 (when-library
