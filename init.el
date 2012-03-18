@@ -37,6 +37,7 @@
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   sudoku http://sourceforge.net/projects/sudoku-elisp
+;;   Sauron https://github.com/djcb/sauron
 
 ;;; Code:
 (if (boundp '+win-p+) (error "Trying to re-initialize"))
@@ -84,7 +85,7 @@ NIX forms are executed on all other platforms."
 ;; add `+extras-path+' and subdirs to `load-path'
 (when (and (file-exists-p +extras-path+)
 	   (not (member +extras-path+ load-path)))
-  (push +extras-path+ load-path)
+  (setq load-path (cons +extras-path+ load-path))
   (let ((default-directory +extras-path+))
     (normal-top-level-add-subdirs-to-load-path)))
 ;; add custom bin to path
@@ -118,6 +119,7 @@ NIX forms are executed on all other platforms."
  '(gdb-many-windows t)
  '(global-hl-line-mode t)
  '(global-linum-mode t)
+ '(global-subword-mode t)
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
@@ -131,6 +133,9 @@ NIX forms are executed on all other platforms."
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
  '(line-number-mode nil)
+ '(mail-envelope-from 'header)
+ '(mail-specify-envelope-from t)
+ '(message-send-mail-function 'smtpmail-send-it)
  '(menu-bar-mode nil)
  '(org-src-fontify-natively t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -155,7 +160,7 @@ NIX forms are executed on all other platforms."
 		  (concat user-emacs-directory ".emacs-places"))))
  '(show-paren-mode t)
  '(size-indication-mode t)
- '(global-subword-mode t)
+ '(smtpmail-smtp-service 587)
  '(tool-bar-mode nil)
  '(uniquify-buffer-name-style 'post-forward-angle-brackets
 			      nil (uniquify))
@@ -194,7 +199,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-						  (list fn)))
+					     (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -212,8 +217,9 @@ Each function may be an atom or a list with parameters."
 KEYS is alternating key-value list."
   `(progn ,@(let ((res nil))
 	      (while keys
-		(push `(define-key ,mode ,(car keys) ,(cadr keys))
-		      res)
+		(setq res (cons `(define-key ,mode ,(car keys)
+				   ,(cadr keys))
+				res))
 		(setq keys (cddr keys)))
 	      (nreverse res))))
 
@@ -236,7 +242,7 @@ KEYS is alternating key-value list."
   (if light '(progn (or (disable-theme 'wombat)
 			(disable-theme 'andr-dark))
 		    (enable-theme 'andr))
-    '(progn (enable-theme 'andr-dark)
+    '(progn (disable-theme 'andr)
 	    (condition-case nil
 		(enable-theme 'wombat)
 	      (error (enable-theme 'andr-dark))))))
@@ -416,6 +422,9 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
      (set-frame-faces)
    (add-hook 'after-make-frame-functions 'set-frame-faces)))
 
+(add-hook 'text-mode-hook (lambda () "Set proportional font."
+			    (variable-pitch-mode t)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; useful stuff
@@ -484,12 +493,14 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
    `(progn
       (setq gnus-select-method '(nntp "news.gmane.org")
 	    gnus-secondary-select-methods
-	    '((nnimap
-	       "gmail" (nnimap-address "imap.gmail.com")
-	       (nnimap-server-port 993) (nnimap-stream ssl))
-	      (nnimap
-	       "vayant" (nnimap-address "imap.gmail.com")
-	       (nnimap-server-port 993) (nnimap-stream ssl))))
+	    '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
+	      (nnimap "vayant" (nnimap-address "mail.vayant.com")
+		      (nnimap-streaming nil)))
+	    gnus-posting-styles
+	    '((".*" (address "m00naticus@gmail.com")
+	       ("X-SMTP-Server" "smtp.gmail.com"))
+	      ("vayant" (address "akotlarski@vayant.com")
+	       ("X-SMTP-Server" "mail.vayant.com"))))
 
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
@@ -525,44 +536,49 @@ Otherwise check for less."
 
       (defun gnus-demon-scan-important ()
 	"Check for new messages in level 1 and notify in modeline."
-	(let ((win (current-window-configuration)))
-	  (unwind-protect
-	      (save-window-excursion
-		(when (gnus-alive-p)
+	(when (gnus-alive-p)
+	  (let ((method (gnus-server-to-method "nnimap:vayant")))
+	    (gnus-close-server method)	; reopen vayant
+	    (gnus-open-server method))
+	  (let ((win (current-window-configuration)))
+	    (unwind-protect
+		(save-window-excursion
 		  (with-current-buffer gnus-group-buffer
 		    (gnus-group-get-new-news 1))
-		  (gnus-demon-notify t)))
-	    (set-window-configuration win))))
+		  (gnus-demon-notify t))
+	      (set-window-configuration win)))))
 
       (byte-compile 'gnus-demon-notify)
       (byte-compile 'gnus-demon-scan-important)
-      ;; run (gnus-demon-init) to track emails
       (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
       (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
+      ;; run (gnus-demon-init) to track emails
       (add-hook 'kill-emacs-hook (byte-compile
 				  (lambda () "Quit Gnus."
 				    (setq gnus-interactive-exit nil)
 				    (gnus-group-exit)))))))
 
 (when-library
- t sendmail
- (setq message-send-mail-function 'smtpmail-send-it
-       smtpmail-smtp-user "m00naticus@gmail.com"
-       smtpmail-default-smtp-server "smtp.gmail.com"
-       smtpmail-smtp-service 587)
-
- (defadvice smtpmail-via-smtp (before smtpmail-via-smtp-change-smtp
-				      (recipient
-				       smtpmail-text-buffer))
-   "Change smtp account according to current `from' field."
-   (with-current-buffer smtpmail-text-buffer
-     (let ((from (save-restriction (message-narrow-to-headers)
-				   (message-fetch-field "from"))))
-       (if (string-match "[^ <]*@[^ >]*" from)
-	   (setq smtpmail-smtp-user
-		 (match-string-no-properties 0 from))))))
-
- (ad-activate 'smtpmail-via-smtp t))
+ t smtpmail
+ (eval-after-load "smtpmail"
+   '(defadvice smtpmail-via-smtp (around set-smtp-server-from-header
+					 activate compile)
+      "Set smtp server according to the `X-SMTP-Server' header.
+If missing, try to deduce it from the `From' header."
+      (save-restriction
+	(message-narrow-to-headers)
+	(setq smtpmail-smtp-server
+	      (message-fetch-field "X-SMTP-Server")
+	      from (message-fetch-field "from")))
+      (cond (smtpmail-smtp-server
+	     (message-remove-header "X-SMTP-Server"))
+	    ((string-match "@\\([^ >]*\\)" from)
+	     (let ((domain (match-string-no-properties 1 from)))
+	       (setq smtpmail-smtp-server
+		     (if (string-equal domain "vayant.com")
+			 "mail.vayant.com"
+		       (concat "smtp." domain))))))
+      ad-do-it)))
 
 (when-library
  t fortune
@@ -575,28 +591,28 @@ Otherwise check for less."
 
 (when-library
  t browse-url
+ (defvar my-search
+   '("startingpage" . "https://startingpage.com/do/search?query=")
+   "My default search engine.")
+
  (defconst +apropos-url-alist+
-   '(("^s +\\(.*\\)" .
-      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=\\1")
-     ("^g +\\(.*\\)" .
-      "http://www.google.com/search?q=\\1&ie=utf-8&oe=utf-8")
+   '(("^i +\\(.*\\)" . "https://startingpage.com/do/search?query=\\1")
+     ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
       "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
       "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
-     ("^gd +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Google Dictionary
-      "http://www.google.com/dictionary?aq=f&langpair=\\1|\\2&q=\\3&hl=\\1")
      ("^w +\\(.*\\)" .			; Wikipedia en
       "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw +\\(.*\\)" .		; Wikipedia bg
       "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
      ("^imdb +\\(.*\\)" . "http://imdb.com/find?q=\\1")
-     ("^ma +\\(.*\\)" .		       ; Encyclopaedia Metallum
-      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=site:metal-archives.com+\\1")
+     ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
+      "http://www.google.com/search?q=site:metal-archives.com+\\1")
      ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
-      "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=site:emacswiki.org+\\1")
+      "http://www.google.com/search?q=site:emacswiki.org+\\1")
      ("^cliki +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/admin/search?words=\\1")
      ("^hoog +\\(.*\\)" .		; Hoogle
@@ -622,17 +638,16 @@ Open in new tab if NEW-WINDOW."
 	 (apropo-reg "^$"))
      (let ((url (assoc-default text +apropos-url-alist+
 			       (lambda (a b) (if (string-match-p a b)
-						 (setq apropo-reg a)))
+					    (setq apropo-reg a)))
 			       text)))
        (browse-url
 	(if (and (string-equal apropo-reg "^$")	; no match
 		 (or (string-match-p ".+ .+" text) ; multiple words
 		     (not (string-match-p ".+\\..+" text))))
-	    (concat "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q="
+	    (concat (cdr my-search)
 		    (replace-regexp-in-string " " "+" text))
 	  (replace-regexp-in-string
-	   " " "+"
-	   (replace-regexp-in-string apropo-reg url text)))
+	   " " "+" (replace-regexp-in-string apropo-reg url text)))
 	(not new-window)))))
 
  (global-set-key [f6] 'browse-apropos-url))
@@ -893,7 +908,8 @@ Make links point to local files."
 	ergoemacs-yank-pop-key 'yank-pop)))
 
    (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
-   (ergoemacs-mode 1)))
+   (ergoemacs-mode 1)
+   (global-set-key "C-@" 'cua-set-mark)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1123,7 +1139,6 @@ Make links point to local files."
 ;;; Emacs Speaks Statistics
 (when-library
  nil ess-site
- (autoload 'R "ess-site" "'GNU S' system from the R Foundation." t)
  (autoload 'R-mode "ess-site" "Major mode for editing R source." t)
  (autoload 'Rd-mode "ess-site"
    "Major mode for editing R documentation source files." t)
@@ -1149,13 +1164,14 @@ Make links point to local files."
 
 ;;; AutoComplete
 (when (require 'auto-complete-config nil t)
-  (push (win-or-nix
-	 (concat user-emacs-directory
-		 "elpa/auto-complete-1.4.20110207/dict")
-	 (eval-when-compile
-	   (concat user-emacs-directory
-		   "elpa/auto-complete-1.4.20110207/dict")))
-	ac-dictionary-directories)
+  (setq ac-dictionary-directories
+	(cons (win-or-nix
+	       (concat user-emacs-directory
+		       "elpa/auto-complete-20120304/dict")
+	       (eval-when-compile
+		 (concat user-emacs-directory
+			 "elpa/auto-complete-20120304/dict")))
+	      ac-dictionary-directories))
   (ac-config-default)
   (ac-flyspell-workaround))
 
@@ -1295,13 +1311,9 @@ With optional prefix ARG ask for url."
 						  (w3m-quit t))) t)))
 
   (eval-after-load "w3m-search"
-    '(progn
-       (add-to-list
-	'w3m-search-engine-alist
-	'("scroogle"
-	  "https://ssl.scroogle.org/cgi-bin/nbbwssl.cgi/search?q=%s"
-	  utf-8))
-       (setq w3m-search-default-engine "scroogle"))))
+    '(add-to-list 'w3m-search-engine-alist
+		  '((car my-search) (concat (cdr my-search "%s"))
+		    utf-8))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
@@ -1330,11 +1342,13 @@ With optional prefix ARG ask for url."
 				'(emms-mode-line-string
 				  emms-playing-time-string)))
 		     global-mode-string)
-	   (push (car global-mode-string) new-global-mode-string)
-	   (setq global-mode-string (cdr global-mode-string)))
-	 (push 'emms-playing-time-string new-global-mode-string)
-	 (push 'emms-mode-line-string new-global-mode-string)
-	 (setq global-mode-string (nreverse new-global-mode-string)))
+	   (setq new-global-mode-string (cons (car global-mode-string)
+					      new-global-mode-string)
+		 global-mode-string (cdr global-mode-string)))
+	 (setq global-mode-string
+	       (nconc (nreverse new-global-mode-string)
+		      '(emms-playing-time-string
+			emms-mode-line-string))))
        (add-hook 'emms-player-started-hook 'emms-show)
 
        (defun my-emms-default-info (track)
@@ -1452,17 +1466,17 @@ Medium - less than 120000 bytes."
 	     'my-emms-track-description-function
 	     emms-browser-covers 'my-emms-covers)
 
-       (when (and (let ((url-request-method "GET"))
-		    (condition-case nil	;check for internet connection
-			(url-retrieve-synchronously
-			 "http://post.audioscrobbler.com")
-		      (error nil)))
-		  (require 'emms-lastfm-client nil t))
+       (when (and (require 'my-secret "my-secret.el.gpg" t)
+		  (require 'emms-lastfm-client nil t)
+		  (let ((url-request-method "GET"))
+		    (ignore-errors     ; check for internet connection
+		      (url-retrieve-synchronously
+		       "http://post.audioscrobbler.com"))))
 	 (setq emms-lastfm-client-username "m00natic"
 	       emms-lastfm-client-api-key
-	       "very-secret"
+	       my-emms-lastfm-client-api-key
 	       emms-lastfm-client-api-secret-key
-	       "very-secret")
+	       my-emms-lastfm-client-api-secret-key)
 	 (ignore-errors (emms-lastfm-scrobbler-enable)))
 
        (when (and (executable-find "mpd")
@@ -1499,6 +1513,20 @@ Medium - less than 120000 bytes."
 			 "EMMS"
 			 (emms-track-description
 			  (emms-playlist-current-selected-track))))))))))))
+
+;;; Sauron
+(when-library
+ nit sauron
+ (setq sauron-separate-frame nil)
+ (eval-after-load "erc" '(sauron-start))
+
+ (when-library
+  nil notify
+  (eval-after-load "sauron"
+    '(add-hook 'sauron-event-added-functions
+	       (lambda (origin prio msg &optional props)
+		 (notify "Sauron"
+			 (format "%s (%d): %s" origin prio msg)))))))
 
 ;;; Dictionary
 (when-library nil dictionary
