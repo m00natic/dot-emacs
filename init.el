@@ -505,7 +505,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
 Otherwise check for less."
-	(and (or notify (not (equal *gnus-new-mail-count* "")))
+	(and (or notify (not (string-equal *gnus-new-mail-count* "")))
 	     (gnus-alive-p)
 	     (let ((unread-count 0)
 		   unread-groups)
@@ -835,6 +835,11 @@ Make links point to local files."
 		  ergoemacs-previous-line-key
 		  'doc-view-previous-line-or-previous-page))))
 
+   (when-library t erc
+		 (eval-after-load "erc" '(define-keys erc-mode-map
+					   [f11] 'erc-previous-command
+					   [f12] 'erc-next-command)))
+
    (defmacro ergoemacs-fix (layout)
      "Fix some keybindings when using ErgoEmacs."
      `(progn
@@ -909,7 +914,7 @@ Make links point to local files."
 
    (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
    (ergoemacs-mode 1)
-   (global-set-key "C-@" 'cua-set-mark)))
+   (global-set-key "\C-@" 'cua-set-mark)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1517,8 +1522,9 @@ Medium - less than 120000 bytes."
 ;;; Sauron
 (when-library
  nit sauron
- (setq sauron-separate-frame nil)
- (eval-after-load "erc" '(sauron-start))
+ (setq sauron-separate-frame nil
+       sauron-hide-mode-line t)
+ (eval-after-load "erc" '(sauron-start-hidden))
 
  (when-library
   nil notify
