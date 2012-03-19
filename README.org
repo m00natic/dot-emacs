@@ -15,47 +15,78 @@ load compile-extras.el to do this.  Here's a list of extensions that
 this .emacs is somewhat aware of in some order and links:
 
 * Anything related
-** Anything http://www.emacswiki.org/emacs/Anything
-** anything-match http://www.emacswiki.org/emacs/AnythingPlugins
+- Anything
+http://www.emacswiki.org/emacs/Anything
+- anything-match
+http://www.emacswiki.org/emacs/AnythingPlugins
 
 * Programming languages related
-** SLIME http://common-lisp.net/project/slime
-** Quack http://www.neilvandyke.org/quack
-** clojure-mode http://github.com/technomancy/clojure-mode
-** clips-mode http://www.cs.us.es/software/clips
-** haskell-mode http://projects.haskell.org/haskellmode-emacs
-** ghc-mod http://www.mew.org/~kazu/proj/ghc-mod/en
-** Oz-mode http://www.mozart-oz.org
-** Emacs Speaks Statistics http://ess.r-project.org
-** Emacs Code Browser http://ecb.sourceforge.net
-** AutoComplete http://cx4a.org/software/auto-complete
+- SLIME
+http://common-lisp.net/project/slime
+- Quack
+http://www.neilvandyke.org/quack
+- clojure-mode
+http://github.com/technomancy/clojure-mode
+- clips-mode
+http://www.cs.us.es/software/clips
+- haskell-mode
+http://projects.haskell.org/haskellmode-emacs
+- ghc-mod
+http://www.mew.org/~kazu/proj/ghc-mod/en
+- Oz-mode
+http://www.mozart-oz.org
+- Emacs Speaks Statistics
+http://ess.r-project.org
+- Emacs Code Browser
+http://ecb.sourceforge.net
+- AutoComplete
+http://cx4a.org/software/auto-complete
 
 * Lisp goodies
-** highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
-** hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
-** ParEdit http://www.emacswiki.org/emacs/ParEdit
-** Redshank http://www.foldr.org/~michaelw/emacs/redshank
+- highlight-parentheses
+http://nschum.de/src/emacs/highlight-parentheses
+- hl-sexp
+http://edward.oconnor.cx/elisp/hl-sexp.el
+- ParEdit
+http://www.emacswiki.org/emacs/ParEdit
+- Redshank
+http://www.foldr.org/~michaelw/emacs/redshank
 
 * networking
-** emacs-w3m http://emacs-w3m.namazu.org
-** emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
+- emacs-w3m
+http://emacs-w3m.namazu.org
+- emacs-wget
+http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 
 * misc
-** ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
-** AUCTeX http://www.gnu.org/software/auctex
-** Ditaa http://ditaa.sourceforge.net
-** TabBar http://www.emacswiki.org/emacs/TabBarMode
-** sml-modeline http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
-** Ace Jump http://www.emacswiki.org/emacs/AceJump
-** notify http://www.emacswiki.org/emacs/notify.el
-** cygwin-mount http://www.emacswiki.org/emacs/cygwin-mount.el
-** Dictionary http://www.myrkr.in-berlin.de/dictionary/index.html
-** EMMS http://www.gnu.org/software/emms
-** Emacs Chess http://github.com/jwiegley/emacs-chess
-** sudoku http://sourceforge.net/projects/sudoku-elisp
-** Sauron https://github.com/djcb/sauron
+- ErgoEmacs-mode
+http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
+- AUCTeX
+http://www.gnu.org/software/auctex
+- Ditaa
+http://ditaa.sourceforge.net
+- TabBar
+http://www.emacswiki.org/emacs/TabBarMode
+- sml-modeline
+http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el
+- Ace Jump
+http://www.emacswiki.org/emacs/AceJump
+- notify
+http://www.emacswiki.org/emacs/notify.el
+- cygwin-mount
+http://www.emacswiki.org/emacs/cygwin-mount.el
+- Dictionary
+http://www.myrkr.in-berlin.de/dictionary/index.html
+- EMMS
+http://www.gnu.org/software/emms
+- Emacs Chess
+http://github.com/jwiegley/emacs-chess
+- sudoku
+http://sourceforge.net/projects/sudoku-elisp
+- Sauron
+https://github.com/djcb/sauron
 
 * Additional packages that come from ELPA repositories
-** gnugo
-** mldonkey
-** shen-mode
+- gnugo
+- mldonkey
+- shen-mode
