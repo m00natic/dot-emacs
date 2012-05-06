@@ -2,9 +2,6 @@
 
 ;;; Commentary:
 ;; Utilized extensions:
-;;  Anything related:
-;;   Anything http://www.emacswiki.org/emacs/Anything
-;;   anything-match http://www.emacswiki.org/emacs/AnythingPlugins
 ;;  Programming languages related:
 ;;   SLIME http://common-lisp.net/project/slime
 ;;   Quack http://www.neilvandyke.org/quack
@@ -26,6 +23,7 @@
 ;;   emacs-wget http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget
 ;;  misc:
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
+;;   Helm https://github.com/emacs-helm/helm
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
@@ -480,7 +478,10 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 		(default-value 'mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
-	     find-file-hooks dired-mode-hook))
+	     find-file-hooks dired-mode-hook)
+
+ (setq tramp-shell-prompt-pattern
+       "\\(?:^\\|\\)[^#$%>\n]*#?[#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*"))
 
 ;;; Gnus
 (when-library
@@ -592,11 +593,11 @@ If missing, try to deduce it from the `From' header."
 (when-library
  t browse-url
  (defvar my-search
-   '("startingpage" . "https://startingpage.com/do/search?query=")
+   '("google" . "http://www.google.com/search?q=")
    "My default search engine.")
 
  (defconst +apropos-url-alist+
-   '(("^i +\\(.*\\)" . "https://startingpage.com/do/search?query=\\1")
+   '(("^s +\\(.*\\)" . "https://startingpage.com/do/search?query=\\1")
      ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
@@ -619,6 +620,8 @@ If missing, try to deduce it from the `From' header."
       "http://haskell.org/hoogle/?hoogle=\\1")
      ("^clj +\\(.*\\)" .		; ClojureDocs
       "http://clojuredocs.org/search?q=\\1")
+     ("^c\\+\\+ +\\(.*\\)" .		; C++
+      "http://www.cplusplus.com/search.do?q=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
      ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
@@ -694,8 +697,8 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Lisp")))
      ((string-match-p "^*tramp" (buffer-name))
       (setq ad-return-value (list "Tramp")))
-     ((string-match-p "^*anything" (buffer-name))
-      (setq ad-return-value (list "Anything")))
+     ((string-match-p "^*helm" (buffer-name))
+      (setq ad-return-value (list "Helm")))
      ((string-match-p "^emms" (symbol-name major-mode))
       (setq ad-return-value (list "EMMS")))
      ((string-match-p "^*inferior" (buffer-name))
@@ -732,78 +735,11 @@ If not a file, attach current directory."
 	     (lambda () "Allow tabbar keys in Org."
 	       (define-key org-mode-map (kbd "C-<tab>") nil)))))
 
-;; Wget
-(when-library
- nil wget
- (when (executable-find "wget")
-   (autoload 'wget-cd-download-dir "wget"
-     "Change directory to wget download dir.")
-   (autoload 'wget-uri "wget" "Wget URI asynchronously.")
-   (setq
-    wget-download-directory-filter 'wget-download-dir-filter-regexp
-    wget-download-directory
-    (eval-when-compile
-      `(("\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$"
-	 . ,(concat +home-path+ "Pictures"))
-	("." . ,(concat +home-path+ "Downloads")))))
-
-   (defun wget-site (uri)
-     "Get a whole web-site pointed by URI through Wget.
-Make links point to local files."
-     (interactive (list (read-string "Web Site URI: "
-				     (thing-at-point-url-at-point))))
-     (let ((dir (wget-cd-download-dir t uri)))
-       (if dir (if (string= uri "") (error "There is no uri")
-		 (wget-uri uri dir '("-pkrmnp" "-E" "-X/page,/message"
-				     "--no-check-certificate" "-w" "1"
-				     "--random-wait"))))))))
-
-;;; Anything
-(when-library
- nil anything
- (defalias 'my-anything 'anything)
- (global-set-key (kbd "<f5> m") 'my-anything)
- (when-library
-  nil anything-config
-  (unless (featurep 'ergoemacs-keybindings)
-    (global-set-key "\M-y" 'anything-show-kill-ring)
-    (define-key minibuffer-local-map "\M-y" 'yank-pop))
-  (global-set-key (kbd "<f5> f") 'anything-for-files)
-  (global-set-key (kbd "<f5> a h i") 'anything-info-at-point)
-  (win-or-nix
-   nil (if (eval-when-compile
-	     (string-match-p "\\(ge\\|fu\\)ntoo"
-			     (shell-command-to-string "uname -r")))
-	   (global-set-key (kbd "<f5> a g") 'anything-gentoo)))
-
-  (eval-after-load "anything"
-    '(when (require 'anything-config nil t)
-       (defun my-anything ()
-	 (interactive)
-	 (anything-other-buffer
-	  '(anything-c-source-bookmarks
-	    anything-c-source-emacs-variables
-	    anything-c-source-emacs-functions-with-abbrevs
-	    anything-c-source-man-pages)
-	  "*anything-custom*"))
-
-       (byte-compile 'my-anything))))
-
- (when-library
-  nil anything-match-plugin
-  (eval-after-load "anything"
-    `(if (require 'anything-match-plugin nil t)
-	 ,(win-or-nix
-	   nil
-	   (if (file-exists-p "/dev/shm")
-	       '(setq anything-grep-candidates-fast-directory-regexp
-		      "^/dev/shm/")))))))
-
 ;;; ErgoEmacs minor mode
 (when-library
- nil ergoemacs-keybindings
+ nil ergoemacs-mode
  (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
- (when (require 'ergoemacs-keybindings nil t)
+ (when (require 'ergoemacs-mode nil t)
    (if (fboundp 'recenter-top-bottom)
        (define-key isearch-mode-map ergoemacs-recenter-key
 	 'recenter-top-bottom))
@@ -813,13 +749,16 @@ Make links point to local files."
      "\C-f" 'search-forward-regexp)
 
    ;; workaround arrows not active in terminal with ErgoEmacs active
-   (when-library nil anything
-		 (eval-after-load "anything"
-		   '(define-keys anything-map
-		      "\C-d" 'anything-next-line
-		      "\C-u" 'anything-previous-line
-		      (kbd "C-M-d") 'anything-next-source
-		      (kbd "C-M-u") 'anything-previous-source)))
+   (when-library nil helm (eval-after-load "helm"
+			    '(define-keys helm-map
+			       "\C-d" 'helm-next-line
+			       "\C-u" 'helm-previous-line
+			       (kbd "C-M-d") 'helm-next-source
+			       (kbd "C-M-u") 'helm-previous-source)))
+
+   (eval-after-load "term" '(define-keys term-raw-map
+			      [f11] 'term-send-up
+			      [f12] 'term-send-down))
 
    (when-library
     t doc-view
@@ -885,9 +824,9 @@ Make links point to local files."
 			 "\M-N" 'slime-previous-note
 			 "\M-p" nil)))))
 	  ,(when-library
-	    nil anything-config
+	    nil helm-config
 	    '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
-	       'anything-show-kill-ring)))))
+	       'helm-show-kill-ring)))))
 
    (defun ergoemacs-change-keyboard (layout)
      "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -898,23 +837,63 @@ Make links point to local files."
        (ergoemacs-mode 0)
        (setenv "ERGOEMACS_KEYBOARD_LAYOUT" layout)
        (setq ergoemacs-keyboard-layout layout)
-       (load "ergoemacs-keybindings")
+       (load "ergoemacs-mode")
        (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
        (ergoemacs-mode 1)))
 
    (when-library
-    nil anything-config
+    nil helm-config
     (defvar ergoemacs-minibuffer-keymap
       (copy-keymap ergoemacs-keymap))
 
     (defadvice ergoemacs-minibuffer-setup-hook
       (after ergoemacs-minibuffer-yank-pop activate compile)
-      (define-key ergoemacs-minibuffer-keymap
-	ergoemacs-yank-pop-key 'yank-pop)))
+      (define-keys ergoemacs-minibuffer-keymap
+	ergoemacs-yank-pop-key 'yank-pop
+	"\M-SPC" 'helm-mark-candidate)))
 
    (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
    (ergoemacs-mode 1)
    (global-set-key "\C-@" 'cua-set-mark)))
+
+;;; helm
+(when-library
+ nil helm
+ (global-set-key [f5] 'helm-M-x)
+ (global-set-key "\C-x\C-f" 'helm-find-files)
+
+ (unless (featurep 'ergoemacs-mode)
+   (global-set-key "\M-y" 'helm-show-kill-ring)
+   (define-keys minibuffer-local-map
+     "\M-y" 'yank-pop
+     "\M-SPC" 'helm-mark-candidate)))
+
+;; Wget
+(when-library
+ nil wget
+ (when (executable-find "wget")
+   (autoload 'wget-cd-download-dir "wget"
+     "Change directory to wget download dir.")
+   (autoload 'wget-uri "wget" "Wget URI asynchronously.")
+   (setq
+    wget-download-directory-filter 'wget-download-dir-filter-regexp
+    wget-download-directory
+    (eval-when-compile
+      `(("\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$"
+	 . ,(concat +home-path+ "Pictures"))
+	("." . ,(concat +home-path+ "Downloads")))))
+
+   (defun wget-site (uri)
+     "Get a whole web-site pointed by URI through Wget.
+Make links point to local files."
+     (interactive (list (read-string "Web Site URI: "
+				     (thing-at-point-url-at-point))))
+     (let ((dir (wget-cd-download-dir t uri)))
+       (if dir (if (string= uri "") (error "There is no uri")
+		 (wget-uri uri dir '("-pkrmnp" "-E" "-X/page,/message"
+				     "--no-check-certificate" "-w" "1"
+				     "--random-wait"))))))))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -926,10 +905,11 @@ Make links point to local files."
  (eval-after-load "eldoc"
    '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
 ;;; Redshank
- (if (require 'redshank-loader nil t)
-     (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				      inferior-lisp-mode-hook)
-		     t)))
+ (when-library
+  nil redshank
+  (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				   inferior-lisp-mode-hook)
+		  t)))
 
 (setq inferior-lisp-program
       (win-or-nix
@@ -950,7 +930,7 @@ Make links point to local files."
 (hook-modes turn-on-eldoc-mode
 	    emacs-lisp-mode-hook lisp-interaction-mode-hook
 	    ielm-mode-hook)
-(or (featurep 'ergoemacs-keybindings)
+(or (featurep 'ergoemacs-mode)
     (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 
 ;; common lisp hyperspec info look-up
@@ -1000,7 +980,7 @@ Make links point to local files."
 				     binary)))
 
 	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	 (or (featurep 'ergoemacs-keybindings)
+	 (or (featurep 'ergoemacs-mode)
 	     (define-key slime-mode-map "\M-g"
 	       'slime-complete-symbol)))))
 
@@ -1144,7 +1124,6 @@ Make links point to local files."
 ;;; Emacs Speaks Statistics
 (when-library
  nil ess-site
- (autoload 'R-mode "ess-site" "Major mode for editing R source." t)
  (autoload 'Rd-mode "ess-site"
    "Major mode for editing R documentation source files." t)
  (setq auto-mode-alist (nconc '(("\\.[rR]$" . R-mode)
@@ -1161,6 +1140,7 @@ Make links point to local files."
   nil ecb
   (eval-after-load "ecb"
     `(progn (custom-set-variables '(ecb-options-version "2.40"))
+	    (defvar stack-trace-on-error nil)
 	    (let ((prog-path ,(win-or-nix
 			       (concat +home-path+ "Programs")
 			       (eval-when-compile
@@ -1169,16 +1149,14 @@ Make links point to local files."
 
 ;;; AutoComplete
 (when (require 'auto-complete-config nil t)
-  (setq ac-dictionary-directories
-	(cons (win-or-nix
-	       (concat user-emacs-directory
-		       "elpa/auto-complete-20120304/dict")
-	       (eval-when-compile
-		 (concat user-emacs-directory
-			 "elpa/auto-complete-20120304/dict")))
-	      ac-dictionary-directories))
   (ac-config-default)
-  (ac-flyspell-workaround))
+  (ac-flyspell-workaround)
+
+  (when-library
+   t semantic
+   (eval-after-load "semantic"
+     '(setq-default ac-sources
+		    (cons 'ac-source-semantic-raw ac-sources)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -1201,14 +1179,15 @@ Make links point to local files."
 	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true -dOptimize=true -dUseFlateCompression=true %s.ps"
 	  TeX-run-command nil (latex-mode)
 	  :help "Produce optimized pdf")))
-      (or (featurep 'ergoemacs-keybindings)
+      (or (featurep 'ergoemacs-mode)
 	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
 ;;; Ditaa
-(let ((ditaa-path (win-or-nix
-		   (concat +extras-path+ "bin/ditaa.jar")
-		   (eval-when-compile
-		     (concat +extras-path+ "bin/ditaa.jar")))))
+(let ((ditaa-path (expand-file-name
+		   (win-or-nix
+		    (concat +extras-path+ "bin/ditaa.jar")
+		    (eval-when-compile
+		      (concat +extras-path+ "bin/ditaa.jar"))))))
   (when (file-exists-p ditaa-path)
     (when-library t org (setq org-ditaa-jar-path ditaa-path))
 
@@ -1266,7 +1245,7 @@ Make links point to local files."
 	 "z" 'w3m-horizontal-recenter
 	 "\C-cs" 'w3m-session-select)
        ,(when-library
-	 nil ergoemacs-keybindings
+	 nil ergoemacs-mode
 	 '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
 
        (when (executable-find "curl")
@@ -1288,7 +1267,7 @@ Make links point to local files."
 			,(win-or-nix '(concat +home-path+ "Downloads")
 				     (concat +home-path+ "Downloads"))
 			nil t))
-		   (async-shell-command (concat "curl -O '" url "'")
+		   (async-shell-command (concat "curl -kO '" url "'")
 					"*Curl*")
 		   (cd olddir))
 	       (w3m-message "No url specified"))))
@@ -1482,7 +1461,9 @@ Medium - less than 120000 bytes."
 	       my-emms-lastfm-client-api-key
 	       emms-lastfm-client-api-secret-key
 	       my-emms-lastfm-client-api-secret-key)
-	 (ignore-errors (emms-lastfm-scrobbler-enable)))
+	 (condition-case err
+	     (emms-lastfm-scrobbler-enable)
+	   (error (message "No scrobbling: %s" err))))
 
        (when (and (executable-find "mpd")
 		  (require 'emms-player-mpd nil t))

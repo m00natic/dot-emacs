@@ -14,10 +14,6 @@ are just elisp sources which should be byte compiled.  You can just
 load compile-extras.el to do this.  Here's a list of extensions that
 this .emacs is somewhat aware of in some order and links:
 
-* Anything related
-- [[http://www.emacswiki.org/emacs/Anything][Anything]]
-- [[http://www.emacswiki.org/emacs/AnythingPlugins][anything-match]]
-
 * Programming languages related
 - [[http://common-lisp.net/project/slime][SLIME]]
 - [[http://www.neilvandyke.org/quack][Quack]]
@@ -42,6 +38,7 @@ this .emacs is somewhat aware of in some order and links:
 
 * misc
 - [[http://xahlee.org/emacs/ergonomic_emacs_keybinding.html][ErgoEmacs-mode]]
+- [[http://github.com/emacs-helm/helm][Helm]]
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
 - [[http://ditaa.sourceforge.net][Ditaa]]
 - [[http://www.emacswiki.org/emacs/TabBarMode][TabBar]]
