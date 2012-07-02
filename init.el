@@ -1,4 +1,6 @@
-;; init.el --- Andrey Kotlarski's .emacs -*- mode:emacs-lisp -*-
+;; init.el --- Andrey Kotlarski's .emacs
+;;; -*- lexical-bind: t -*-
+;;; -*- mode: emacs-lisp -*-
 
 ;;; Commentary:
 ;; Utilized extensions:
@@ -13,6 +15,7 @@
 ;;   ESS http://ess.r-project.org
 ;;   ECB http://ecb.sourceforge.net
 ;;   AutoComplete http://cx4a.org/software/auto-complete
+;;   find file in project http://emacswiki.org/emacs/FindFileInProject
 ;;  Lisp goodies:
 ;;   highlight-parentheses http://nschum.de/src/emacs/highlight-parentheses
 ;;   hl-sexp http://edward.oconnor.cx/elisp/hl-sexp.el
@@ -83,7 +86,7 @@ NIX forms are executed on all other platforms."
 ;; add `+extras-path+' and subdirs to `load-path'
 (when (and (file-exists-p +extras-path+)
 	   (not (member +extras-path+ load-path)))
-  (setq load-path (cons +extras-path+ load-path))
+  (push +extras-path+ load-path)
   (let ((default-directory +extras-path+))
     (normal-top-level-add-subdirs-to-load-path)))
 ;; add custom bin to path
@@ -109,10 +112,6 @@ NIX forms are executed on all other platforms."
  '(display-time-day-and-date t)
  '(display-time-mode t)
  '(electric-pair-mode t)
- `(eshell-directory-name
-   ,(win-or-nix (concat user-emacs-directory ".eshell/")
-		(eval-when-compile
-		  (concat user-emacs-directory ".eshell/"))))
  '(frame-title-format "emacs %@ %b (%f)")
  '(gdb-many-windows t)
  '(global-hl-line-mode t)
@@ -164,6 +163,7 @@ NIX forms are executed on all other platforms."
 			      nil (uniquify))
  '(version-control t)
  '(view-read-only t)
+ '(which-function-mode t)
  '(winner-mode t)
  '(word-wrap t))
 
@@ -197,7 +197,7 @@ Each function may be an atom or a list with parameters."
 	(if (consp functions)
 	    (if (cdr functions)
 		(let ((fns (mapcar (lambda (fn) (if (consp fn) fn
-					     (list fn)))
+						  (list fn)))
 				   functions)))
 		  (mapcar (lambda (mode) `(add-hook ',mode (lambda () ,@fns)))
 			  modes))
@@ -215,9 +215,8 @@ Each function may be an atom or a list with parameters."
 KEYS is alternating key-value list."
   `(progn ,@(let ((res nil))
 	      (while keys
-		(setq res (cons `(define-key ,mode ,(car keys)
-				   ,(cadr keys))
-				res))
+		(push `(define-key ,mode ,(car keys) ,(cadr keys))
+		      res)
 		(setq keys (cddr keys)))
 	      (nreverse res))))
 
@@ -231,7 +230,7 @@ KEYS is alternating key-value list."
 				  ,(make-char 'greek-iso8859-7 107))
 		  nil)))))
      ,(when-library nil hl-sexp '(hl-sexp-mode 1))
-     ,(when-library nil highlight-parentheses ; from ELPA
+     ,(when-library nil highlight-parentheses
 		    '(highlight-parentheses-mode 1))
      ,(when-library nil paredit '(paredit-mode 1))))
 
@@ -467,15 +466,13 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 			 (tramp-dissect-file-name
 			  default-directory)))))
      (if host-name
-	 (setq mode-line-buffer-identification
-	       (cons
-		(propertize
-		 (if (string-match "^/su\\(do\\)?:" default-directory)
-		     (concat "su" (match-string 1 default-directory)
-			     "@" host-name)
-		   host-name)
-		 'face 'highlight)
-		(default-value 'mode-line-buffer-identification))))))
+	 (push (propertize
+		(if (string-match "^/su\\(do\\)?:" default-directory)
+		    (concat "su" (match-string 1 default-directory)
+			    "@" host-name)
+		  host-name)
+		'face 'highlight)
+	       mode-line-buffer-identification))))
 
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook)
@@ -560,35 +557,45 @@ Otherwise check for less."
 				    (gnus-group-exit)))))))
 
 (when-library
- t smtpmail
- (eval-after-load "smtpmail"
-   '(defadvice smtpmail-via-smtp (around set-smtp-server-from-header
-					 activate compile)
-      "Set smtp server according to the `X-SMTP-Server' header.
+ t message
+ (add-hook 'message-mode-hook 'flyspell-mode)
+
+ (when-library
+  t smtpmail
+  (eval-after-load "smtpmail"
+    '(defadvice smtpmail-via-smtp (around set-smtp-server-from-header
+					  activate compile)
+       "Set smtp server according to the `X-SMTP-Server' header.
 If missing, try to deduce it from the `From' header."
-      (save-restriction
-	(message-narrow-to-headers)
-	(setq smtpmail-smtp-server
-	      (message-fetch-field "X-SMTP-Server")
-	      from (message-fetch-field "from")))
-      (cond (smtpmail-smtp-server
-	     (message-remove-header "X-SMTP-Server"))
-	    ((string-match "@\\([^ >]*\\)" from)
-	     (let ((domain (match-string-no-properties 1 from)))
-	       (setq smtpmail-smtp-server
-		     (if (string-equal domain "vayant.com")
-			 "mail.vayant.com"
-		       (concat "smtp." domain))))))
-      ad-do-it)))
+       (save-restriction
+	 (message-narrow-to-headers)
+	 (setq smtpmail-smtp-server
+	       (message-fetch-field "X-SMTP-Server")
+	       from (message-fetch-field "from")))
+       (cond (smtpmail-smtp-server
+	      (message-remove-header "X-SMTP-Server"))
+	     ((string-match "@\\([^ >]*\\)" from)
+	      (let ((domain (match-string-no-properties 1 from)))
+		(setq smtpmail-smtp-server
+		      (if (string-equal domain "vayant.com")
+			  "mail.vayant.com"
+			(concat "smtp." domain))))))
+       ad-do-it)))
+
+ (when-library
+  t fortune
+  (when (executable-find "fortune")
+    (eval-after-load "fortune"
+      (let ((fortune-d (concat user-emacs-directory "fortune/")))
+	`(if (file-exists-p ,fortune-d)
+	     (setq fortune-dir ,fortune-d
+		   fortune-file ,(concat fortune-d "sigs")))))
+    (add-hook 'message-signature-setup-hook 'fortune-to-signature))))
 
 (when-library
- t fortune
- (when (executable-find "fortune")
-   (let ((fortune-d (concat user-emacs-directory "fortune/")))
-     (if (file-exists-p fortune-d)
-	 (setq fortune-dir fortune-d
-	       fortune-file (concat fortune-dir "sigs"))))
-   (add-hook 'message-signature-setup-hook 'fortune-to-signature)))
+ t erc (eval-after-load "erc" '(define-keys erc-mode-map
+				 [f11] 'erc-previous-command
+				 [f12] 'erc-next-command)))
 
 (when-library
  t browse-url
@@ -654,6 +661,13 @@ Open in new tab if NEW-WINDOW."
 	(not new-window)))))
 
  (global-set-key [f6] 'browse-apropos-url))
+
+;;; Semantic
+(when-library
+ t semantic
+ (eval-after-load "semantic"
+   '(custom-set-variables '(global-semantic-decoration-mode t)
+			  '(global-semantic-idle-summary-mode t))))
 
 ;;; ELPA
 (if (require 'package nil t) (package-initialize))
@@ -746,19 +760,10 @@ If not a file, attach current directory."
    (define-keys ergoemacs-keymap
      "\M-2" 'move-cursor-previous-pane
      "\M-@" 'move-cursor-next-pane
-     "\C-f" 'search-forward-regexp)
-
-   ;; workaround arrows not active in terminal with ErgoEmacs active
-   (when-library nil helm (eval-after-load "helm"
-			    '(define-keys helm-map
-			       "\C-d" 'helm-next-line
-			       "\C-u" 'helm-previous-line
-			       (kbd "C-M-d") 'helm-next-source
-			       (kbd "C-M-u") 'helm-previous-source)))
-
-   (eval-after-load "term" '(define-keys term-raw-map
-			      [f11] 'term-send-up
-			      [f12] 'term-send-down))
+     "\C-f" 'search-forward-regexp
+     "\C-F" 'search-backward-regexp
+     "\M-<" 'beginning-of-buffer
+     "\M->" 'end-of-buffer)
 
    (when-library
     t doc-view
@@ -773,11 +778,6 @@ If not a file, attach current directory."
 		  'doc-view-next-line-or-next-page
 		  ergoemacs-previous-line-key
 		  'doc-view-previous-line-or-previous-page))))
-
-   (when-library t erc
-		 (eval-after-load "erc" '(define-keys erc-mode-map
-					   [f11] 'erc-previous-command
-					   [f12] 'erc-next-command)))
 
    (defmacro ergoemacs-fix (layout)
      "Fix some keybindings when using ErgoEmacs."
@@ -901,7 +901,7 @@ Make links point to local files."
 
 ;;; Paredit
 (when-library
- nil paredit				; from ELPA
+ nil paredit
  (eval-after-load "eldoc"
    '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
 ;;; Redshank
@@ -954,39 +954,39 @@ Make links point to local files."
 ;;; Lisp
 
 ;;; Set up SLIME
-(if (require 'slime-autoloads nil t)
-    (eval-after-load "slime"
-      `(progn
-	 (slime-setup ,(win-or-nix
-			''(slime-fancy slime-banner slime-indentation)
-			''(slime-fancy slime-banner slime-indentation
-				       slime-asdf)))
-	 (add-to-list 'slime-lisp-implementations
-		      (list ',(win-or-nix 'clisp 'sbcl)
-			    ',(split-string inferior-lisp-program
-					    " +")))
-	 (if (file-exists-p ,(concat +home-path+
-				     "Documents/HyperSpec/"))
-	     (setq common-lisp-hyperspec-root
-		   ,(concat "file://" +home-path+
-			    "Documents/HyperSpec/")))
-	 (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
-	       slime-complete-symbol*-fancy t
-	       slime-complete-symbol-function
-	       'slime-fuzzy-complete-symbol
-	       slime-net-coding-system
-	       (find-if 'slime-find-coding-system
-			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
-				     binary)))
+(when-library
+ nil slime
+ (eval-after-load "slime"
+   `(progn
+      (slime-setup ,(win-or-nix
+		     ''(slime-fancy slime-banner slime-indentation)
+		     ''(slime-fancy slime-banner slime-indentation
+				    slime-asdf)))
+      (add-to-list 'slime-lisp-implementations
+		   (list ',(win-or-nix 'clisp 'sbcl)
+			 ',(split-string inferior-lisp-program " +")))
+      (if (file-exists-p ,(concat +home-path+
+				  "Documents/HyperSpec/"))
+	  (setq common-lisp-hyperspec-root
+		,(concat "file://" +home-path+
+			 "Documents/HyperSpec/")))
+      (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
+	    slime-complete-symbol*-fancy t
+	    slime-complete-symbol-function
+	    'slime-fuzzy-complete-symbol
+	    slime-net-coding-system
+	    (find-if 'slime-find-coding-system
+		     '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+				  binary)))
 
-	 (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
-	 (or (featurep 'ergoemacs-mode)
-	     (define-key slime-mode-map "\M-g"
-	       'slime-complete-symbol)))))
+      (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
+      (or (featurep 'ergoemacs-mode)
+	  (define-key slime-mode-map "\M-g"
+	    'slime-complete-symbol)))))
 
 ;;; Clojure
 (when-library
- nil clojure-mode			; from ELPA
+ nil clojure-mode
  (eval-after-load "clojure-mode"
    '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
  (when-library
@@ -1105,7 +1105,8 @@ Make links point to local files."
 ;;; Haskell
 (when-library
  nil haskell-mode
- (hook-modes ((haskell-indentation-mode t))
+ (hook-modes ((haskell-indentation-mode t)
+	      (haskell-doc-mode t))
 	     haskell-mode-hook)
 
  (when-library
@@ -1133,9 +1134,6 @@ Make links point to local files."
 ;;; Emacs Code Browser
 (when-library
  t semantic
- (eval-after-load "semantic"
-   '(progn (global-semantic-decoration-mode 1)
-	   (global-semantic-idle-summary-mode 1)))
  (when-library
   nil ecb
   (eval-after-load "ecb"
@@ -1158,11 +1156,24 @@ Make links point to local files."
      '(setq-default ac-sources
 		    (cons 'ac-source-semantic-raw ac-sources)))))
 
+;;; find file in project
+(when-library
+ nil find-file-in-project
+ (define-key global-map "\C-cf" 'find-file-in-project)
+
+ (eval-after-load "find-file-in-project"
+   '(setq-default ffip-project-file ".emacs-project"
+		  ffip-patterns (nconc '("*.cpp" "*.h" "*.hpp" "*.c")
+				       ffip-patterns)
+		  ffip-find-options
+		  "-not -regex \".*\\(debug\\|release\\|svn\\|git\\).*\""
+		  ffip-limit 4096)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;;; Auxiliary extensions
 
-;;; AUCTeX from ELPA
+;;; AUCTeX
 (when-library
  nil auctex-autoloads
  (eval-after-load "latex"
@@ -1202,102 +1213,103 @@ Make links point to local files."
     (setq browse-url-browser-function 'browse-url-generic
 	  browse-url-generic-program "conkeror"))
 
-;;; w3m
-(when (and (executable-find "w3m") (require 'w3m-load nil t))
-  (setq ;; make w3m default for most URLs
-   browse-url-browser-function
-   `(("^ftp://.*" . browse-ftp-tramp)
-     ("video" . ,browse-url-browser-function)
-     ("\\.tv" . ,browse-url-browser-function)
-     ("youtube" . ,browse-url-browser-function)
-     ("." . w3m-browse-url)))
+;;; emacs-w3m
+(when-library
+ nil w3m
+ (when (executable-find "w3m")
+   (setq ;; make w3m default for most URLs
+    browse-url-browser-function
+    `(("^ftp://.*" . browse-ftp-tramp)
+      ("video" . ,browse-url-browser-function)
+      ("\\.tv" . ,browse-url-browser-function)
+      ("youtube" . ,browse-url-browser-function)
+      ("." . w3m-browse-url)))
 
-  (win-or-nix (setq w3m-imagick-convert-program nil))
-  (autoload 'w3m-find-file "w3m" "Browse local file with w3m." t)
+   (win-or-nix (setq w3m-imagick-convert-program nil))
 
-  (defun w3m-dired-open ()
-    "Open a file with w3m."
-    (interactive)
-    (w3m-find-file (dired-get-filename)))
+   (defun w3m-dired-open ()
+     "Open a file with w3m."
+     (interactive)
+     (w3m-find-file (dired-get-filename)))
 
-  (add-hook 'dired-load-hook
-	    (lambda () "Add w3m key for opening files in dired."
-	      (define-key dired-mode-map "\C-cw" 'w3m-dired-open)))
+   (add-hook 'dired-load-hook
+	     (lambda () "Add w3m key for opening files in dired."
+	       (define-key dired-mode-map "\C-cw" 'w3m-dired-open)))
 
-  ;; wget integration
-  (when-library nil w3m-wget (if (executable-find "w3m")
-				 (require 'w3m-wget nil t)))
+   ;; wget integration
+   (when-library nil w3m-wget (if (executable-find "w3m")
+				  (require 'w3m-wget nil t)))
 
-  ;; Conkeror style anchor numbering on actions
-  (add-hook 'w3m-mode-hook 'w3m-lnum-mode)
+   ;; Conkeror style anchor numbering on actions
+   (add-hook 'w3m-mode-hook 'w3m-lnum-mode)
 
-  (eval-after-load "w3m"
-    `(progn
-       (setq w3m-home-page ,(win-or-nix
-			     (concat "file://" +home-path+
-				     ".w3m/bookmark.html")
-			     (eval-when-compile
-			       (concat "file://" +home-path+
-				       ".w3m/bookmark.html")))
-	     w3m-use-cookies t)
-       (define-keys w3m-mode-map
-	 (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
-	 "z" 'w3m-horizontal-recenter
-	 "\C-cs" 'w3m-session-select)
-       ,(when-library
-	 nil ergoemacs-mode
-	 '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
+   (eval-after-load "w3m"
+     `(progn
+	(setq w3m-home-page ,(win-or-nix
+			      (concat "file://" +home-path+
+				      ".w3m/bookmark.html")
+			      (eval-when-compile
+				(concat "file://" +home-path+
+					".w3m/bookmark.html")))
+	      w3m-use-cookies t)
+	(define-keys w3m-mode-map
+	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
+	  "z" 'w3m-horizontal-recenter
+	  "\C-cs" 'w3m-session-select)
+	,(when-library
+	  nil ergoemacs-mode
+	  '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
 
-       (when (executable-find "curl")
-	 (autoload 'thing-at-point-url-at-point "thingatpt")
+	(when (executable-find "curl")
+	  (autoload 'thing-at-point-url-at-point "thingatpt")
 
-	 (defun w3m-download-with-curl (arg)
-	   "Download current w3m link or URL to DIR."
-	   (interactive "P")
-	   (let ((url (or (w3m-anchor)
-			  (if arg
-			      (read-string
-			       "URI: " (thing-at-point-url-at-point))
-			    (car (w3m-lnum-get-action
-				  "Curl on: " 1))))))
-	     (if (stringp url)
-		 (let ((olddir default-directory))
-		   (cd (read-directory-name
-			"Save to: "
-			,(win-or-nix '(concat +home-path+ "Downloads")
-				     (concat +home-path+ "Downloads"))
-			nil t))
-		   (async-shell-command (concat "curl -kO '" url "'")
-					"*Curl*")
-		   (cd olddir))
-	       (w3m-message "No url specified"))))
+	  (defun w3m-download-with-curl (arg)
+	    "Download current w3m link or URL to DIR."
+	    (interactive "P")
+	    (let ((url (or (w3m-anchor)
+			   (if arg
+			       (read-string
+				"URI: " (thing-at-point-url-at-point))
+			     (car (w3m-lnum-get-action
+				   "Curl on: " 1))))))
+	      (if (stringp url)
+		  (let ((olddir default-directory))
+		    (cd (read-directory-name
+			 "Save to: "
+			 ,(win-or-nix '(concat +home-path+ "Downloads")
+				      (concat +home-path+ "Downloads"))
+			 nil t))
+		    (async-shell-command (concat "curl -kO '" url "'")
+					 "*Curl*")
+		    (cd olddir))
+		(w3m-message "No url specified"))))
 
-	 (byte-compile 'w3m-download-with-curl)
-	 (define-key w3m-mode-map "D" 'w3m-download-with-curl))
+	  (byte-compile 'w3m-download-with-curl)
+	  (define-key w3m-mode-map "D" 'w3m-download-with-curl))
 
-       (when browse-url-generic-program
-	 (defun w3m-browse-url-generic (&optional arg)
-	   "Open current link, link-number url with generic browser.
+	(when browse-url-generic-program
+	  (defun w3m-browse-url-generic (&optional arg)
+	    "Open current link, link-number url with generic browser.
 With optional prefix ARG ask for url."
-	   (interactive "P")
-	   (browse-url-generic
-	    (if arg
-		(read-string "URI: " (thing-at-point-url-at-point))
-	      (or (w3m-anchor) (w3m-image)
-		  (car (w3m-lnum-get-action
-			(concat browse-url-generic-program
-				" on link: ") 1))))))
+	    (interactive "P")
+	    (browse-url-generic
+	     (if arg
+		 (read-string "URI: " (thing-at-point-url-at-point))
+	       (or (w3m-anchor) (w3m-image)
+		   (car (w3m-lnum-get-action
+			 (concat browse-url-generic-program
+				 " on link: ") 1))))))
 
-	 (byte-compile 'w3m-browse-url-generic)
-	 (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
+	  (byte-compile 'w3m-browse-url-generic)
+	  (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
 
-       (add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
-						  (w3m-quit t))) t)))
+	(add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
+						   (w3m-quit t))) t)))
 
-  (eval-after-load "w3m-search"
-    '(add-to-list 'w3m-search-engine-alist
-		  '((car my-search) (concat (cdr my-search "%s"))
-		    utf-8))))
+   (eval-after-load "w3m-search"
+     '(add-to-list 'w3m-search-engine-alist
+		   '((car my-search) (concat (cdr my-search "%s"))
+		     utf-8)))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
@@ -1306,199 +1318,199 @@ With optional prefix ARG ask for url."
 	    ("." . ,browse-url-browser-function))))
 
 ;;; EMMS
-(when (require 'emms-auto nil t)
-  (autoload 'emms-browser "emms-browser"
-    "Launch or switch to the EMMS Browser." t)
-  (autoload 'emms "emms-playlist-mode"
-    "Switch to the current emms-playlist buffer." t)
+(when-library
+ nil emms
+ (autoload 'emms-browser "emms-browser"
+   "Launch or switch to the EMMS Browser." t)
+ (autoload 'emms "emms-playlist-mode"
+   "Switch to the current emms-playlist buffer." t)
 
-  (eval-after-load "emms"
-    `(progn
-       (emms-devel)
-       (emms-default-players)
-       (if (require 'emms-info-libtag nil t)
-	   (add-to-list 'emms-info-functions 'emms-info-libtag
-			nil 'eq))
-       (require 'emms-mark nil t)
-       ;; swap time and other track info
-       (let ((new-global-mode-string nil))
-	 (while (and (not (memq (car global-mode-string)
-				'(emms-mode-line-string
-				  emms-playing-time-string)))
-		     global-mode-string)
-	   (setq new-global-mode-string (cons (car global-mode-string)
-					      new-global-mode-string)
-		 global-mode-string (cdr global-mode-string)))
-	 (setq global-mode-string
-	       (nconc (nreverse new-global-mode-string)
-		      '(emms-playing-time-string
-			emms-mode-line-string))))
-       (add-hook 'emms-player-started-hook 'emms-show)
+ (eval-after-load "emms"
+   `(progn
+      (emms-devel)
+      (emms-default-players)
+      (if (require 'emms-info-libtag nil t)
+	  (add-to-list 'emms-info-functions 'emms-info-libtag
+		       nil 'eq))
+      (require 'emms-mark nil t)
+      ;; swap time and other track info
+      (let ((new-global-mode-string nil))
+	(while (and (not (memq (car global-mode-string)
+			       '(emms-mode-line-string
+				 emms-playing-time-string)))
+		    global-mode-string)
+	  (push (car global-mode-string) new-global-mode-string)
+	  (setq global-mode-string (cdr global-mode-string)))
+	(setq global-mode-string
+	      (nconc (nreverse new-global-mode-string)
+		     '(emms-playing-time-string
+		       emms-mode-line-string))))
+      (add-hook 'emms-player-started-hook 'emms-show)
 
-       (defun my-emms-default-info (track)
-	 "Get some generic meta data."
-	 (concat
-	  "(" (number-to-string
-	       (or (emms-track-get track 'play-count) 0))
-	  ", " (emms-last-played-format-date
-		(or (emms-track-get track 'last-played) '(0 0 0)))
-	  ")" (let ((time (emms-track-get track 'info-playing-time)))
-		(if time (format " %d:%02d" (/ time 60) (mod time 60))
-		  ""))))
+      (defun my-emms-default-info (track)
+	"Get some generic meta data."
+	(concat
+	 "(" (number-to-string
+	      (or (emms-track-get track 'play-count) 0))
+	 ", " (emms-last-played-format-date
+	       (or (emms-track-get track 'last-played) '(0 0 0)))
+	 ")" (let ((time (emms-track-get track 'info-playing-time)))
+	       (if time (format " %d:%02d" (/ time 60) (mod time 60))
+		 ""))))
 
-       (defun my-emms-track-description-function (track)
-	 "Return a description of the current TRACK."
-	 (let ((type (emms-track-type track)))
-	   (cond
-	    ((eq 'file type)
-	     (let ((artist (emms-track-get track 'info-artist)))
-	       (if artist
-		   (concat
-		    artist " - "
-		    (let ((num (emms-track-get track
-					       'info-tracknumber)))
-		      (if num
-			  (format "%02d. " (string-to-number num))
-			""))
-		    (or (emms-track-get track 'info-title)
-			(file-name-sans-extension
-			 (file-name-nondirectory
-			  (emms-track-name track))))
-		    " [" (let ((year (emms-track-get track
-						     'info-year)))
-			   (if year (concat year " - ")))
-		    (or (emms-track-get track 'info-album) "unknown")
-		    "]" (my-emms-default-info track))
-		 (concat (emms-track-name track)
-			 (my-emms-default-info track)))))
-	    ((eq 'url type)
-	     (emms-format-url-track-name (emms-track-name track)))
-	    (t (concat (symbol-name type) ": " (emms-track-name track)
-		       (my-emms-default-info track))))))
+      (defun my-emms-track-description-function (track)
+	"Return a description of the current TRACK."
+	(let ((type (emms-track-type track)))
+	  (cond
+	   ((eq 'file type)
+	    (let ((artist (emms-track-get track 'info-artist)))
+	      (if artist
+		  (concat
+		   artist " - "
+		   (let ((num (emms-track-get track
+					      'info-tracknumber)))
+		     (if num
+			 (format "%02d. " (string-to-number num))
+		       ""))
+		   (or (emms-track-get track 'info-title)
+		       (file-name-sans-extension
+			(file-name-nondirectory
+			 (emms-track-name track))))
+		   " [" (let ((year (emms-track-get track
+						    'info-year)))
+			  (if year (concat year " - ")))
+		   (or (emms-track-get track 'info-album) "unknown")
+		   "]" (my-emms-default-info track))
+		(concat (emms-track-name track)
+			(my-emms-default-info track)))))
+	   ((eq 'url type)
+	    (emms-format-url-track-name (emms-track-name track)))
+	   (t (concat (symbol-name type) ": " (emms-track-name track)
+		      (my-emms-default-info track))))))
 
-       (defun my-emms-covers (dir type)
-	 "Choose album cover in DIR deppending on TYPE.
+      (defun my-emms-covers (dir type)
+	"Choose album cover in DIR deppending on TYPE.
 Small cover should be less than 80000 bytes.
 Medium - less than 120000 bytes."
-	 (let* ((pics (directory-files-and-attributes
-		       dir t "\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$" t))
-		(pic (car pics))
-		(pic-size (car (cddr (cddr (cddr (cddr pic)))))))
-	   (let (temp)
-	     (cond
-	      ((eq type 'small)
-	       (while (setq temp (cadr pics))
-		 (let ((temp-size (car (cddr (cddr (cddr
-						    (cddr temp)))))))
-		   (if (< temp-size pic-size)
-		       (setq pic temp
-			     pic-size temp-size)))
-		 (setq pics (cdr pics)))
-	       (if (<= (or pic-size 80001) 80000)
-		   (car pic)))
-	      ((eq type 'medium)
-	       (if (and pic (setq temp (cadr pics)))
-		   (progn
-		     (setq pics (cdr pics))
-		     (let ((temp-size (car (cddr
-					    (cddr
-					     (cddr (cddr temp)))))))
-		       (let ((small temp)
-			     (small-size temp-size))
-			 (if (< pic-size small-size)
-			     (setq small pic
-				   small-size pic-size
-				   pic temp
-				   pic-size temp-size))
-			 (while (setq temp (cadr pics))
-			   (setq temp-size
-				 (car (cddr (cddr (cddr
-						   (cddr temp))))))
-			   (cond
-			    ((< temp-size small-size)
-			     (setq pic small
-				   pic-size small-size
-				   small temp
-				   small-size temp-size))
-			    ((< temp-size pic-size)
-			     (setq pic temp
-				   pic-size temp-size)))
-			   (setq pics (cdr pics)))
-			 (car (if (<= pic-size 120000) pic
-				small)))))
-		 (car pic)))
-	      ((eq type 'large)
-	       (while (setq temp (cadr pics))
-		 (let ((temp-size (car (cddr (cddr (cddr
-						    (cddr temp)))))))
-		   (if (> temp-size pic-size)
-		       (setq pic temp
-			     pic-size temp-size)))
-		 (setq pics (cdr pics)))
-	       (car pic))))))
+	(let* ((pics (directory-files-and-attributes
+		      dir t "\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$" t))
+	       (pic (car pics))
+	       (pic-size (car (cddr (cddr (cddr (cddr pic)))))))
+	  (let (temp)
+	    (cond
+	     ((eq type 'small)
+	      (while (setq temp (cadr pics))
+		(let ((temp-size (car (cddr (cddr (cddr
+						   (cddr temp)))))))
+		  (if (< temp-size pic-size)
+		      (setq pic temp
+			    pic-size temp-size)))
+		(setq pics (cdr pics)))
+	      (if (<= (or pic-size 80001) 80000)
+		  (car pic)))
+	     ((eq type 'medium)
+	      (if (and pic (setq temp (cadr pics)))
+		  (progn
+		    (setq pics (cdr pics))
+		    (let ((temp-size (car (cddr
+					   (cddr
+					    (cddr (cddr temp)))))))
+		      (let ((small temp)
+			    (small-size temp-size))
+			(if (< pic-size small-size)
+			    (setq small pic
+				  small-size pic-size
+				  pic temp
+				  pic-size temp-size))
+			(while (setq temp (cadr pics))
+			  (setq temp-size
+				(car (cddr (cddr (cddr
+						  (cddr temp))))))
+			  (cond
+			   ((< temp-size small-size)
+			    (setq pic small
+				  pic-size small-size
+				  small temp
+				  small-size temp-size))
+			   ((< temp-size pic-size)
+			    (setq pic temp
+				  pic-size temp-size)))
+			  (setq pics (cdr pics)))
+			(car (if (<= pic-size 120000) pic
+			       small)))))
+		(car pic)))
+	     ((eq type 'large)
+	      (while (setq temp (cadr pics))
+		(let ((temp-size (car (cddr (cddr (cddr
+						   (cddr temp)))))))
+		  (if (> temp-size pic-size)
+		      (setq pic temp
+			    pic-size temp-size)))
+		(setq pics (cdr pics)))
+	      (car pic))))))
 
-       (byte-compile 'my-emms-default-info)
-       (byte-compile 'my-emms-track-description-function)
-       (byte-compile 'my-emms-covers)
-       (setq emms-show-format "EMMS: %s"
-	     emms-mode-line-format "%s"
-	     emms-source-file-default-directory
-	     ,(win-or-nix
-	       (concat +home-path+ "Music/")
-	       (eval-when-compile (concat +home-path+ "Music/")))
-	     emms-track-description-function
-	     'my-emms-track-description-function
-	     emms-browser-covers 'my-emms-covers)
+      (byte-compile 'my-emms-default-info)
+      (byte-compile 'my-emms-track-description-function)
+      (byte-compile 'my-emms-covers)
+      (setq emms-show-format "EMMS: %s"
+	    emms-mode-line-format "%s"
+	    emms-source-file-default-directory
+	    ,(win-or-nix
+	      (concat +home-path+ "Music/")
+	      (eval-when-compile (concat +home-path+ "Music/")))
+	    emms-track-description-function
+	    'my-emms-track-description-function
+	    emms-browser-covers 'my-emms-covers)
 
-       (when (and (require 'my-secret "my-secret.el.gpg" t)
-		  (require 'emms-lastfm-client nil t)
-		  (let ((url-request-method "GET"))
-		    (ignore-errors     ; check for internet connection
-		      (url-retrieve-synchronously
-		       "http://post.audioscrobbler.com"))))
-	 (setq emms-lastfm-client-username "m00natic"
-	       emms-lastfm-client-api-key
-	       my-emms-lastfm-client-api-key
-	       emms-lastfm-client-api-secret-key
-	       my-emms-lastfm-client-api-secret-key)
-	 (condition-case err
-	     (emms-lastfm-scrobbler-enable)
-	   (error (message "No scrobbling: %s" err))))
+      (when (and (require 'my-secret "my-secret.el.gpg" t)
+		 (require 'emms-lastfm-client nil t)
+		 (let ((url-request-method "GET"))
+		   (ignore-errors     ; check for internet connection
+		     (url-retrieve-synchronously
+		      "http://post.audioscrobbler.com"))))
+	(setq emms-lastfm-client-username "m00natic"
+	      emms-lastfm-client-api-key
+	      my-emms-lastfm-client-api-key
+	      emms-lastfm-client-api-secret-key
+	      my-emms-lastfm-client-api-secret-key)
+	(condition-case err
+	    (emms-lastfm-scrobbler-enable)
+	  (error (message "No scrobbling: %s" err))))
 
-       (when (and (executable-find "mpd")
-		  (require 'emms-player-mpd nil t))
-	 (add-to-list 'emms-info-functions 'emms-info-mpd nil 'eq)
-	 (add-to-list 'emms-player-list 'emms-player-mpd nil 'eq)
-	 (setq emms-player-mpd-music-directory
-	       emms-source-file-default-directory)
-	 ,(win-or-nix
-	   nil
-	   (when-library
-	    nil notify
-	    '(defadvice emms-player-started
-	       (after emms-player-mpd-notify activate compile)
-	       "Notify new track for MPD."
-	       (if (eq emms-player-playing-p 'emms-player-mpd)
-		   (notify
-		    "EMMS"
-		    (emms-track-description
-		     (emms-playlist-current-selected-track))))))))
+      (when (and (executable-find "mpd")
+		 (require 'emms-player-mpd nil t))
+	(add-to-list 'emms-info-functions 'emms-info-mpd nil 'eq)
+	(add-to-list 'emms-player-list 'emms-player-mpd nil 'eq)
+	(setq emms-player-mpd-music-directory
+	      emms-source-file-default-directory)
+	,(win-or-nix
+	  nil
+	  (when-library
+	   nil notify
+	   '(defadvice emms-player-started
+	      (after emms-player-mpd-notify activate compile)
+	      "Notify new track for MPD."
+	      (if (eq emms-player-playing-p 'emms-player-mpd)
+		  (notify
+		   "EMMS"
+		   (emms-track-description
+		    (emms-playlist-current-selected-track))))))))
 
-       (global-set-key [XF86AudioPlay] 'emms-pause)
-       (global-set-key "\C-cp" 'emms-pause)
-       ,(win-or-nix
-	 nil
-	 (when-library
-	  nil notify
-	  '(setq emms-player-next-function
-		 (byte-compile
-		  (lambda () "Notify on new track."
-		    (emms-next-noerror)
-		    (if emms-player-playing-p
-			(notify
-			 "EMMS"
-			 (emms-track-description
-			  (emms-playlist-current-selected-track))))))))))))
+      (global-set-key [XF86AudioPlay] 'emms-pause)
+      (global-set-key "\C-cp" 'emms-pause)
+      ,(win-or-nix
+	nil
+	(when-library
+	 nil notify
+	 '(setq emms-player-next-function
+		(byte-compile
+		 (lambda () "Notify on new track."
+		   (emms-next-noerror)
+		   (if emms-player-playing-p
+		       (notify
+			"EMMS"
+			(emms-track-description
+			 (emms-playlist-current-selected-track))))))))))))
 
 ;;; Sauron
 (when-library
@@ -1511,16 +1523,15 @@ Medium - less than 120000 bytes."
   nil notify
   (eval-after-load "sauron"
     '(add-hook 'sauron-event-added-functions
-	       (lambda (origin prio msg &optional props)
-		 (notify "Sauron"
-			 (format "%s (%d): %s" origin prio msg)))))))
+	       (lambda (origin msg &optional props)
+		 (notify "Sauron" (format "%s: %s" origin msg)))))))
 
 ;;; Dictionary
 (when-library nil dictionary
 	      (global-set-key "\C-cd" 'dictionary-search))
 
 ;;; chess
-(when-library nil chess			; from ELPA
+(when-library nil chess
 	      (setq chess-sound-play-function nil))
 
 ;;; sudoku
