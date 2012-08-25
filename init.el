@@ -27,6 +27,7 @@
 ;;  misc:
 ;;   ErgoEmacs-mode http://xahlee.org/emacs/ergonomic_emacs_keybinding.html
 ;;   Helm https://github.com/emacs-helm/helm
+;;   BBDB http://bbdb.sourceforge.net
 ;;   AUCTeX http://www.gnu.org/software/auctex
 ;;   Ditaa http://ditaa.sourceforge.net
 ;;   TabBar http://www.emacswiki.org/emacs/TabBarMode
@@ -38,7 +39,6 @@
 ;;   EMMS http://www.gnu.org/software/emms
 ;;   Emacs Chess http://github.com/jwiegley/emacs-chess
 ;;   sudoku http://sourceforge.net/projects/sudoku-elisp
-;;   Sauron https://github.com/djcb/sauron
 
 ;;; Code:
 (if (boundp '+win-p+) (error "Trying to re-initialize"))
@@ -132,8 +132,8 @@ NIX forms are executed on all other platforms."
  '(line-number-mode nil)
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
- '(message-send-mail-function 'smtpmail-send-it)
  '(menu-bar-mode nil)
+ '(message-send-mail-function 'smtpmail-send-it)
  '(org-src-fontify-natively t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
@@ -248,65 +248,6 @@ KEYS is alternating key-value list."
 
 ;;;; extension independent functions
 
-;;; themes
-(if (ignore-errors (load-theme 'wombat))
-    (disable-theme 'wombat))
-(deftheme andr "My corrections over default theme.")
-(deftheme andr-dark "My corrections over default dark theme.")
-
-(defun andr-themes ()
-  "Define my custom themes.  Should be done in graphical frame."
-  (condition-case nil
-      (set-face-font 'default (win-or-nix "Consolas" "Anonymous Pro"))
-    (error (ignore-errors (set-face-font 'default "terminus"))))
-  (let ((class '((class color) (min-colors 88))))
-    (custom-theme-set-faces
-     'andr
-     `(default ((default :foreground "black")
-		(,class :background "cornsilk")
-		(t :background "white")))
-     `(mode-line
-       ((default :width condensed :family "neep")
-	(,class :foreground "white" :background "DarkSlateGray")
-	(t :background "cyan")))
-     `(mode-line-inactive
-       ((default :inherit mode-line :weight light)
-	(,class :box (:line-width -1 :color "grey75")
-		:foreground "grey20" :background "grey90")
-	(t :inverse-video t)))
-     '(tabbar-selected ((t :inherit default :weight bold)))
-     `(tabbar-unselected ((default :inherit tabbar-default)
-			  (,class
-			   :background "gray75" :foreground "white"
-			   :box (:line-width 2 :color "white"))
-			  (t :inverse-video t)))
-     '(tabbar-button ((t :background "white" :foreground "gray75")))
-     '(sml-modeline-end-face ((t :family "neep" :inherit default
-				 :width condensed))))
-    (custom-theme-set-faces
-     'andr-dark
-     `(default ((default :background "#242424")
-		(,class :foreground "#f6f3e8")
-		(t :foreground "white")))
-     `(mode-line
-       ((default :width condensed :family "neep")
-	(,class :background "#444444" :foreground "#f6f3e8")
-	(t :background "cyan")))
-     `(mode-line-inactive
-       ((default :inherit mode-line :weight light)
-	(,class :box (:line-width -1 :color "grey40")
-		:background "#444444" :foreground "#857b6f")
-	(t :inverse-video t)))
-     '(tabbar-selected ((t :inherit default :weight bold)))
-     `(tabbar-unselected ((default :inherit tabbar-default)
-			  (,class
-			   :background "gray50" :foreground "black"
-			   :box (:line-width 2 :color "black"))
-			  (t :inverse-video t)))
-     '(tabbar-button ((t :background "black" :foreground "gray50")))
-     '(sml-modeline-end-face ((t :family "neep" :inherit default
-				 :width condensed))))))
-
 (defun solar-time-to-24 (time-str)
   "Convert solar type string TIME-STR to 24 hour format."
   (if (string-match "\\(.*\\)[/:-]\\(..\\)\\(.\\)" time-str)
@@ -362,7 +303,7 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
   (active-lisp-modes))
 
 ;;; fullscreen stuff
-(defvar *fullscreen-p* t "Check if fullscreen is on or off.")
+(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
 
 (defun fullscreen-toggle ()
   "Toggle fullscreen view on and off."
@@ -376,22 +317,6 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
      (set-frame-parameter nil 'width 100)
      (set-frame-parameter nil 'fullscreen 'fullheight))))
 
-(defun set-frame-faces (&optional frame)
-  "Load my custom themes.  Execute once in the first graphical FRAME."
-  (if frame
-      (progn
-	(select-frame frame)
-	(when (window-system)
-	  (remove-hook 'after-make-frame-functions 'set-frame-faces)
-	  (andr-themes)
-	  (if (require 'solar nil t) (my-colours-set))
-	  (if *fullscreen-p*
-	      (set-frame-parameter nil 'fullscreen 'fullboth))))
-    (andr-themes)
-    (if (require 'solar nil t) (my-colours-set))
-    (if *fullscreen-p*
-	(set-frame-parameter nil 'fullscreen 'fullboth))))
-
 (defun browse-ftp-tramp (url &optional new-window)
   "Open ftp URL in NEW-WINDOW with TRAMP."
   (if (string-match "\\(.*?\\)\\(\\/.*\\)" url 6)
@@ -403,24 +328,72 @@ Set timer that runs on next sunset or sunrise, whichever sooner."
 
 ;;;; appearance
 
-(win-or-nix
- ((when (window-system)
-    (defun hide-frame ()
-      "Keep emacs running hidden.
-Use emacsclient -e '(make-frame-visible)' to restore it."
-      (interactive)
-      (server-edit)
-      (make-frame-invisible nil t))
+(deftheme andr "My corrections over default theme.")
+(deftheme andr-dark "My corrections over default dark theme.")
 
-    (global-set-key "\C-x\C-c" 'hide-frame))
-  (set-frame-faces))
+(let ((class '((class color) (min-colors 88))))
+  (custom-theme-set-faces
+   'andr
+   `(default ((default :foreground "black")
+	      (,class :background "cornsilk" :family "Inconsolata")
+	      (t :background "white" :family "terminus")))
+   `(mode-line
+     ((default :width condensed :family "neep")
+      (,class :foreground "white" :background "DarkSlateGray")
+      (t :background "cyan")))
+   `(mode-line-inactive
+     ((default :inherit mode-line :weight light)
+      (,class :box (:line-width -1 :color "grey75")
+	      :foreground "grey20" :background "grey90")
+      (t :inverse-video t)))
+   '(tabbar-selected ((t :inherit default :weight bold)))
+   `(tabbar-unselected ((default :inherit tabbar-default)
+			(,class
+			 :background "gray75" :foreground "white"
+			 :box (:line-width 2 :color "white"))
+			(t :inverse-video t)))
+   '(tabbar-button ((t :background "white" :foreground "gray75")))
+   '(sml-modeline-end-face ((t :family "neep" :inherit default
+			       :width condensed))))
 
- (if (window-system)
-     (set-frame-faces)
-   (add-hook 'after-make-frame-functions 'set-frame-faces)))
+  (custom-theme-set-faces
+   'andr-dark
+   `(default ((default :background "#242424")
+	      (,class :foreground "#f6f3e8" :family "Inconsolata")
+	      (t :foreground "white" :family "terminus")))
+   `(mode-line ((default :width condensed :family "neep")
+		(,class :background "#444444" :foreground "#f6f3e8")
+		(t :background "cyan")))
+   `(mode-line-inactive
+     ((default :inherit mode-line :weight light)
+      (,class :box (:line-width -1 :color "grey40")
+	      :background "#444444" :foreground "#857b6f")
+      (t :inverse-video t)))
+   '(tabbar-selected ((t :inherit default :weight bold)))
+   `(tabbar-unselected ((default :inherit tabbar-default)
+			(,class
+			 :background "gray50" :foreground "black"
+			 :box (:line-width 2 :color "black"))
+			(t :inverse-video t)))
+   '(tabbar-button ((t :background "black" :foreground "gray50")))
+   '(sml-modeline-end-face ((t :family "neep" :inherit default
+			       :width condensed)))))
+
+(if (require 'solar nil t)
+    (my-colours-set))
 
 (add-hook 'text-mode-hook (lambda () "Set proportional font."
 			    (variable-pitch-mode t)))
+
+(win-or-nix
+ ((defun hide-frame ()
+    "Keep emacs running hidden.
+Use emacsclient -e '(make-frame-visible)' to restore it."
+    (interactive)
+    (server-edit)
+    (make-frame-invisible nil t))
+
+  (global-set-key "\C-x\C-c" 'hide-frame)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -449,7 +422,7 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
 
 ;; Proced
-(when-library t proced (global-set-key (kbd "C-~") 'proced))
+(when-library t proced (global-set-key "\C-^" 'proced))
 
 ;;; ido and subword
 (when-library t (ido subword)
@@ -666,8 +639,10 @@ Open in new tab if NEW-WINDOW."
 (when-library
  t semantic
  (eval-after-load "semantic"
-   '(custom-set-variables '(global-semantic-decoration-mode t)
-			  '(global-semantic-idle-summary-mode t))))
+   '(custom-set-variables
+     '(global-semantic-decoration-mode 1)
+     '(global-semantic-idle-summary-mode 1)
+     '(global-semantic-idle-local-symbol-highlight-mode 1))))
 
 ;;; ELPA
 (if (require 'package nil t) (package-initialize))
@@ -855,6 +830,14 @@ If not a file, attach current directory."
    (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
    (ergoemacs-mode 1)
    (global-set-key "\C-@" 'cua-set-mark)))
+
+;;; The insidious Big Brother Database
+(when-library
+ nil bbdb
+ (eval-after-load "gnus"
+   '(progn (setq bbdb-file (concat user-emacs-directory ".bbdb"))
+	   (bbdb-initialize 'gnus 'message)
+	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
 
 ;;; helm
 (when-library
@@ -1511,20 +1494,6 @@ Medium - less than 120000 bytes."
 			"EMMS"
 			(emms-track-description
 			 (emms-playlist-current-selected-track))))))))))))
-
-;;; Sauron
-(when-library
- nit sauron
- (setq sauron-separate-frame nil
-       sauron-hide-mode-line t)
- (eval-after-load "erc" '(sauron-start-hidden))
-
- (when-library
-  nil notify
-  (eval-after-load "sauron"
-    '(add-hook 'sauron-event-added-functions
-	       (lambda (origin msg &optional props)
-		 (notify "Sauron" (format "%s: %s" origin msg)))))))
 
 ;;; Dictionary
 (when-library nil dictionary
