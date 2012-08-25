@@ -45,7 +45,7 @@ This is used when recursing, when calling, must be nil."
 	(directory-files dir)))
 
 (maprdir 'byte-compile-file "~/.emacs.d/elpa/" "*.el")
-(maprdir 'byte-compile-file "~/.emacs.d/extras/" "*.el")
+(maprdir 'byte-compile-file "~/.emacs.d/conf/" "*.el")
 
 (provide 'compile-extras)
 
