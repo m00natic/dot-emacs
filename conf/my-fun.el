@@ -20,10 +20,12 @@
    `(progn
       (emms-devel)
       (emms-default-players)
+
       (if (require 'emms-info-libtag nil t)
 	  (add-to-list 'emms-info-functions 'emms-info-libtag
 		       nil 'eq))
       (require 'emms-mark nil t)
+
       ;; swap time and other track info
       (let ((new-global-mode-string nil))
 	(while (and (not (memq (car global-mode-string)
@@ -37,20 +39,6 @@
 		     '(emms-playing-time-string
 		       emms-mode-line-string))))
       (add-hook 'emms-player-started-hook 'emms-show)
-
-      (defun string-shift-left (str &optional offset)
-	"Shift STR content to the left OFFSET characters."
-	(or offset (setq offset 1))
-	(let ((str-len (length str)))
-	  (if (< offset str-len)
-	      (concat (substring-no-properties str offset)
-		      (substring-no-properties str 0 offset))
-	    str)))
-
-      (defun emms-tick-mode-line-description (offset)
-	"Tick emms track description OFFSET characters."
-	(setq emms-mode-line-string
-	      (string-shift-left emms-mode-line-string offset)))
 
       (defun my-emms-default-info (track)
 	"Get some generic meta data."
@@ -154,8 +142,6 @@ Medium - less than 120000 bytes."
 		(setq pics (cdr pics)))
 	      (car pic))))))
 
-      (byte-compile 'string-shift-left)
-      (byte-compile 'emms-tick-mode-line-description)
       (byte-compile 'my-emms-default-info)
       (byte-compile 'my-emms-track-description-function)
       (byte-compile 'my-emms-covers)
@@ -169,8 +155,7 @@ Medium - less than 120000 bytes."
 	    'my-emms-track-description-function
 	    emms-browser-covers 'my-emms-covers)
 
-      (run-at-time t 2 'emms-tick-mode-line-description 5)
-
+      ;; lastfm
       (when (and (require 'my-secret "my-secret.el.gpg" t)
 		 (require 'emms-lastfm-client nil t)
 		 (let ((url-request-method "GET"))
@@ -186,24 +171,30 @@ Medium - less than 120000 bytes."
 	    (emms-lastfm-scrobbler-enable)
 	  (error (message "No scrobbling: %s" err))))
 
+      ;; mpd
       (when (and (executable-find "mpd")
 		 (require 'emms-player-mpd nil t))
 	(add-to-list 'emms-info-functions 'emms-info-mpd nil 'eq)
 	(add-to-list 'emms-player-list 'emms-player-mpd nil 'eq)
 	(setq emms-player-mpd-music-directory
 	      emms-source-file-default-directory)
+
 	,(win-or-nix
 	  nil
 	  (when-library
 	   nil notify
-	   '(defadvice emms-player-started
-	      (after emms-player-mpd-notify activate compile)
-	      "Notify new track for MPD."
-	      (if (eq emms-player-playing-p 'emms-player-mpd)
-		  (notify
-		   "EMMS"
-		   (emms-track-description
-		    (emms-playlist-current-selected-track))))))))
+	   '(progn
+	      (defun emms-player-mpd-notify ()
+		"Notify new track for MPD."
+		(if (eq emms-player-playing-p 'emms-player-mpd)
+		    (notify
+		     "EMMS"
+		     (emms-track-description
+		      (emms-playlist-current-selected-track)))))
+
+	      (byte-compile 'emms-player-mpd-notify)
+	      (add-hook 'emms-player-started-hook
+			'emms-player-mpd-notify)))))
 
       (global-set-key [XF86AudioPlay] 'emms-pause)
       (global-set-key "\C-cp" 'emms-pause)
@@ -219,7 +210,47 @@ Medium - less than 120000 bytes."
 		       (notify
 			"EMMS"
 			(emms-track-description
-			 (emms-playlist-current-selected-track))))))))))))
+			 (emms-playlist-current-selected-track)))))))))
+
+      ;; track info ticker
+      (defun string-shift-left (str &optional offset)
+	"Shift STR content to the left OFFSET characters."
+	(or offset (setq offset 1))
+	(let ((str-len (length str)))
+	  (if (< offset str-len)
+	      (concat (substring-no-properties str offset)
+		      (substring-no-properties str 0 offset))
+	    str)))
+
+      (defun emms-tick-mode-line-description (offset)
+	"Tick emms track description OFFSET characters."
+	(setq emms-mode-line-string
+	      (string-shift-left emms-mode-line-string offset)))
+
+      (byte-compile 'string-shift-left)
+      (byte-compile 'emms-tick-mode-line-description)
+
+      (defvar *my-emms-ticker* nil
+	"Timer for current track info ticker.")
+
+      (defun emms-track-ticker-start ()
+	"Start ticking current TRACK info."
+	(setq *my-emms-ticker*
+	      (run-at-time t 2 'emms-tick-mode-line-description 5)))
+
+      (byte-compile 'emms-track-ticker-start)
+
+      (defadvice emms-player-start
+	(after emms-player-tick-start (track) activate compile)
+	"Start ticking current TRACK info."
+	(emms-track-ticker-start))
+
+      (defadvice emms-player-stop
+	(after emms-player-tick-stop activate compile)
+	"Stop track ticker."
+	(cancel-timer *my-emms-ticker*))
+
+      (add-hook 'emms-player-started-hook 'emms-track-ticker-start))))
 
 ;;; chess
 (when-library nil chess
