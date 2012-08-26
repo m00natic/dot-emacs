@@ -38,6 +38,20 @@
 		       emms-mode-line-string))))
       (add-hook 'emms-player-started-hook 'emms-show)
 
+      (defun string-shift-left (str &optional offset)
+	"Shift STR content to the left OFFSET characters."
+	(or offset (setq offset 1))
+	(let ((str-len (length str)))
+	  (if (< offset str-len)
+	      (concat (substring-no-properties str offset)
+		      (substring-no-properties str 0 offset))
+	    str)))
+
+      (defun emms-tick-mode-line-description (offset)
+	"Tick emms track description OFFSET characters."
+	(setq emms-mode-line-string
+	      (string-shift-left emms-mode-line-string offset)))
+
       (defun my-emms-default-info (track)
 	"Get some generic meta data."
 	(concat
@@ -140,9 +154,12 @@ Medium - less than 120000 bytes."
 		(setq pics (cdr pics)))
 	      (car pic))))))
 
+      (byte-compile 'string-shift-left)
+      (byte-compile 'emms-tick-mode-line-description)
       (byte-compile 'my-emms-default-info)
       (byte-compile 'my-emms-track-description-function)
       (byte-compile 'my-emms-covers)
+
       (setq emms-show-format "EMMS: %s"
 	    emms-mode-line-format "%s"
 	    emms-source-file-default-directory
@@ -152,10 +169,12 @@ Medium - less than 120000 bytes."
 	    'my-emms-track-description-function
 	    emms-browser-covers 'my-emms-covers)
 
+      (run-at-time t 2 'emms-tick-mode-line-description 5)
+
       (when (and (require 'my-secret "my-secret.el.gpg" t)
 		 (require 'emms-lastfm-client nil t)
 		 (let ((url-request-method "GET"))
-		   (ignore-errors     ; check for internet connection
+		   (ignore-errors      ; check for internet connection
 		     (url-retrieve-synchronously
 		      "http://post.audioscrobbler.com"))))
 	(setq emms-lastfm-client-username "m00natic"
