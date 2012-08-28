@@ -123,10 +123,9 @@ Open in new tab if NEW-WINDOW."
    (setq
     wget-download-directory-filter 'wget-download-dir-filter-regexp
     wget-download-directory
-    (eval-when-compile
-      `(("\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$"
-	 . ,(concat +home-path+ "Pictures"))
-	("." . ,(concat +home-path+ "Downloads")))))
+    `(("\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$"
+       . ,(concat +home-path+ "Pictures"))
+      ("." . ,(concat +home-path+ "Downloads"))))
 
    (defun wget-site (uri)
      "Get a whole web-site pointed by URI through Wget.
@@ -176,10 +175,8 @@ Make links point to local files."
 
    (eval-after-load "w3m"
      `(progn
-	(setq w3m-home-page ,(win-or-nix
-			      #1=(concat "file://" +home-path+
-					 ".w3m/bookmark.html")
-			      (eval-when-compile #1#))
+	(setq w3m-home-page ,(concat "file://" +home-path+
+				     ".w3m/bookmark.html")
 	      w3m-use-cookies t)
 	(define-keys w3m-mode-map
 	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
@@ -204,9 +201,7 @@ Make links point to local files."
 	      (if (stringp url)
 		  (let ((olddir default-directory))
 		    (cd (read-directory-name
-			 "Save to: "
-			 ,(win-or-nix
-			   '#2=(concat +home-path+ "Downloads") #2#)
+			 "Save to: " (concat +home-path+ "Downloads")
 			 nil t))
 		    (async-shell-command (concat "curl -kO '" url "'")
 					 "*Curl*")

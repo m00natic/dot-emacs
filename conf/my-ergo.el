@@ -111,7 +111,11 @@
        "\M-SPC" 'helm-mark-candidate)))
 
   (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
-  (ergoemacs-mode 1)
+
+  (if +old-emacs+
+      (ignore-errors (ergoemacs-mode 1))
+    (ergoemacs-mode 1))
+
   (global-set-key "\C-@" 'cua-set-mark))
 
 (provide 'my-ergo)

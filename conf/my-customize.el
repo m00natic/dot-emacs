@@ -17,9 +17,8 @@
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
- `(ido-save-directory-list-file
-   ,(win-or-nix #1=(concat user-emacs-directory ".ido.last")
-		(eval-when-compile #1#)))
+ `(ido-save-directory-list-file ,(concat user-emacs-directory
+					 ".ido.last"))
  '(ido-use-virtual-buffers t)
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
@@ -34,14 +33,10 @@
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
- `(recentf-save-file
-   ,(win-or-nix #2=(concat user-emacs-directory "recentf")
-		(eval-when-compile #2#)))
+ `(recentf-save-file ,(concat user-emacs-directory "recentf"))
  '(require-final-newline t)
  '(save-place t nil (saveplace))
- `(save-place-file
-   ,(win-or-nix #3=(concat user-emacs-directory ".emacs-places")
-		(eval-when-compile #3#)))
+ `(save-place-file ,(concat user-emacs-directory ".emacs-places"))
  '(version-control t)
  '(view-read-only t))
 
@@ -54,8 +49,7 @@
 
 ;;; backup
 (setq backup-directory-alist
-      `(("." . ,(win-or-nix #4=(concat user-emacs-directory "backup/")
-			    (eval-when-compile #4#))))
+      `(("." . ,(concat user-emacs-directory "backup/")))
       tramp-backup-directory-alist backup-directory-alist)
 
 ;;; ido and subword
@@ -64,9 +58,14 @@
 			(lambda () (subword-mode -1))))
 
 ;;; add custom bin to path
-(let ((bin-path (win-or-nix #5=(concat +conf-path+ "bin")
-			    (eval-when-compile #5#))))
+(let ((bin-path (concat +conf-path+ "bin")))
   (if (file-exists-p bin-path) (add-to-list 'exec-path bin-path)))
+
+;;; eshell
+(if +old-emacs+
+    (custom-set-variables
+     '(eshell-directory-name (concat user-emacs-directory
+				     "eshell/"))))
 
 (provide 'my-customize)
 

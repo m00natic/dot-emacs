@@ -12,8 +12,7 @@
       default-directory +home-path+)
 
 ;;; Cygwin
-(let ((cygwin-dir (eval-when-compile
-		    (concat +win-path+ "cygwin/bin"))))
+(let ((cygwin-dir (concat +win-path+ "cygwin/bin")))
   (when (file-exists-p cygwin-dir)
     (setq shell-file-name "bash"
 	  explicit-shell-file-name "bash")

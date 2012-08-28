@@ -32,8 +32,7 @@
 
 ;;; Ditaa
 (let ((ditaa-path (expand-file-name
-		   (win-or-nix #1=(concat +conf-path+ "bin/ditaa.jar")
-			       (eval-when-compile #1#)))))
+		   (concat +conf-path+ "bin/ditaa.jar"))))
   (when (file-exists-p ditaa-path)
     (when-library t org (setq org-ditaa-jar-path ditaa-path))
 

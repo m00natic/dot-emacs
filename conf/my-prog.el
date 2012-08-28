@@ -9,6 +9,9 @@
 (require 'my-utils)
 
 (custom-set-variables
+ '(c-default-style '((java-mode . "java")
+		     (awk-mode . "awk")
+		     (other . "stroustrup")))
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
  '(prolog-system 'swi)
@@ -28,14 +31,16 @@
   nil ecb
   (eval-after-load "ecb"
     `(progn (defvar stack-trace-on-error nil)
-	    (let ((prog-path ,(win-or-nix
-			       #1=(concat +home-path+ "Programs")
-			       (eval-when-compile #1#))))
+	    (let ((prog-path (concat +home-path+ "Programs")))
 	      (ecb-add-source-path prog-path prog-path t))))))
 
 ;;; AutoComplete
 (when (require 'auto-complete-config nil t)
-  (ac-config-default)
+
+  (if +old-emacs+
+      (ignore-errors (ac-config-default))
+    (ac-config-default))
+
   (ac-flyspell-workaround)
 
   (when-library
@@ -84,12 +89,12 @@
   (add-hook 'haskell-mode-hook (lambda () (ghc-init)
 				 (flymake-mode)))))
 
-;;; cc-mode - hide functions
-(add-hook 'c-mode-common-hook (lambda () (hs-minor-mode 1)
-				(when-library nil hl-sexp
-					      (hl-sexp-mode 1))
-				(local-set-key [backtab]
-					       'hs-toggle-hiding)))
+;;; cc-mode settings
+(add-hook 'c-mode-common-hook
+	  (lambda () (hs-minor-mode 1)
+	    (when-library nil hl-sexp
+			  (hl-sexp-mode 1))
+	    (local-set-key [backtab] 'hs-toggle-hiding)))
 
 ;;; Emacs Speaks Statistics
 (when-library

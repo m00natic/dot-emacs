@@ -15,12 +15,9 @@
    ,(win-or-nix
      (cond ((file-exists-p (concat +home-path+ "clisp"))
 	    (concat +home-path+ "clisp/clisp.exe -K full"))
-	   ((file-exists-p (eval-when-compile
-			     (concat +win-path+
-				     "Program Files/clisp")))
-	    (eval-when-compile
-	      (concat +win-path+
-		      "Program Files/clisp/clisp.exe -K full")))
+	   ((file-exists-p (concat +win-path+ "Program Files/clisp"))
+	    (concat +win-path+
+		    "Program Files/clisp/clisp.exe -K full"))
 	   (t "clisp"))
      "sbcl"))
  '(scheme-program-name "gsi"))
@@ -203,9 +200,8 @@
    `(progn
       (setq inferior-clips-program
 	    ,(win-or-nix
-	      (eval-when-compile
-		(concat +win-path+
-			"Program Files/CLIPS/Bin/CLIPSDOS.exe"))
+	      (concat +win-path+
+		      "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 	      "clips"))
       (add-hook 'inferior-clips-mode-hook
 		(byte-compile

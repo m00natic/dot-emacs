@@ -149,8 +149,7 @@ Medium - less than 120000 bytes."
       (setq emms-show-format "EMMS: %s"
 	    emms-mode-line-format "%s"
 	    emms-source-file-default-directory
-	    ,(win-or-nix #1=(concat +home-path+ "Music/")
-			 (eval-when-compile #1#))
+	    ,(concat +home-path+ "Music/")
 	    emms-track-description-function
 	    'my-emms-track-description-function
 	    emms-browser-covers 'my-emms-covers)
@@ -263,9 +262,8 @@ Medium - less than 120000 bytes."
  (eval-after-load "sudoku"
    `(progn
       (setq sudoku-level "evil")
-      ,(win-or-nix
-	'(let ((wget-path (executable-find "wget")))
-	   (if wget-path (setq sudoku-wget-process wget-path)))))))
+      (let ((wget-path (executable-find "wget")))
+	(if wget-path (setq sudoku-wget-process wget-path))))))
 
 (provide 'my-fun)
 

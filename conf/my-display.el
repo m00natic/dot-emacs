@@ -31,7 +31,9 @@
 
 ;;; sml-modeline
 (if (require 'sml-modeline nil t)
-    (sml-modeline-mode 1))
+    (if +old-emacs+
+	(ignore-errors (sml-modeline-mode 1))
+      (sml-modeline-mode 1)))
 
 ;;; fullscreen stuff
 (defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
@@ -86,7 +88,10 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
-  (tabbar-mode 1)
+  (if +old-emacs+
+      (ignore-errors (tabbar-mode 1))
+    (tabbar-mode 1))
+
   (setq-default mode-line-buffer-identification "")
 
   (defun next-tab (arg)

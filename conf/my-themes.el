@@ -14,8 +14,15 @@
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
-(when (and (load-theme 'andr t t)
-	   (load-theme 'andr-dark t t))
+(when (if +old-emacs+
+	  (and (load-theme 'andr)
+	       (load-theme 'andr-dark))
+	(and (load-theme 'andr t t)
+	     (load-theme 'andr-dark t t)))
+
+  (when +old-emacs+
+    (disable-theme 'andr)
+    (disable-theme 'andr-dark))
 
   (defmacro switch-faces (&optional light)
     "Set dark faces.  With prefix, LIGHT."
