@@ -38,8 +38,7 @@ NIX forms are executed on all other platforms."
    #1#)
   "Home path.")
 
-(defconst +conf-path+ (concat user-emacs-directory "conf"
-			      (if +old-emacs+ "-srv") "/")
+(defconst +conf-path+ (concat user-emacs-directory "conf/")
   "Elisp configuration path.")
 
 ;;; add `+conf-path+' and subdirs to `load-path'

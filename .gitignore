@@ -1,2 +1,15 @@
 *.elc
+*.dat
+.*
 bin/
+anything-c-adaptive-history
+backup/
+bookmarks
+elpa/
+emms/
+eshell/
+image-dired/
+recentf
+semanticdb/
+tramp
+url/

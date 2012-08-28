@@ -1,0 +1,511 @@
+How many Prolog programmers does it take to change a lightbulb?
+No.
+%
+I ask people, "isn't there something funny about grown people
+gathering in a huge stadium to see other grown people kicking a ball
+from one end to the other?" Each of those persons is using a
+multitrillion synapse brain.
+		-- Marvin Minsky
+%
+Act from reason, and failure makes you rethink and study harder.
+Act from faith, and failure makes you blame someone and push harder.
+%
+If I could change one thing—this is going to sound stupid - but if I
+could go back in time and change one thing, I might try to interest
+some early preliterate people in not using their thumbs when they
+count.
+		-- Guy Steele Jr.
+%
+Poor Andersson - had to play until move 40 (which he is so unfamiliar
+with). This bad guy Solodovnichenko just kept pressing and pressing
+until the draw was obvious - to him. Andersson is much better at
+that. He spots draws long before and really knows when to stop
+playing. And everyone has to admit that 18 or 14 moves are too much
+anyway. But Andersson loves his fans and likes to play OTB that's why
+he sits down at the board and makes some moves though it's completely
+unnecessary. You may ask why and I will tell you: Andersson solved
+chess and knows that it's a draw. And as a real sportsman he still
+travels to tournaments instead of simply sending a postcard with all
+the results correctly predicted (4.5/9 with a draw against
+everyone). Andersson, you are my hero!
+		-- from chessgames.com
+%
+I hear the Russians put a dangerous scorpion in Danailov's luggage and
+it stung him. The scorpion died three days later of poisoning.
+		-- from chessgames.com
+%
+Dear Santa, can you teach me to read? Don't bother with the writing,
+I'm doing fine with copy&paste.
+		-- from chessgames.com
+%
+Chess is certainly not a matter of life or death, it's much more
+serious than that.
+		-- from rybkaforum.net
+%
+About the use of language: it is impossible to sharpen a pencil with a blunt
+ax.  It is equally vain to try to do it with ten blunt axes instead.
+		-- Edsger Dijkstra
+%
+Much of the excitement we get out of our work is that we don't really
+know what we are doing.
+		-- Edsger Dijkstra
+%
+Testing can show the presense of bugs, but not their absence.
+		-- Edsger Dijkstra
+%
+Any sufficiently complicated C or Fortran program contains an ad hoc,
+informally-specified, bug-ridden, slow implementation of half of
+Common Lisp.
+		-- Greenspun's Tenth Rule of Programming
+%
+If you don't fail at least 90 percent of the time, you're not aiming
+high enough.
+		-- Alan Kay
+%
+The best way to predict the future is to invent it.
+		-- Alan Kay
+%
+Simple things should be simple, complex things should be possible.
+		-- Alan Kay
+%
+Technology is anything that wasn't around when you were born.
+		-- Alan Kay
+%
+Most software today is very much like an Egyptian pyramid with
+millions of bricks piled on top of each other, with no structural
+integrity, but just done by brute force and thousands of slaves.
+		-- Alan Kay
+%
+Most creativity is a transition from one context into another where
+things are more surprising. There’s an element of surprise, and
+especially in science, there is often laughter that goes along with
+the “Aha”. Art also has this element. Our job is to remind us that
+there are more contexts than the one that we’re in — the one that we
+think is reality.
+		-- Alan Kay
+%
+Actually I made up the term "object-oriented", and I can tell you I
+did not have C++ in mind.
+		-- Alan Kay
+%
+I finally understood that the half page of code on the bottom of page
+13 of the Lisp 1.5 manual was Lisp in itself. These were “Maxwell’s
+Equations of Software!”
+		-- Alan Kay
+%
+Unlike other resources, time cannot be bought or sold, borrowed or
+stolen, stocked up or saved, manufactured, reproduced, or modified.
+All we can do is make use of it.
+		-- Jean-Louis Servan-Schreiber
+%
+Fallacies do not cease to be fallacies because they become fashions.
+		-- G. K. Chesterton
+%
+Man needs God like a fish needs a bicycle.
+%
+Humanity without religion is like a serial killer without a chain saw.
+%
+The narrower the mind, the broader the statement.
+		-- Ted Cook
+%
+Until lions have their historians, tales of the hunt shall always
+glorify the hunters.
+		-- African proverb
+%
+Show me your .emacs and I'll tell you who you are.
+		-- modified proverb
+%
+It is better to keep your mouth shut and be thought a fool than to
+open it and remove all doubt.
+		-- Mark Twain
+%
+When the only tool you own is a hammer, every problem begins to
+resemble a nail.
+		-- Abraham Maslow
+%
+Philosophy is questions that may never be answered. Religion is
+answers that may never be questioned.
+%
+The greatest problem with communication is the illusion that it has
+occurred.
+		-- George Bernard Shaw
+%
+Some people, when confronted with a problem, think "I know, I'll use
+regular expressions." Now they have two problems.
+		-- Jamie Zawinski
+%
+The determined Real Programmer can write FORTRAN programs in any
+language.
+		-- Ed Post
+%
+One man's constant is another man's variable.
+		-- Alan Perlis
+%
+Functions delay binding; data structures induce binding. Moral:
+Structure data late in the programming process.
+		-- Alan Perlis
+%
+Syntactic sugar causes cancer of the semicolon.
+		-- Alan Perlis
+%
+Every program is a part of some other program and rarely fits.
+		-- Alan Perlis
+%
+If a program manipulates a large amount of data, it does so in a small
+number of ways.
+		-- Alan Perlis
+%
+It is easier to write an incorrect program than understand a correct
+one.
+		-- Alan Perlis
+%
+A programming language is low level when its programs require
+attention to the irrelevant.
+		-- Alan Perlis
+%
+It is better to have 100 functions operate on one data structure than
+10 functions on 10 data structures.
+		-- Alan Perlis
+%
+If you have a procedure with ten parameters, you probably missed some.
+		-- Alan Perlis
+%
+Everything should be built top-down, except the first time.
+		-- Alan Perlis
+%
+Every program has (at least) two purposes: the one for which it was
+written, and another for which it wasn't.
+		-- Alan Perlis
+%
+If a listener nods his head when you're explaining your program, wake
+him up.
+		-- Alan Perlis
+%
+A language that doesn't affect the way you think about programming, is
+not worth knowing.
+		-- Alan Perlis
+%
+Optimization hinders evolution.
+		-- Alan Perlis
+%
+There will always be things we wish to say in our programs that in all
+known languages can only be said poorly.
+		-- Alan Perlis
+%
+In programming, everything we do is a special case of something more
+general - and often we know it too quickly.
+		-- Alan Perlis
+%
+Simplicity does not precede complexity, but follows it.
+		-- Alan Perlis
+%
+The eleventh commandment was "Thou Shalt Compute" or "Thou Shalt Not
+Compute" - I forget which.
+		-- Alan Perlis
+%
+Some programming languages manage to absorb change, but withstand
+progress.
+		-- Alan Perlis
+%
+Like punning, programming is a play on words.
+		-- Alan Perlis
+%
+As Will Rogers would have said, "There is no such thing as a free
+variable."
+		-- Alan Perlis
+%
+Systems have sub-systems and sub-systems have sub- systems and so on
+ad infinitum - which is why we're always starting over.
+		-- Alan Perlis
+%
+Beware of the Turing tar-pit in which everything is possible but
+nothing of interest is easy.
+		-- Alan Perlis
+%
+It is easier to change the specification to fit the program than vice
+versa.
+		-- Alan Perlis
+%
+Fools ignore complexity. Pragmatists suffer it. Some can avoid
+it. Geniuses remove it.
+		-- Alan Perlis
+%
+In seeking the unattainable, simplicity only gets in the way.
+		-- Alan Perlis
+%
+In programming, as in everything else, to be in error is to be reborn.
+		-- Alan Perlis
+%
+When we write programs that "learn", it turns out that we do and they
+don't.
+		-- Alan Perlis
+%
+Often it is the means that justify the ends: Goals advance technique
+and technique survives even when goal structures crumble.
+		-- Alan Perlis
+%
+If we believe in data structures, we must believe in independent
+(hence simultaneous) processing. For why else would we collect items
+within a structure? Why do we tolerate languages that give us the one
+without the other?
+		-- Alan Perlis
+%
+In a 5 year period we get one superb programming language. Only we
+can't control when the 5 year period will be.
+		-- Alan Perlis
+%
+Motto for a research laboratory: What we work on today, others will
+first think of tomorrow.
+		-- Alan Perlis
+%
+One does not learn computing by using a hand calculator, but one can
+forget arithmetic.
+		-- Alan Perlis
+%
+Interfaces keep things tidy, but don't accelerate growth: Functions
+do.
+		-- Alan Perlis
+%
+Don't have good ideas if you aren't willing to be responsible for
+them.
+		-- Alan Perlis
+%
+Computers don't introduce order anywhere as much as they expose
+opportunities.
+		-- Alan Perlis
+%
+In computing, the mean time to failure keeps getting shorter.
+		-- Alan Perlis
+%
+We will never run out of things to program as long as there is a
+single program around.
+		-- Alan Perlis
+%
+Dealing with failure is easy: Work hard to improve. Success is also
+easy to handle: You've solved the wrong problem. Work hard to improve.
+		-- Alan Perlis
+%
+Purely applicative languages are poorly applicable.
+		-- Alan Perlis
+%
+The proof of a system's value is its existence.
+		-- Alan Perlis
+%
+You can't communicate complexity, only an awareness of it.
+		-- Alan Perlis
+%
+Whenever two programmers meet to criticize their programs, both are
+silent.
+		-- Alan Perlis
+%
+Within a computer natural language is unnatural.
+		-- Alan Perlis
+%
+Most people find the concept of programming obvious, but the doing
+impossible.
+		-- Alan Perlis
+%
+It goes against the grain of modern education to teach children to
+program. What fun is there in making plans, acquiring discipline in
+organizing thoughts, devoting attention to detail and learning to be
+self-critical?
+		-- Alan Perlis
+%
+Adapting old programs to fit new machines usually means adapting new
+machines to behave like old ones.
+		-- Alan Perlis
+%
+There are no facts, only interpretations.
+		-- Friedrich Nietzsche
+%
+Man has an invincible inclination to allow himself to be deceived and
+is, as it were, enchanted with happiness when the rhapsodist tells him
+epic fables as if they were true, or when the actor in the theater
+acts more royally than any real king.
+		-- Friedrich Nietzsche
+%
+Every tradition grows ever more venerable — the more remote its
+origin, the more confused that origin is. The reverence due to it
+increases from generation to generation. The tradition finally becomes
+holy and inspires awe.
+		-- Friedrich Nietzsche
+%
+It is not the struggle of opinions that has made history so violent,
+but rather the struggle of belief in opinions, that is, the struggle
+of convictions.
+		-- Friedrich Nietzsche
+%
+Whatever has value in our world now does not have value in itself,
+according to its nature — nature is always value-less, but has been
+given value at some time, as a present — and it was we who gave and
+bestowed it.
+		-- Friedrich Nietzsche
+%
+Not by wrath does one kill, but by laughter.
+		-- Friedrich Nietzsche
+%
+Christianity is a metaphysics of the hangman...
+		-- Friedrich Nietzsche
+%
+"Faith" means not wanting to know what is true.
+		-- Friedrich Nietzsche
+%
+We are apt to fall into the error of thinking that the facts are
+simple because simplicity is the goal of our quest.
+		-- Alfred North Whitehead
+%
+We think in generalities, but we live in detail.
+		-- Alfred North Whitehead
+%
+Civilization advances by extending the number of important operations
+which we can perform without thinking about them.
+		-- Alfred North Whitehead
+%
+It requires a very unusual mind to undertake the analysis of the
+obvious.
+		-- Alfred North Whitehead
+%
+The science of pure mathematics, in its modern developments, may claim
+to be the most original creation of the human spirit.
+		-- Alfred North Whitehead
+%
+We all have a tendency to think that the world must conform to our
+prejudices. The opposite view involves some effort of thought, and
+most people would die sooner than think — in fact they do so.
+		-- Bertrand Russell
+%
+The fundamental cause of the trouble is that in the modern world the
+stupid are cocksure while the intelligent are full of doubt.
+		-- Bertrand Russell
+%
+The opinions that are held with passion are always those for which no
+good ground exists; indeed the passion is the measure of the holder’s
+lack of rational conviction. Opinions in politics and religion are
+almost always held passionately.
+		-- Bertrand Russell
+%
+Lisp is the red pill.
+		-- John Fraser
+%
+Lisp is a programmable programming language.
+		-- John Foderaro
+%
+The key to performance is elegance, not battalions of special cases.
+		-- Jon Bentley and Douglas McIlroy
+%
+Life is too long to be good at C/C++.
+		-- Erik Naggum
+%
+Well, take it from an old hand: the only reason it would be easier to
+program in C is that you can't easily express complex problems in C,
+so you don't.
+		-- Erik Naggum
+%
+A novice had a problem and could not find a solution. "I know," said
+the novice, "I'll just use Perl!" The novice now had two problems.
+		-- Erik Naggum
+%
+If Perl is the solution, you're solving the wrong problem.
+		-- Erik Naggum
+%
+Structure is nothing if it is all you got. Skeletons spook people if
+they try to walk around on their own. I really wonder why XML does
+not.
+		-- Erik Naggum
+%
+XML is a giant step in no direction at all.
+		-- Erik Naggum
+%
+If the syntax is good enough for the information, it should be good
+enough for the meta-information.
+		-- Erik Naggum
+%
+Please note: if you think the above is offensive, it is of course a
+joke and you did not get it. If you do not find it offensive, it is of
+course not a joke, and you did not get it. This is not a joke. Get it?
+		-- Erik Naggum
+%
+A little knowledge is a dangerous thing. I regret that this isn't
+fatal.
+		-- Erik Naggum
+%
+Rewarding incompetence and ignorance increases the number of
+incompetent programmers. Designing programming languages and tools so
+incompetent programmers can feel better about themselves is not the
+way to go.
+		-- Erik Naggum
+%
+Optimization is generally detrimental to future success, but it is the
+only way to accomplish present success in competition with others who
+are equally interested in short-term results.
+		-- Erik Naggum
+%
+The only way to improve your work or life is by understanding and
+examining why you do what you do.
+		-- Erik Naggum
+%
+The past is not more important than the future, despite what your
+culture has taught you. Your future observations, conclusions, and
+beliefs are more important to you than those in your past ever will
+be. The world is changing so fast the balance between the past and the
+future has shifted.
+%
+In science, if you know what you are doing, you should not be doing
+it. In engineering, if you do not know what you are doing, you should
+not be doing it. Of course, you seldom, if ever, see either pure
+state.
+		-- Richard Hamming
+%
+The reasonable man adapts himself to the world; the unreasonable one
+persists in trying to adapt the world to himself. Therefore all
+progress depends on the unreasonable man.
+		-- George Bernard Shaw
+%
+A thing is not necessarily true because a man dies for it.
+		-- Oscar Wilde
+%
+And, after all, what is a fashion? From the artistic point of view, it
+is usually a form of ugliness so intolerable that we have to alter it
+every six months.
+		-- Oscar Wilde
+%
+Experience is the name everyone gives to their mistakes.
+		-- Oscar Wilde
+%
+Ambition is the last refuge of the failure.
+		-- Oscar Wilde
+%
+Most people are other people. Their thoughts are someone else's
+opinions, their lives a mimicry, their passions a quotation.
+		-- Oscar Wilde
+%
+Seriousness is the only refuge of the shallow.
+		-- Oscar Wilde
+%
+Religion is regarded by the common people as true, by the wise as
+false, and by the rulers as useful.
+%
+Computer engineering is the only profession next to Meteorology where
+you can be wrong most of the time and keep your job.
+		-- /. comment
+%
+All new features added to C++ are intended to fix previously new
+features added to C++.
+		-- David Jameson
+%
+The essence of XML is this: the problem it solves is not hard, and it
+does not solve the problem well.
+		-- Phil Wadler
+%
+The assignment statement is the von Neumann bottle-neck of programming
+languages and keeps us thinking in word-at-a-time terms in much the
+same way the computer’s bottleneck does.
+		-- John Backus
+%
+The reports of my death are greatly exaggerated.
+		-- Mark Twain
+%
+Some people, when confronted with a problem, think, 'I know, I'll use
+floating point arithmetic'. Now they have 2.000000000000000000001
+problems.
+		-- reddit comment
