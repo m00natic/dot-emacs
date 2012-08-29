@@ -26,10 +26,8 @@
 
   (defmacro switch-faces (&optional light)
     "Set dark faces.  With prefix, LIGHT."
-    (if light '(progn (disable-theme 'andr-dark)
-		      (enable-theme 'andr))
-      '(progn (disable-theme 'andr)
-	      (enable-theme 'andr-dark))))
+    (if light '(enable-theme 'andr)
+      '(enable-theme 'andr-dark)))
 
   ;; automatically switch faces on sunrise and sunset
   (when (require 'solar nil t)

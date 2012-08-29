@@ -43,15 +43,6 @@ NIX forms are executed on all other platforms."
 
 ;;; add `+conf-path+' and subdirs to `load-path'
 (add-to-list 'load-path +conf-path+)
-(let ((default-directory +conf-path+))
-  (normal-top-level-add-subdirs-to-load-path))
-
-(if +old-emacs+
-;;; add elpa and subdirs to `load-path'
-    (let ((elpa-path (concat user-emacs-directory "elpa/")))
-      (add-to-list 'load-path elpa-path)
-      (let ((default-directory elpa-path))
-	(normal-top-level-add-subdirs-to-load-path))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -61,29 +52,9 @@ NIX forms are executed on all other platforms."
 (require 'my-utils)
 (require 'my-customize)
 
-(if (require 'package nil t)
-    (package-initialize)
-
-  (defmacro require-multi (&rest packages)
-    "Require PACKAGES."
-    `(progn
-       ,@(mapcar (lambda (package)
-		   `(require ',package nil t))
-		 packages)))
-
-  (require-multi
-   ace-jump-mode-autoloads auctex-autoloads auto-complete-autoloads
-   clips-mode-autoloads clojure-mode-autoloads csharp-mode-autoloads
-   cygwin-mount-autoloads dictionary-autoloads ecb_snap-autoloads
-   emms-autoloads ergoemacs-keybindings-autoloads ess-autoloads
-   ghc-autoloads gnugo-autoloads graphviz-dot-mode-autoloads
-   haskell-mode-autoloads helm-autoloads
-   highlight-parentheses-autoloads hl-sexp-autoloads
-   mldonkey-autoloads notify-autoloads oz-autoloads paredit-autoloads
-   popup-autoloads quack-autoloads redshank-autoloads sauron-autoloads
-   shen-mode-autoloads slime-autoloads sml-modeline-autoloads
-   sudoku-autoloads tabbar-autoloads w3-autoloads w3m-autoloads
-   wgrep-autoloads wget-autoloads))
+(if (or (require 'package nil t)
+	(require 'package-23 nil t))
+    (package-initialize))
 
 (require 'my-display)
 

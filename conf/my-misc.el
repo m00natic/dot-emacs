@@ -31,9 +31,8 @@
      "\M-SPC" 'helm-mark-candidate)))
 
 ;;; Ditaa
-(let ((ditaa-path (expand-file-name
-		   (concat +conf-path+ "bin/ditaa.jar"))))
-  (when (file-exists-p ditaa-path)
+(let ((ditaa-path (executable-find "ditaa.jar")))
+  (when ditaa-path
     (when-library t org (setq org-ditaa-jar-path ditaa-path))
 
     (defun ditaa-generate ()
