@@ -2,7 +2,6 @@
 *.dat
 .*
 bin/
-anything-c-adaptive-history
 backup/
 bookmarks
 elpa/

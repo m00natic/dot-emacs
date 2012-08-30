@@ -234,22 +234,28 @@ Medium - less than 120000 bytes."
 
       (defun emms-track-ticker-start ()
 	"Start ticking current TRACK info."
-	(setq *my-emms-ticker*
-	      (run-at-time t 2 'emms-tick-mode-line-description 5)))
+	(or *my-emms-ticker*
+	    (setq *my-emms-ticker*
+		  (run-at-time t 2
+			       'emms-tick-mode-line-description 5))))
+
+      (defun emms-track-ticker-stop ()
+	"Stop ticking current TRACK info."
+	(when *my-emms-ticker*
+	  (cancel-timer *my-emms-ticker*)
+	  (setq *my-emms-ticker* nil)))
 
       (byte-compile 'emms-track-ticker-start)
+      (byte-compile 'emms-track-ticker-stop)
 
-      (defadvice emms-player-start
-	(after emms-player-tick-start (track) activate compile)
-	"Start ticking current TRACK info."
-	(emms-track-ticker-start))
-
-      (defadvice emms-player-stop
-	(after emms-player-tick-stop activate compile)
-	"Stop track ticker."
-	(cancel-timer *my-emms-ticker*))
-
-      (add-hook 'emms-player-started-hook 'emms-track-ticker-start))))
+      (add-hook 'emms-player-started-hook 'emms-track-ticker-start)
+      (add-hook 'emms-player-stopped-hook 'emms-track-ticker-stop)
+      (add-hook 'emms-player-finished-hook 'emms-track-ticker-stop)
+      (add-hook 'emms-player-paused-hook
+		(byte-compile (lambda () "Start/Stop track ticker."
+				(if *my-emms-ticker*
+				    (emms-track-ticker-stop)
+				  (emms-track-ticker-start))))))))
 
 ;;; chess
 (when-library nil chess
@@ -260,10 +266,9 @@ Medium - less than 120000 bytes."
  nil sudoku
  (autoload 'sudoku "sudoku" "Start a sudoku game." t)
  (eval-after-load "sudoku"
-   `(progn
-      (setq sudoku-level "evil")
-      (let ((wget-path (executable-find "wget")))
-	(if wget-path (setq sudoku-wget-process wget-path))))))
+   `(progn (setq sudoku-level "evil")
+	   (let ((wget-path (executable-find "wget")))
+	     (if wget-path (setq sudoku-wget-process wget-path))))))
 
 (provide 'my-fun)
 
