@@ -48,14 +48,13 @@ NIX forms are executed on all other platforms."
 
 ;;; load configurations
 
-(require 'my-themes)
-(require 'my-utils)
-(require 'my-customize)
-
 (if (or (require 'package nil t)
 	(require 'package-23 nil t))
     (package-initialize))
 
+(require 'my-themes)
+(require 'my-utils)
+(require 'my-customize)
 (require 'my-display)
 
 (win-or-nix (require 'my-windows))

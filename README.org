@@ -1,19 +1,19 @@
 This is my humble .emacs.d configuration.  It's tested to run
-on #1=GNU/Linux, BSDs and windows with #2=GNU/Emacs 24 onwards.  Main
+on #1=GNU/Linux, BSDs and windows with #2=GNU/Emacs 23 onwards.  Main
 target is #1# with trunk version of #2# though.  Many things are
 shamelessly adopted from other people (thanks emacswiki).  It is
-compilable and supposed to be tolerant to missing extra packages
-without complaining and errors.  Whenever possible, extensions are
-autoloaded on demand for a quicker start-up and smaller memory
-footprint.  It's somewhat personalized, thus if someone is to try it
-out, some glitches (paths, email addresses...) may have to be tuned.
-The download section contains a relevant set of extensions which is
-kept up to date at time of upload.  It's expected to be untared in
-~/.emacs.d/ to run out of the box.  There are just elisp sources which
-should be byte compiled.  You can just load compile-extras.el to do
-this.  At present all external extensions are avavailable through some
-ELPA repository so it would be even more convenient to get them from
-there with `package-list-packages'.
+supposed to be tolerant to missing extra packages without complaining
+and errors.  Whenever possible, extensions are autoloaded on demand
+for a quicker start-up and smaller memory footprint.  It's somewhat
+personalized, thus if someone is to try it out, some glitches (paths,
+email addresses...) may have to be tuned.  The download section
+contains a relevant set of extensions which is kept up to date at time
+of upload.  It's expected to be untared in ~/.emacs.d/ to run out of
+the box.  There are just elisp sources which should be byte compiled.
+You can just load compile-extras.el to do so.  At present all external
+extensions are avavailable through some ELPA repository so it would be
+even more convenient to get them from there with
+`package-list-packages'.
 
 Here's a list of external packages (mentioning the built-in ones would
 be too much) that this .emacs is somewhat aware of in some order and
@@ -22,7 +22,7 @@ links:
 * Programming languages related
 - [[http://common-lisp.net/project/slime][SLIME]]
 - [[http://www.neilvandyke.org/quack][Quack]]
-- [[http://github.com/technomancy/clojure-mode][clojure-mode]]
+- [[https://github.com/technomancy/clojure-mode][clojure-mode]]
 - [[http://www.cs.us.es/software/clips][clips-mode]]
 - [[http://projects.haskell.org/haskellmode-emacs][haskell-mode]]
 - [[http://www.mew.org/~kazu/proj/ghc-mod/en][ghc-mod]]
@@ -45,7 +45,7 @@ links:
 
 * misc
 - [[http://xahlee.org/emacs/ergonomic_emacs_keybinding.html][ErgoEmacs-mode]]
-- [[http://github.com/emacs-helm/helm][Helm]]
+- [[https://github.com/emacs-helm/helm][Helm]]
 - [[http://bbdb.sourceforge.net][BBDB]]
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
 - [[http://ditaa.sourceforge.net][Ditaa]]
@@ -56,7 +56,8 @@ links:
 - [[http://www.emacswiki.org/emacs/cygwin-mount.el][cygwin-mount]]
 - [[http://www.myrkr.in-berlin.de/dictionary/index.html][Dictionary]]
 - [[http://www.gnu.org/software/emms][EMMS]]
-- [[http://github.com/jwiegley/emacs-chess][Emacs Chess]]
+- [[https://github.com/m00natic/rase][RASE]]
+- [[https://github.com/jwiegley/emacs-chess][Emacs Chess]]
 - [[http://sourceforge.net/projects/sudoku-elisp][sudoku]]
 - gnugo
 - mldonkey
