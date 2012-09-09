@@ -10,17 +10,16 @@
 (let ((class '((class color) (min-colors 88))))
   (custom-theme-set-faces
    'andr-dark
-   `(default ((default :background "#242424")
-	      (,class :foreground "#f6f3e8" :family "Inconsolata")
+   `(default ((default :background "#3f3f3f")
+	      (,class :foreground "#dcdccc" :family "Inconsolata")
 	      (t :foreground "white" :family "terminus")))
    `(mode-line ((default :width condensed :family "neep")
-		(,class :background "#444444" :foreground "#f6f3e8")
+		(,class :background "#2b2b2b" :foreground "#8fb28f")
 		(t :background "cyan")))
    `(mode-line-inactive
-     ((default :inherit mode-line :weight light)
-      (,class :box (:line-width -1 :color "grey40")
-	      :background "#444444" :foreground "#857b6f")
-      (t :inverse-video t)))
+     ((default :inherit mode-line :weight light
+	:box (:line-width -1 :color "grey40")
+	:background "#383838" :foreground "#5f7f5f")))
    '(tabbar-selected ((t :inherit default :weight bold)))
    `(tabbar-unselected ((default :inherit tabbar-default)
 			(,class

@@ -18,10 +18,9 @@
       (,class :foreground "white" :background "DarkSlateGray")
       (t :background "cyan")))
    `(mode-line-inactive
-     ((default :inherit mode-line :weight light)
-      (,class :box (:line-width -1 :color "grey75")
-	      :foreground "grey20" :background "grey90")
-      (t :inverse-video t)))
+     ((default :inherit mode-line :weight light
+	:box (:line-width -1 :color "grey75")
+	:foreground "grey20" :background "grey90")))
    '(tabbar-selected ((t :inherit default :weight bold)))
    `(tabbar-unselected ((default :inherit tabbar-default)
 			(,class
