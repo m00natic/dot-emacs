@@ -85,9 +85,10 @@
 
  (when-library
   nil ghc
-  (autoload 'ghc-init "ghc" nil t)
-  (add-hook 'haskell-mode-hook (lambda () (ghc-init)
-				 (flymake-mode)))))
+  (when (executable-find "ghc-mod")
+    (autoload 'ghc-init "ghc" nil t)
+    (add-hook 'haskell-mode-hook (lambda () (ghc-init)
+				   (flymake-mode))))))
 
 ;;; cc-mode settings
 (add-hook 'c-mode-common-hook

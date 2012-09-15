@@ -87,6 +87,10 @@
       (add-to-list 'slime-lisp-implementations
 		   (list ',(win-or-nix 'clisp 'sbcl)
 			 ',(split-string inferior-lisp-program " +")))
+
+      (win-or-nix
+       nil (add-to-list 'slime-lisp-implementations '(clozure ("ccl"))))
+
       (if (file-exists-p ,(concat +home-path+
 				  "Documents/HyperSpec/"))
 	  (setq common-lisp-hyperspec-root

@@ -34,7 +34,6 @@
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
  `(recentf-save-file ,(concat user-emacs-directory "recentf"))
- '(require-final-newline t)
  '(save-place t nil (saveplace))
  `(save-place-file ,(concat user-emacs-directory ".emacs-places"))
  '(version-control t)

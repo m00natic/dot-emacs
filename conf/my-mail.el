@@ -12,6 +12,7 @@
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
  '(message-send-mail-function 'smtpmail-send-it)
+ '(mm-inline-large-images 'resize)
  '(smtpmail-smtp-service 587))
 
 ;;; Gnus
