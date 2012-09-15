@@ -13,20 +13,21 @@
    `(default ((default :background "#3f3f3f")
 	      (,class :foreground "#dcdccc" :family "Inconsolata")
 	      (t :foreground "white" :family "terminus")))
-   `(mode-line ((default :width condensed :family "neep")
+   `(mode-line ((default :inherit variable-pitch :width condensed)
 		(,class :background "#2b2b2b" :foreground "#8fb28f")
 		(t :background "cyan")))
-   `(mode-line-inactive
+   '(mode-line-inactive
      ((default :inherit mode-line :weight light
 	:box (:line-width -1 :color "grey40")
 	:background "#383838" :foreground "#5f7f5f")))
-   '(tabbar-selected ((t :inherit default :weight bold)))
-   `(tabbar-unselected ((default :inherit tabbar-default)
-			(,class
-			 :background "gray50" :foreground "black"
-			 :box (:line-width 2 :color "black"))
+   `(tabbar-selected ((t :inherit default :weight bold
+			 (,class :box (:line-width -1
+				       :style pressed-button)))))
+   `(tabbar-unselected ((default :inherit default)
+			(,class :box (:line-width -1
+				:style released-button))
 			(t :inverse-video t)))
-   '(tabbar-button ((t :background "black" :foreground "gray50")))
+   '(tabbar-button ((t :inherit default)))
    '(sml-modeline-end-face ((t :family "neep" :inherit default
 			       :width condensed)))))
 

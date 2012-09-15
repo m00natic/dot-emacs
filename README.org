@@ -51,6 +51,7 @@ links:
 - [[http://ditaa.sourceforge.net][Ditaa]]
 - [[http://www.emacswiki.org/emacs/TabBarMode][TabBar]]
 - [[http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el][sml-modeline]]
+- [[https://github.com/bbatsov/zenburn-emacs][Zenburn]]
 - [[http://www.emacswiki.org/emacs/AceJump][Ace Jump]]
 - [[http://www.emacswiki.org/emacs/notify.el][notify]]
 - [[http://www.emacswiki.org/emacs/cygwin-mount.el][cygwin-mount]]

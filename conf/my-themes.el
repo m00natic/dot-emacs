@@ -21,21 +21,34 @@
 		  (load-theme 'andr-dark t t)))
 	   (require 'rase nil t))
 
+  (ignore-errors (if (if +old-emacs+
+			 (load-theme 'zenburn)
+		       (load-theme 'zenburn t))
+		     (enable-theme 'zenburn)))
+
+  (defmacro my-switch-colours (&optional light)
+    "Switch themes.  If LIGHT is not given, let it be dark."
+    (if light
+	'(progn (ignore-errors (disable-theme 'zenburn))
+		(enable-theme 'andr))
+      '(progn (enable-theme 'andr-dark)
+	      (ignore-errors (enable-theme 'zenburn)))))
+
   (defun my-switch-themes (sun-event first-run)
     "Switch themes on SUN-EVENT sunrise and sunset even on FIRST-RUN."
     (cond ((eq sun-event 'sunrise)
-	   (enable-theme 'andr))
+	   (my-switch-colours t))
 	  ((eq sun-event 'sunset)
-	   (enable-theme 'andr-dark))
+	   (my-switch-colours))
 	  ((consp first-run)
 	   (if (< (length (memq 'sunset first-run))
 		  (length (memq 'sunrise first-run)))
-	       (enable-theme 'andr)
-	     (enable-theme 'andr-dark)))
+	       (my-switch-colours t)
+	     (my-switch-colours)))
 	  (first-run
 	   (if (eq sun-event 'midday)
-	       (enable-theme 'andr)
-	     (enable-theme 'andr-dark)))))
+	       (my-switch-colours t)
+	     (my-switch-colours)))))
 
   (add-to-list 'rase-hook 'my-switch-themes)
   (rase-start t))
