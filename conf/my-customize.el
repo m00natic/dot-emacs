@@ -52,7 +52,7 @@
       tramp-backup-directory-alist backup-directory-alist)
 
 ;;; ido and subword
-(when-library t (ido subword)
+(when-library nil (ido subword)
 	      (add-hook 'ido-minibuffer-setup-hook
 			(lambda () (subword-mode -1))))
 

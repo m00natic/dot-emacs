@@ -32,10 +32,10 @@
 		  (compose-region (match-beginning 1) (match-end 1)
 				  ,(make-char 'greek-iso8859-7 107))
 		  nil)))))
-     ,(when-library nil hl-sexp '(hl-sexp-mode 1))
+     ,(when-library nil hl-sexp '(ignore-errors (hl-sexp-mode 1)))
      ,(when-library nil highlight-parentheses
-		    '(highlight-parentheses-mode 1))
-     ,(when-library nil paredit '(paredit-mode 1))))
+		    '(ignore-errors (highlight-parentheses-mode 1)))
+     ,(when-library nil paredit '(ignore-errors (paredit-mode 1)))))
 
 (defun activate-lisp-minor-modes ()
   "Activate some convenient minor modes for editing s-exp."

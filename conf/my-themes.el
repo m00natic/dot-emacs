@@ -21,10 +21,9 @@
 		  (load-theme 'andr-dark t t)))
 	   (require 'rase nil t))
 
-  (ignore-errors (if (if +old-emacs+
-			 (load-theme 'zenburn)
-		       (load-theme 'zenburn t))
-		     (enable-theme 'zenburn)))
+  (if (and (not +old-emacs+)
+	   (ignore-errors (load-theme 'zenburn t)))
+    (enable-theme 'zenburn))
 
   (defmacro my-switch-colours (&optional light)
     "Switch themes.  If LIGHT is not given, let it be dark."
@@ -51,7 +50,10 @@
 	     (my-switch-colours)))))
 
   (add-to-list 'rase-hook 'my-switch-themes)
-  (rase-start t))
+
+  (if +old-emacs+
+      (ignore-errors (rase-start t))
+    (rase-start t)))
 
 (provide 'my-themes)
 

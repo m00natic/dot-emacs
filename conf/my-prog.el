@@ -35,12 +35,9 @@
 	      (ecb-add-source-path prog-path prog-path t))))))
 
 ;;; AutoComplete
-(when (require 'auto-complete-config nil t)
-
-  (if +old-emacs+
-      (ignore-errors (ac-config-default))
-    (ac-config-default))
-
+(when (and (not +old-emacs+)
+	   (require 'auto-complete-config nil t))
+  (ac-config-default)
   (ac-flyspell-workaround)
 
   (when-library
