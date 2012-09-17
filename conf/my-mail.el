@@ -9,6 +9,7 @@
 (require 'my-utils)
 
 (custom-set-variables
+ '(gnus-buttonized-mime-types '("multipart/.*"))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
  '(message-send-mail-function 'smtpmail-send-it)

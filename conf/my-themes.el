@@ -23,7 +23,7 @@
 
   (if (and (not +old-emacs+)
 	   (ignore-errors (load-theme 'zenburn t)))
-    (enable-theme 'zenburn))
+      (enable-theme 'zenburn))
 
   (defmacro my-switch-colours (&optional light)
     "Switch themes.  If LIGHT is not given, let it be dark."
@@ -50,10 +50,7 @@
 	     (my-switch-colours)))))
 
   (add-to-list 'rase-hook 'my-switch-themes)
-
-  (if +old-emacs+
-      (ignore-errors (rase-start t))
-    (rase-start t)))
+  (rase-start t))
 
 (provide 'my-themes)
 

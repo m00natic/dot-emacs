@@ -52,9 +52,10 @@
       tramp-backup-directory-alist backup-directory-alist)
 
 ;;; ido and subword
-(when-library nil (ido subword)
-	      (add-hook 'ido-minibuffer-setup-hook
-			(lambda () (subword-mode -1))))
+(when-library t ido
+	      (when-library nil subword
+			    (add-hook 'ido-minibuffer-setup-hook
+				      (lambda () (subword-mode -1)))))
 
 ;;; add custom bin to path
 (let ((bin-path (concat +conf-path+ "bin")))
