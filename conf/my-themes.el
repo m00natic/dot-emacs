@@ -33,7 +33,7 @@
       '(progn (enable-theme 'andr-dark)
 	      (ignore-errors (enable-theme 'zenburn)))))
 
-  (defun my-switch-themes (sun-event first-run)
+  (defun my-switch-themes (sun-event &optional first-run)
     "Switch themes on SUN-EVENT sunrise and sunset even on FIRST-RUN."
     (cond ((eq sun-event 'sunrise)
 	   (my-switch-colours t))
