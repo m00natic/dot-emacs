@@ -156,7 +156,7 @@ Medium - less than 120000 bytes."
 
       ;; lastfm
       (when (and (require 'my-secret "my-secret.el.gpg" t)
-		 (require 'emms-lastfm-client nil t)
+		 (require 'emms-lastfm-scrobbler nil t)
 		 (let ((url-request-method "GET"))
 		   (ignore-errors      ; check for internet connection
 		     (url-retrieve-synchronously
