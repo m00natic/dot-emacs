@@ -10,17 +10,17 @@
 (let ((class '((class color) (min-colors 88))))
   (custom-theme-set-faces
    'andr
-   `(default ((default :foreground "black")
-	      (,class :background "cornsilk" :family "Inconsolata")
+   `(default ((default :foreground "#232333")
+	      (,class :background "#c0c0c0" :family "Inconsolata")
 	      (t :background "white" :family "terminus")))
    `(mode-line
      ((default :inherit variable-pitch :width condensed)
-      (,class :foreground "white" :background "DarkSlateGray")
+      (,class :foreground "#704d70" :background "#c7c7c7")
       (t :background "cyan")))
    '(mode-line-inactive
      ((default :inherit mode-line :weight light
-	:box (:line-width -1 :color "grey75")
-	:foreground "grey20" :background "grey90")))
+	:box (:line-width -1 :color "grey60")
+	:foreground "#a080a0" :background "#c7c7c7")))
    `(tabbar-selected ((t :inherit default :weight bold
 			 (,class :box (:line-width -1
 				       :style pressed-button)))))
