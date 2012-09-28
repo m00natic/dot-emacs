@@ -48,7 +48,7 @@
 	       (my-switch-colours t)
 	     (my-switch-colours)))))
 
-  (add-to-list 'rase-hook 'my-switch-themes)
+  (add-to-list 'rase-functions 'my-switch-themes)
   (rase-start t))
 
 (provide 'my-themes)
