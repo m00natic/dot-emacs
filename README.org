@@ -32,6 +32,7 @@ links:
 - [[http://ecb.sourceforge.net][Emacs Code Browser]]
 - [[http://cx4a.org/software/auto-complete][AutoComplete]]
 - [[http://emacswiki.org/emacs/FindFileInProject][Find File in Project]]
+- [[http://www.emacswiki.org/emacs/RainbowDelimiters][RainbowDelimiters]]
 
 * Lisp goodies
 - [[http://nschum.de/src/emacs/highlight-parentheses][highlight-parentheses]]
