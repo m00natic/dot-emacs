@@ -14,8 +14,13 @@
 		     (other . "stroustrup")))
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
+ '(indent-tabs-mode nil)
  '(prolog-system 'swi)
  '(which-function-mode t))
+
+;;; highlight parens
+(when-library nil rainbow-delimiters
+	      (add-hook 'prog-mode-hook 'rainbow-delimiters-mode-enable))
 
 ;;; Semantic
 (when-library
