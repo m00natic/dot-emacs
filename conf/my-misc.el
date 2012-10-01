@@ -43,8 +43,12 @@
       (display-buffer "*Ditaa*"))))
 
 ;;; Dictionary
-(when-library nil dictionary
-	      (global-set-key "\C-cd" 'dictionary-search))
+(when-library
+ nil dictionary
+ (global-set-key "\C-cd" 'dictionary-search)
+ (add-hook 'view-mode-hook
+	   (lambda () (if (dictionary-mode-p)
+		     (local-set-key [return] 'link-selected)))))
 
 (provide 'my-misc)
 
