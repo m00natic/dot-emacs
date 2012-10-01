@@ -11,16 +11,18 @@
 
 ;;; set inferior lisp and scheme
 (custom-set-variables
- `(inferior-lisp-program
-   ,(win-or-nix
-     (cond ((file-exists-p (concat +home-path+ "clisp"))
-	    (concat +home-path+ "clisp/clisp.exe -K full"))
-	   ((file-exists-p (concat +win-path+ "Program Files/clisp"))
-	    (concat +win-path+
-		    "Program Files/clisp/clisp.exe -K full"))
-	   (t "clisp"))
-     "sbcl"))
  '(scheme-program-name "gsi"))
+
+(setq inferior-lisp-program
+      (win-or-nix
+       (cond ((file-exists-p (concat +home-path+ "clisp"))
+	      (concat +home-path+ "clisp/clisp.exe -K full"))
+	     ((file-exists-p (concat +win-path+
+				     "Program Files/clisp"))
+	      (concat +win-path+
+		      "Program Files/clisp/clisp.exe -K full"))
+	     (t "clisp"))
+       "sbcl"))
 
 ;;; Hook convenient s-exp minor modes to some major modes.
 (defmacro active-lisp-modes ()
