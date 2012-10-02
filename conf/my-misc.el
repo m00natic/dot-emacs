@@ -46,9 +46,12 @@
 (when-library
  nil dictionary
  (global-set-key "\C-cd" 'dictionary-search)
- (add-hook 'view-mode-hook
-	   (lambda () (if (dictionary-mode-p)
-		     (local-set-key [return] 'link-selected)))))
+
+ ;; workarround view-mode capturing <return>
+ (eval-after-load "dictionary"
+   '(add-hook 'view-mode-hook
+	      (lambda () (if (dictionary-mode-p)
+			(local-set-key [return] 'link-selected))))))
 
 (provide 'my-misc)
 
