@@ -12,6 +12,7 @@
  '(c-default-style '((java-mode . "java")
 		     (awk-mode . "awk")
 		     (other . "stroustrup")))
+ '(ecb-cedet-required-version-max '(2 1 4 9))
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
  '(indent-tabs-mode nil)
