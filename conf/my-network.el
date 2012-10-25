@@ -177,7 +177,9 @@ Make links point to local files."
      `(progn
 	(setq w3m-home-page ,(concat "file://" +home-path+
 				     ".w3m/bookmark.html")
-	      w3m-use-cookies t)
+	      w3m-use-cookies t
+	      w3m-key-binding 'info)
+
 	(define-keys w3m-mode-map
 	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	  "z" 'w3m-horizontal-recenter
