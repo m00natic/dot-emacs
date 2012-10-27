@@ -12,8 +12,8 @@ of upload.  It's expected to be untared in ~/.emacs.d/ to run out of
 the box.  There are just elisp sources which should be byte compiled.
 You can just load compile-extras.el to do so.  At present all external
 extensions are avavailable through some ELPA repository so it would be
-even more convenient to get them from there with
-`package-list-packages'.
+even more convenient to get them from there with M-x
+package-list-packages.
 
 Here's a list of external packages (mentioning the built-in ones would
 be too much) that this .emacs is somewhat aware of in some order and
@@ -53,6 +53,7 @@ links:
 - [[http://www.emacswiki.org/emacs/TabBarMode][TabBar]]
 - [[http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el][sml-modeline]]
 - [[https://github.com/bbatsov/zenburn-emacs][Zenburn]]
+- [[https://github.com/m00natic/anti-zenburn-theme][anti-zenburn]]
 - [[http://www.emacswiki.org/emacs/AceJump][Ace Jump]]
 - [[http://www.emacswiki.org/emacs/notify.el][notify]]
 - [[http://www.emacswiki.org/emacs/cygwin-mount.el][cygwin-mount]]
