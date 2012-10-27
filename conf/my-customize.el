@@ -67,6 +67,10 @@
      '(eshell-directory-name (concat user-emacs-directory
 				     "eshell/"))))
 
+;;; windmove
+(when-library t windmove
+	      (windmove-default-keybindings))
+
 (provide 'my-customize)
 
 ;;; my-customize.el ends here
