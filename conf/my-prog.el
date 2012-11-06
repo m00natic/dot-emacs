@@ -27,10 +27,15 @@
 (when-library
  t semantic
  (eval-after-load "semantic"
-   '(custom-set-variables
-     '(global-semantic-decoration-mode 1)
-     '(global-semantic-idle-summary-mode 1)
-     '(global-semantic-idle-local-symbol-highlight-mode 1)))
+   '(progn
+      (add-to-list 'semantic-default-submodes
+		   'global-semantic-decoration-mode)
+      (add-to-list 'semantic-default-submodes
+		   'global-semantic-idle-summary-mode)
+      (add-to-list 'semantic-default-submodes
+		   'global-semantic-idle-local-symbol-highlight-mode)
+      (add-to-list 'semantic-default-submodes
+		   'global-semantic-mru-bookmark-mode)))
 
 ;;; Emacs Code Browser
  (when-library
@@ -50,7 +55,7 @@
    t semantic
    (eval-after-load "semantic"
      '(setq-default ac-sources
-		    (cons 'ac-source-semantic-raw ac-sources)))))
+		    (cons 'ac-source-semantic ac-sources)))))
 
 ;;; find file in project
 (when-library
