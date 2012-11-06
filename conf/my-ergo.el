@@ -15,6 +15,7 @@
   (if (fboundp 'recenter-top-bottom)
       (define-key isearch-mode-map ergoemacs-recenter-key
 	'recenter-top-bottom))
+
   (define-keys ergoemacs-keymap
     "\M-2" 'move-cursor-previous-pane
     "\M-@" 'move-cursor-next-pane
@@ -36,6 +37,14 @@
 		 'doc-view-next-line-or-next-page
 		 ergoemacs-previous-line-key
 		 'doc-view-previous-line-or-previous-page))))
+
+  ;; occur fixes
+  (eval-after-load "replace"
+    '(define-keys occur-mode-map
+       "n" 'occur-next
+       "p" 'occur-prev
+       "o" 'occur-mode-display-occurrence
+       "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
 
   (defmacro ergoemacs-fix (layout)
     "Fix some keybindings when using ErgoEmacs."
