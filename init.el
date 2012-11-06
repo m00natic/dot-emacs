@@ -53,9 +53,8 @@ NIX forms are executed on all other platforms."
     (package-initialize))
 
 (require 'my-themes)
-(require 'my-utils)
-(require 'my-customize)
 (require 'my-display)
+(require 'my-customize)
 
 (win-or-nix (require 'my-windows))
 (when-library nil ergoemacs-mode (require 'my-ergo))
