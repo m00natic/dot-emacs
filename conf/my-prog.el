@@ -76,8 +76,6 @@ return current directory."
 					 ffip-project-file))))
 	  (or project-directory default-directory)))
 
-      (byte-compile 'my-ffip-project-root-function)
-
       (setq-default
        ffip-project-file ".emacs-project"
        ffip-patterns (nconc '("*.cpp" "*.h" "*.hpp" "*.c")
