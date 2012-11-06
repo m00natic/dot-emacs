@@ -190,6 +190,12 @@ Make links point to local files."
 	  nil ergoemacs-mode
 	  '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
 
+	,(when-library
+	  nil w3m-wget
+	  '(if w3m-key-binding
+	       (substitute-key-definition 'w3m-download
+					  'w3m-wget w3m-mode-map)))
+
 	(when (executable-find "curl")
 	  (autoload 'thing-at-point-url-at-point "thingatpt")
 
