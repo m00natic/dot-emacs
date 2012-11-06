@@ -1,4 +1,4 @@
-;;; my-customize.el --- My customizations
+;;; my-custom.el --- My customizations
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
@@ -71,6 +71,6 @@
 (when-library t windmove
 	      (windmove-default-keybindings))
 
-(provide 'my-customize)
+(provide 'my-custom)
 
-;;; my-customize.el ends here
+;;; my-custom.el ends here

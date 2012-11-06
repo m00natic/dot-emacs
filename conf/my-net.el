@@ -1,4 +1,4 @@
-;;; my-network.el --- Browse and network settings
+;;; my-net.el --- Browse and network settings
 ;;; -*- lexical-bind: t -*-
 
 ;;; Commentary:
@@ -83,6 +83,7 @@
       "http://www.cplusplus.com/search.do?q=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
+     ("^b +\\(.*\\)" . "http://boobpedia.com/boobs/Special:Search?search=\\1")
      ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
    "Search engines and sites.")
 
@@ -114,6 +115,11 @@ Open in new tab if NEW-WINDOW."
 
  (global-set-key [f6] 'browse-apropos-url))
 
+;;; Default browser
+(if (executable-find "conkeror")
+    (setq browse-url-browser-function 'browse-url-generic
+	  browse-url-generic-program "conkeror"))
+
 ;;; Wget
 (when-library
  nil wget
@@ -138,11 +144,6 @@ Make links point to local files."
 		 (wget-uri uri dir '("-pkrmnp" "-E" "-X/page,/message"
 				     "--no-check-certificate" "-w" "1"
 				     "--random-wait"))))))))
-
-;;; Default browser
-(if (executable-find "conkeror")
-    (setq browse-url-browser-function 'browse-url-generic
-	  browse-url-generic-program "conkeror"))
 
 ;;; emacs-w3m
 (when-library
@@ -184,6 +185,7 @@ Make links point to local files."
 	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	  "z" 'w3m-horizontal-recenter
 	  "\C-cs" 'w3m-session-select)
+
 	,(when-library
 	  nil ergoemacs-mode
 	  '(define-keys w3m-mode-map "\M-i" nil "\M-a" nil))
@@ -243,6 +245,6 @@ With optional prefix ARG ask for url."
 	  `(("^ftp://.*" . browse-ftp-tramp)
 	    ("." . ,browse-url-browser-function))))
 
-(provide 'my-network)
+(provide 'my-net)
 
-;;; my-network.el ends here
+;;; my-net.el ends here

@@ -54,13 +54,13 @@ NIX forms are executed on all other platforms."
 
 (require 'my-themes)
 (require 'my-display)
-(require 'my-customize)
+(require 'my-custom)
 
 (win-or-nix (require 'my-windows))
 (when-library nil ergoemacs-mode (require 'my-ergo))
 
 (require 'my-mail)
-(require 'my-network)
+(require 'my-net)
 (require 'my-lisp)
 (require 'my-prog)
 (require 'my-fun)
