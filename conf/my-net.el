@@ -12,7 +12,10 @@
  '(browse-url-new-window-flag t)
  '(tramp-shell-prompt-pattern
    "\\(?:^\\|\\)[^#$%>\n]*#?[#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
- '(w3m-key-binding 'info))
+ '(w3m-cookie-accept-bad-cookies 'ask )
+ `(w3m-home-page ,(concat "file://" +home-path+ ".w3m/bookmark.html"))
+ '(w3m-key-binding 'info)
+ '(w3m-use-cookies t))
 
 ;;; ERC
 (when-library
@@ -177,10 +180,6 @@ Make links point to local files."
 
    (eval-after-load "w3m"
      `(progn
-	(setq w3m-home-page ,(concat "file://" +home-path+
-				     ".w3m/bookmark.html")
-	      w3m-use-cookies t)
-
 	(define-keys w3m-mode-map
 	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	  "z" 'w3m-horizontal-recenter
