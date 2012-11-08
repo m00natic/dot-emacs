@@ -62,31 +62,28 @@
    '(("^s +\\(.*\\)" . "https://startingpage.com/do/search?query=\\1")
      ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
-     ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(\\w+://.*\\)" . ; Translate URL
-      "http://translate.google.com/translate?langpair=\\1|\\2&u=\\3")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
-      "http://translate.google.com/translate_t?langpair=\\1|\\2&text=\\3")
+      "http://translate.google.com/m?sl=\\1&tl=\\2&text=\\3")
      ("^w +\\(.*\\)" .			; Wikipedia en
       "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw +\\(.*\\)" .		; Wikipedia bg
       "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
-     ("^imdb +\\(.*\\)" . "http://imdb.com/find?q=\\1")
+     ("^imdb +\\(.*\\)" . "http://m.imdb.com/find?q=\\1")
      ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
       "http://www.google.com/search?q=site:metal-archives.com+\\1")
      ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
       "http://www.google.com/search?q=site:emacswiki.org+\\1")
      ("^cliki +\\(.*\\)" .		; Common Lisp wiki
-      "http://www.cliki.net/admin/search?words=\\1")
+      "http://www.cliki.net/site/search?query=\\1")
      ("^hoog +\\(.*\\)" .		; Hoogle
       "http://haskell.org/hoogle/?hoogle=\\1")
      ("^clj +\\(.*\\)" .		; ClojureDocs
       "http://clojuredocs.org/search?q=\\1")
      ("^c\\+\\+ +\\(.*\\)" .		; C++
-      "http://www.cplusplus.com/search.do?q=\\1")
+      "http://en.cppreference.com/w/?search=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-     ("^b +\\(.*\\)" . "http://boobpedia.com/boobs/Special:Search?search=\\1")
      ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
    "Search engines and sites.")
 
