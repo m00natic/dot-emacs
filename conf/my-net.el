@@ -11,8 +11,7 @@
 (custom-set-variables
  '(browse-url-new-window-flag t)
  '(tramp-shell-prompt-pattern
-   "\\(?:^\\|\\)[^#$%>\n]*#?[#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
- '(w3m-cookie-accept-bad-cookies 'ask )
+   "\\(?:^\\|\\)[^]#$%>\n]*#?[]#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
  `(w3m-home-page ,(concat "file://" +home-path+ ".w3m/bookmark.html"))
  '(w3m-key-binding 'info)
  '(w3m-use-cookies t))
