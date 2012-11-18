@@ -91,9 +91,9 @@
 			"\M-N" 'slime-previous-note
 			"\M-p" nil)))))
 	 ,(when-library
-	   nil helm-config
-	   '(define-key ergoemacs-keymap ergoemacs-yank-pop-key
-	      'helm-show-kill-ring)))))
+	   nil browse-kill-ring
+	   '(define-key ergoemacs-keymap
+	      ergoemacs-yank-pop-key 'browse-kill-ring)))))
 
   (defun ergoemacs-change-keyboard (layout)
     "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -109,15 +109,14 @@
       (ergoemacs-mode 1)))
 
   (when-library
-   nil helm-config
+   nil browse-kill-ring
    (defvar ergoemacs-minibuffer-keymap
      (copy-keymap ergoemacs-keymap))
 
    (defadvice ergoemacs-minibuffer-setup-hook
      (after ergoemacs-minibuffer-yank-pop activate compile)
      (define-keys ergoemacs-minibuffer-keymap
-       ergoemacs-yank-pop-key 'yank-pop
-       "\M-SPC" 'helm-mark-candidate)))
+       ergoemacs-yank-pop-key 'yank-pop)))
 
   (ergoemacs-fix (getenv "ERGOEMACS_KEYBOARD_LAYOUT"))
 

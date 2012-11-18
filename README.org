@@ -46,7 +46,7 @@ links:
 
 * misc
 - [[http://xahlee.org/emacs/ergonomic_emacs_keybinding.html][ErgoEmacs-mode]]
-- [[https://github.com/emacs-helm/helm][Helm]]
+- [[https://github.com/browse-kill-ring/browse-kill-ring][browse-kill-ring]]
 - [[http://bbdb.sourceforge.net][BBDB]]
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
 - [[http://ditaa.sourceforge.net][Ditaa]]

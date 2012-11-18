@@ -18,17 +18,13 @@
 (if (require 'ace-jump-mode nil t)
     (define-key global-map "\C-c " 'ace-jump-mode))
 
-;;; helm
+;;; browse kill ring
 (when-library
- nil helm
- (global-set-key [f5] 'helm-M-x)
- (global-set-key "\C-x\C-f" 'helm-find-files)
-
+ nil browse-kill-ring
  (unless (featurep 'ergoemacs-mode)
-   (global-set-key "\M-y" 'helm-show-kill-ring)
+   (global-set-key "\M-y" 'browse-kill-ring)
    (define-keys minibuffer-local-map
-     "\M-y" 'yank-pop
-     "\M-SPC" 'helm-mark-candidate)))
+     "\M-y" 'yank-pop)))
 
 ;;; Ditaa
 (let ((ditaa-path (executable-find "ditaa.jar")))
