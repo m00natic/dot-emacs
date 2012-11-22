@@ -24,6 +24,7 @@
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
+ '(jit-lock-defer-time 0.2)
  '(org-src-fontify-natively t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
