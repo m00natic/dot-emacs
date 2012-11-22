@@ -103,19 +103,20 @@ Otherwise check for less."
 					  activate compile)
        "Set smtp server according to the `X-SMTP-Server' header.
 If missing, try to deduce it from the `From' header."
-       (save-restriction
-	 (message-narrow-to-headers)
-	 (setq smtpmail-smtp-server
-	       (message-fetch-field "X-SMTP-Server")
-	       from (message-fetch-field "from")))
-       (cond (smtpmail-smtp-server
-	      (message-remove-header "X-SMTP-Server"))
-	     ((string-match "@\\([^ >]*\\)" from)
-	      (let ((domain (match-string-no-properties 1 from)))
-		(setq smtpmail-smtp-server
-		      (if (string-equal domain "vayant.com")
-			  "mail.vayant.com"
-			(concat "smtp." domain))))))
+       (let ((from ""))
+	 (save-restriction
+	   (message-narrow-to-headers)
+	   (setq smtpmail-smtp-server
+		 (message-fetch-field "X-SMTP-Server")
+		 from (message-fetch-field "from")))
+	 (cond (smtpmail-smtp-server
+		(message-remove-header "X-SMTP-Server"))
+	       ((string-match "@\\([^ >]*\\)" from)
+		(let ((domain (match-string-no-properties 1 from)))
+		  (setq smtpmail-smtp-server
+			(if (string-equal domain "vayant.com")
+			    "mail.vayant.com"
+			  (concat "smtp." domain)))))))
        ad-do-it)))
 
  (when-library
