@@ -149,6 +149,10 @@ return current directory."
       (or (featurep 'ergoemacs-mode)
 	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
+;;; commit logs
+(add-hook 'log-edit-mode-hook 'auto-fill-mode)
+(add-hook 'log-edit-mode-hook 'flyspell-mode)
+
 (provide 'my-prog)
 
 ;;; my-prog.el ends here
