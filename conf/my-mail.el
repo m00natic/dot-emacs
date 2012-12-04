@@ -87,6 +87,7 @@ Otherwise check for less."
       (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
       (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
       ;; run (gnus-demon-init) to track emails
+      (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
       (add-hook 'kill-emacs-hook (byte-compile
 				  (lambda () "Quit Gnus."
 				    (setq gnus-interactive-exit nil)
