@@ -23,8 +23,7 @@
  nil browse-kill-ring
  (unless (featurep 'ergoemacs-mode)
    (global-set-key "\M-y" 'browse-kill-ring)
-   (define-keys minibuffer-local-map
-     "\M-y" 'yank-pop)))
+   (define-key minibuffer-local-map "\M-y" 'yank-pop)))
 
 ;;; Ditaa
 (let ((ditaa-path (executable-find "ditaa.jar")))

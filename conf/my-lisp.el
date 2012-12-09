@@ -39,9 +39,13 @@
 		    '(ignore-errors (highlight-parentheses-mode 1)))
      ,(when-library nil paredit '(ignore-errors (paredit-mode 1)))))
 
+(defvar activate-lisp-minor-modes-hook nil
+  "Hooks to run after additional lisp minor modes are activated.")
+
 (defun activate-lisp-minor-modes ()
   "Activate some convenient minor modes for editing s-exp."
-  (active-lisp-modes))
+  (active-lisp-modes)
+  (run-hooks 'activate-lisp-minor-modes-hook))
 
 (hook-modes activate-lisp-minor-modes
 	    inferior-lisp-mode-hook lisp-mode-hook
