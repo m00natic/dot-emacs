@@ -73,7 +73,7 @@
 			   paredit-mode-map)
        (forward-kill-word paredit-forward-kill-word paredit-mode-map)
        (delete-backward-char paredit-backward-delete paredit-mode-map)
-       (delete-cha paredit-forward-delete paredit-mode-map)
+       (delete-char paredit-forward-delete paredit-mode-map)
        (kill-line paredit-kill paredit-mode-map)))))
 
   (when-library
