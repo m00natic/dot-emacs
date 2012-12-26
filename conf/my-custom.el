@@ -1,4 +1,5 @@
 ;;; my-custom.el --- My customizations
+;;; -*- lexical-bind: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
@@ -40,9 +41,21 @@
  '(version-control t)
  '(view-read-only t))
 
-;;; some keybindings
-(global-set-key "\C-cl" 'goto-line)
 (global-set-key (kbd "M-RET") 'newline-and-indent)
+
+;;; goto line
+(defun goto-line-with-feedback ()
+  "Show line numbers temporarily, while prompting \
+for the line number input."
+  (interactive)
+  (unwind-protect
+      (progn (linum-mode 1)
+	     (let ((line (read-number "Goto line: ")))
+	       (goto-char (point-min))
+	       (forward-line (1- line))))
+    (linum-mode -1)))
+
+(global-set-key "\C-cl" 'goto-line-with-feedback)
 
 ;;; Use y or n instead of yes or no
 (fset 'yes-or-no-p 'y-or-n-p)
