@@ -12,12 +12,6 @@
 (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
 
 (when (require 'ergoemacs-mode nil t)
-  (global-set-key "\C-@" 'cua-set-mark)
-  (ergoemacs-key "M-2" 'move-cursor-previous-pane)
-  (ergoemacs-key "M-@" 'move-cursor-next-pane)
-  (ergoemacs-key "M-<" 'beginning-of-buffer)
-  (ergoemacs-key "M->" 'end-of-buffer)
-
   (defun ergoemacs-change-keyboard (layout)
     "Change ErgoEmacs keyboard bindings according to LAYOUT."
     (interactive (list (completing-read "Enter layout (default us): "
@@ -105,8 +99,11 @@
       (ignore-errors (ergoemacs-mode 1))
     (ergoemacs-mode 1))
 
-  (ergoemacs-global-set-key "\C-f" 'search-forward-regexp)
-  (ergoemacs-global-set-key "\C-F" 'search-backward-regexp))
+  (ergoemacs-key "C-@" 'cua-set-mark)	; set mark in terminal
+  (ergoemacs-key "C-e" 'search-forward-regexp)
+  (ergoemacs-key "C-S-E" 'search-backward-regexp)
+  (ergoemacs-key "M-<" 'beginning-of-buffer)
+  (ergoemacs-key "M->" 'end-of-buffer))
 
 (provide 'my-ergo)
 
