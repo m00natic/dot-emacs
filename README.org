@@ -58,6 +58,7 @@ links:
 - [[http://www.emacswiki.org/emacs/notify.el][notify]]
 - [[http://www.emacswiki.org/emacs/cygwin-mount.el][cygwin-mount]]
 - [[http://www.myrkr.in-berlin.de/dictionary/index.html][Dictionary]]
+- [[https://github.com/manzyuk/google-translate][Google Translate]]
 - [[http://www.gnu.org/software/emms][EMMS]]
 - [[https://github.com/m00natic/rase][RASE]]
 - [[https://github.com/jwiegley/emacs-chess][Emacs Chess]]

@@ -8,6 +8,9 @@
 
 (require 'my-utils)
 
+(custom-set-variables
+ '(google-translate-enable-ido-completion t))
+
 ;;; Imenu
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
 
@@ -47,6 +50,15 @@
    '(add-hook 'view-mode-hook
 	      (lambda () (if (dictionary-mode-p)
 			(local-set-key [return] 'link-selected))))))
+
+;;; Google Translate
+(when-library
+ nil google-translate
+ (autoload 'google-translate-at-point "google-translate" nil t)
+ (autoload 'google-translate-query-translate "google-translate" nil t)
+
+ (global-set-key "\C-ct" 'google-translate-query-translate)
+ (global-set-key "\C-cT" 'google-translate-at-point))
 
 (provide 'my-misc)
 
