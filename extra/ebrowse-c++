@@ -1,0 +1,10 @@
+#!/bin/sh
+
+DIR=$1
+
+if [ ! "$DIR" = "" ]; then
+    cd $DIR
+fi
+
+find . -regex ".*\.\(hpp\|cpp\|h\|c\)" \
+    -not -regex ".*\(debug\|release\|svn\|git\).*" | ebrowse

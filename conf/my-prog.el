@@ -37,6 +37,8 @@
       (add-to-list 'semantic-default-submodes
 		   'global-semantic-mru-bookmark-mode)))
 
+ (add-hook 'prog-mode-hook (lambda () (or semantic-mode (semantic-mode))))
+
 ;;; Emacs Code Browser
  (when-library
   nil ecb
@@ -152,6 +154,25 @@ return current directory."
 ;;; commit logs
 (add-hook 'log-edit-mode-hook 'auto-fill-mode)
 (add-hook 'log-edit-mode-hook 'flyspell-mode)
+
+;;; ebrowse
+(when (executable-find "ebrowse-c++")
+  (defun my-ebrowse-refresh (arg)
+    "Refresh existing ebrowse db or if *Tree* buffer is missing \
+or ARG is non nil - locate project file for current directory."
+    (interactive "P")
+    (save-excursion
+      (if (and (not arg) (ignore-errors (set-buffer "*Tree*")))
+	  (let ((ebrowse-file buffer-file-name))
+	    (call-process "ebrowse-c++")
+	    (kill-buffer)
+	    (find-file-noselect ebrowse-file))
+	(let ((project-dir (locate-dominating-file default-directory
+						   ".emacs-project")))
+	  (when project-dir
+	    (save-excursion
+	      (call-process "ebrowse-c++" nil nil nil project-dir)
+	      (find-file-noselect (concat project-dir "BROWSE")))))))))
 
 (provide 'my-prog)
 
