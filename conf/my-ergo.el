@@ -43,10 +43,7 @@
 
   (when-library
    nil browse-kill-ring
-   (ergoemacs-key "M-V" 'browse-kill-ring)
-   (ergoemacs-minor-key 'minibuffer-setup-hook
-			'("M-V" yank-pop
-			  minor-mode-overriding-map-alist)))
+   (ergoemacs-key "M-V" 'browse-kill-ring))
 
   (when-library
    nil paredit

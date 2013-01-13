@@ -25,8 +25,7 @@
 (when-library
  nil browse-kill-ring
  (unless (featurep 'ergoemacs-mode)
-   (global-set-key "\M-y" 'browse-kill-ring)
-   (define-key minibuffer-local-map "\M-y" 'yank-pop)))
+   (global-set-key "\M-y" 'browse-kill-ring)))
 
 ;;; Ditaa
 (let ((ditaa-path (executable-find "ditaa.jar")))
