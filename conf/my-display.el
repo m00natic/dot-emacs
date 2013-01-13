@@ -33,21 +33,6 @@
 	(ignore-errors (sml-modeline-mode 1))
       (sml-modeline-mode 1)))
 
-;;; fullscreen stuff
-(defvar *fullscreen-p* nil "Check if fullscreen is on or off.")
-
-(defun fullscreen-toggle ()
-  "Toggle fullscreen view on and off."
-  (interactive)
-  (if (setq *fullscreen-p* (not *fullscreen-p*))
-      (win-or-nix
-       (w32-send-sys-command 61488)    ; WM_SYSCOMMAND maximize #xf030
-       (set-frame-parameter nil 'fullscreen 'fullboth))
-    (win-or-nix
-     (w32-send-sys-command 61728)	; WM_SYSCOMMAND restore #xf120
-     (set-frame-parameter nil 'width 100)
-     (set-frame-parameter nil 'fullscreen 'fullheight))))
-
 ;;; TabBar
 (when (require 'tabbar nil t)
   (defadvice tabbar-buffer-help-on-tab (after tabbar-add-file-path

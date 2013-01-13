@@ -35,9 +35,6 @@ Use emacsclient -e '(make-frame-visible)' to restore it."
 
 (server-start)
 
-(and *fullscreen-p* (window-system)
-     (w32-send-sys-command 61488))
-
 (provide 'my-windows)
 
 ;;; my-windows.el ends here
