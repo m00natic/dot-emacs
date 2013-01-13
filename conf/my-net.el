@@ -26,19 +26,24 @@
 (when-library
  t tramp
  (defun tramping-mode-line ()
-   "Change modeline when root or remote."
+   "Change modeline or buffer name when root or remote."
+   (if tabbar-mode
+       (setq mode-line-buffer-identification ""))
    (let ((host-name (if (file-remote-p default-directory)
 			(tramp-file-name-host
 			 (tramp-dissect-file-name
 			  default-directory)))))
      (if host-name
-	 (push (propertize
-		(if (string-match "^/su\\(do\\)?:" default-directory)
-		    (concat "su" (match-string 1 default-directory)
-			    "@" host-name)
-		  host-name)
-		'face 'highlight)
-	       mode-line-buffer-identification))))
+	 (let ((name (if (string-match "^/su\\(do\\)?:"
+				       default-directory)
+			 (concat "su"
+				 (match-string 1 default-directory)
+				 "@" host-name)
+		       host-name)))
+	   (if tabbar-mode
+	       (rename-buffer (concat name ":" (buffer-name)) t)
+	     (push (propertize name 'face 'highlight)
+		   mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
 	     find-file-hooks dired-mode-hook)
