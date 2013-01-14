@@ -71,10 +71,7 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
-  (if +old-emacs+
-      (ignore-errors (tabbar-mode 1))
-    (tabbar-mode 1))
-
+  (tabbar-mode 1)
   (setq-default mode-line-buffer-identification "")
 
   (defun next-tab (arg)

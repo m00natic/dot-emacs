@@ -12,7 +12,6 @@
  '(c-default-style '((java-mode . "java")
 		     (awk-mode . "awk")
 		     (other . "stroustrup")))
- '(ecb-cedet-required-version-max '(2 1 4 9))
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
  '(indent-tabs-mode nil)
@@ -44,7 +43,8 @@
   nil ecb
   (eval-after-load "ecb"
     `(progn (defvar stack-trace-on-error nil)
-	    (let ((prog-path (concat +home-path+ "Programs")))
+	    (defconst ecb-cedet-required-version-max '(2 1 4 9))
+	    (let ((prog-path ,(concat +home-path+ "Programs")))
 	      (ecb-add-source-path prog-path prog-path t))))))
 
 ;;; AutoComplete
@@ -80,7 +80,7 @@ return current directory."
 
       (setq-default
        ffip-project-file ".emacs-project"
-       ffip-patterns (nconc '("*.cpp" "*.h" "*.hpp" "*.c")
+       ffip-patterns (nconc '("*.cpp" "*.h" "*.hpp" "*.c" "*.sql")
 			    ffip-patterns)
        ffip-find-options
        "-not -regex \".*\\(debug\\|release\\|svn\\|git\\).*\""
