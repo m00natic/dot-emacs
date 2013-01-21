@@ -1,5 +1,6 @@
 #!/usr/bin/emacs --script
 ;;; compile-extras.el --- byte compile all elisp files within directory tree
+;;; -*- lexical-bind: t -*-
 
 ;;; Commentary:
 ;; Apply a function to name selected files in directory and subdirectories.
