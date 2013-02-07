@@ -179,6 +179,10 @@ Make links point to local files."
    ;; Conkeror style anchor numbering on actions
    (add-hook 'w3m-mode-hook 'w3m-lnum-mode)
 
+   (add-hook 'w3m-display-hook (lambda (url) "Remove trailing whitespace."
+				 (let ((buffer-read-only nil))
+				   (delete-trailing-whitespace))))
+
    (eval-after-load "w3m"
      `(progn
 	(define-keys w3m-mode-map
