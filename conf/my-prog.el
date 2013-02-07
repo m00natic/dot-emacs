@@ -19,8 +19,9 @@
  '(which-function-mode t))
 
 ;;; highlight parens
-(when-library nil rainbow-delimiters
-	      (add-hook 'prog-mode-hook 'rainbow-delimiters-mode-enable))
+(when-library
+ nil rainbow-delimiters
+ (add-hook 'prog-mode-hook 'rainbow-delimiters-mode-enable))
 
 ;;; Semantic
 (when-library
@@ -52,12 +53,12 @@
 	   (require 'auto-complete-config nil t))
   (ac-config-default)
   (ac-flyspell-workaround)
+  (add-to-list 'ac-modes 'org-mode)
 
   (when-library
    t semantic
    (eval-after-load "semantic"
-     '(setq-default ac-sources
-		    (cons 'ac-source-semantic ac-sources)))))
+     '(add-to-list 'ac-sources 'ac-source-semantic))))
 
 ;;; find file in project
 (when-library
@@ -108,18 +109,16 @@ return current directory."
 	      (haskell-doc-mode t))
 	     haskell-mode-hook)
 
- (when-library
-  nil ghc
-  (when (executable-find "ghc-mod")
-    (autoload 'ghc-init "ghc" nil t)
-    (add-hook 'haskell-mode-hook (lambda () (ghc-init)
-				   (flymake-mode))))))
+ (when-library nil ghc
+	       (when (executable-find "ghc-mod")
+		 (autoload 'ghc-init "ghc" nil t)
+		 (add-hook 'haskell-mode-hook (lambda () (ghc-init)
+						(flymake-mode))))))
 
 ;;; cc-mode settings
 (add-hook 'c-mode-common-hook
 	  (lambda () (hs-minor-mode 1)
-	    (when-library nil hl-sexp
-			  (hl-sexp-mode 1))
+	    (when-library nil hl-sexp (hl-sexp-mode 1))
 	    (local-set-key [backtab] 'hs-toggle-hiding)))
 
 ;;; Emacs Speaks Statistics
@@ -145,15 +144,16 @@ return current directory."
        (add-to-list
 	'TeX-command-list
 	'("Optimized PDF"
-	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true -dOptimize=true -dUseFlateCompression=true %s.ps"
+	  "latex %s && dvips %s.dvi && ps2pdf -dEmbedAllFonts=true \
+-dOptimize=true -dUseFlateCompression=true %s.ps"
 	  TeX-run-command nil (latex-mode)
 	  :help "Produce optimized pdf")))
       (or (featurep 'ergoemacs-mode)
 	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
 ;;; commit logs
-(add-hook 'log-edit-mode-hook 'auto-fill-mode)
-(add-hook 'log-edit-mode-hook 'flyspell-mode)
+(hook-modes (auto-fill-mode flyspell-mode)
+	    log-edit-mode-hook)
 
 ;;; ebrowse
 (when (executable-find "ebrowse-c++")
