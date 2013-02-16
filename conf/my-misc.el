@@ -17,6 +17,29 @@
 ;;; Proced
 (when-library t proced (global-set-key "\C-^" 'proced))
 
+;;; Publishing
+(let ((my-site-dir (concat +home-path+ "Documents/my-site/")))
+  (if (file-exists-p my-site-dir)
+      (setq org-publish-project-alist
+	    `(("my-site-org"
+	       :base-directory ,(concat my-site-dir "org/")
+	       :base-extension "org"
+	       :publishing-directory ,my-site-dir
+	       :recursive t
+	       :publishing-function org-publish-org-to-html
+	       :auto-preamble t
+	       :auto-sitemap t
+	       :sitemap-title "Sitemap")
+	      ("my-site-static"
+	       :base-directory ,(concat my-site-dir "org/")
+	       :base-extension
+	       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+	       :publishing-directory ,my-site-dir
+	       :recursive t
+	       :publishing-function org-publish-attachment)
+	      ("my-site" :components ("my-site-org"
+				      "my-site-static"))))))
+
 ;;; Ace Jump
 (if (require 'ace-jump-mode nil t)
     (define-key global-map "\C-c " 'ace-jump-mode))
