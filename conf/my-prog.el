@@ -133,9 +133,12 @@ return current directory."
 ;;; AUCTeX
 (when-library
  nil auctex-autoloads
+ (add-to-list 'auto-mode-alist '("\\.[tT]e[xX]\\'" . TeX-latex-mode))
+
  (eval-after-load "latex"
    '(progn (load "preview" t)
 	   (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)))
+
  (eval-after-load "tex"
    '(progn
       (and
@@ -148,6 +151,7 @@ return current directory."
 -dOptimize=true -dUseFlateCompression=true %s.ps"
 	  TeX-run-command nil (latex-mode)
 	  :help "Produce optimized pdf")))
+
       (or (featurep 'ergoemacs-mode)
 	  (define-key TeX-mode-map "\M-g" 'TeX-complete-symbol)))))
 
