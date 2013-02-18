@@ -26,6 +26,7 @@
  '(initial-scratch-message nil)
  '(ispell-dictionary "en")
  '(jit-lock-defer-time 0.2)
+ '(nxml-sexp-element-flag t)
  '(org-src-fontify-natively t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
@@ -82,8 +83,17 @@ for the line number input."
 				     "eshell/"))))
 
 ;;; windmove
-(when-library t windmove
-	      (windmove-default-keybindings))
+(when-library
+ t windmove
+ (windmove-default-keybindings)
+
+ ;; Make windmove work in org-mode
+ (when-library
+  t org-mode
+  (add-hook 'org-shiftup-final-hook 'windmove-up)
+  (add-hook 'org-shiftleft-final-hook 'windmove-left)
+  (add-hook 'org-shiftdown-final-hook 'windmove-down)
+  (add-hook 'org-shiftright-final-hook 'windmove-right)))
 
 (provide 'my-custom)
 
