@@ -8,7 +8,7 @@ for a quicker start-up and smaller memory footprint.  It's somewhat
 personalized, thus if someone is to try it out, some glitches (paths,
 email addresses...) may have to be tuned.
 
-[[https://docs.google.com/file/d/0ByTYEU5KUEBVZnJSTHFBY0Z5MVE/edit][Here's]] a relevant set of extensions which is kept up to date at time
+[[https://docs.google.com/file/d/0ByTYEU5KUEBVNkNMWG51cHNmbHM/edit][Here's]] a relevant set of extensions which is kept up to date at time
 of upload.  It's expected to be untared in ~/.emacs.d/ to run out of
 the box.  There are just elisp sources which should be byte compiled.
 You can just load extra/compile-extras.el to do so.  At present all
