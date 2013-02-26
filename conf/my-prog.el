@@ -1,5 +1,4 @@
-;;; my-prog.el --- Additional programming modes settings
-;;; -*- lexical-bind: t -*-
+;;; my-prog.el --- Additional programming modes settings  -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
@@ -173,10 +172,11 @@ or ARG is non nil - locate project file for current directory."
 	    (find-file-noselect ebrowse-file))
 	(let ((project-dir (locate-dominating-file default-directory
 						   ".emacs-project")))
-	  (when project-dir
-	    (save-excursion
-	      (call-process "ebrowse-c++" nil nil nil project-dir)
-	      (find-file-noselect (concat project-dir "BROWSE")))))))))
+	  (if project-dir
+	      (save-excursion
+		(call-process "ebrowse-c++" nil nil nil project-dir)
+		(find-file-noselect (concat project-dir
+					    "BROWSE")))))))))
 
 (provide 'my-prog)
 

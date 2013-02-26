@@ -33,8 +33,6 @@
 	      ("my-site" :components ("my-site-org"
 				      "my-site-static"))))))
 
-(org-publish "my-site")
-
 (provide 'init-export)
 
 ;;; init-export.el ends here

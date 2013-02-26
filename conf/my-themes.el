@@ -1,5 +1,4 @@
-;;; my-themes.el --- My appearance settings
-;;; -*- lexical-bind: t -*-
+;;; my-themes.el --- My appearance settings  -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

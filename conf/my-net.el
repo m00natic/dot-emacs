@@ -1,5 +1,4 @@
-;;; my-net.el --- Browse and network settings
-;;; -*- lexical-bind: t -*-
+;;; my-net.el --- Browse and network settings  -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

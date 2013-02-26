@@ -1,5 +1,4 @@
-;;; my-mail.el --- Mail and news settings
-;;; -*- lexical-bind: t -*-
+;;; my-mail.el --- Mail and news settings  -*- lexical-binding: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
