@@ -21,6 +21,7 @@ be too much) that this .emacs is somewhat aware of in some order and
 links:
 
 * Programming languages related
+
 - [[http://common-lisp.net/project/slime][SLIME]]
 - [[http://www.neilvandyke.org/quack][Quack]]
 - [[https://github.com/technomancy/clojure-mode][clojure-mode]]
@@ -34,18 +35,22 @@ links:
 - [[http://cx4a.org/software/auto-complete][AutoComplete]]
 - [[http://emacswiki.org/emacs/FindFileInProject][Find File in Project]]
 - [[http://www.emacswiki.org/emacs/RainbowDelimiters][RainbowDelimiters]]
+- [[http://magit.github.com/magit/][Magit]]
 
 * Lisp goodies
+
 - [[http://nschum.de/src/emacs/highlight-parentheses][highlight-parentheses]]
 - [[http://edward.oconnor.cx/elisp/hl-sexp.el][hl-sexp]]
 - [[http://www.emacswiki.org/emacs/ParEdit][ParEdit]]
 - [[http://www.foldr.org/~michaelw/emacs/redshank][Redshank]]
 
 * networking
+
 - [[http://emacs-w3m.namazu.org][emacs-w3m]]
 - [[http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget][emacs-wget]]
 
 * misc
+
 - [[http://xahlee.org/emacs/ergonomic_emacs_keybinding.html][ErgoEmacs-mode]]
 - [[https://github.com/browse-kill-ring/browse-kill-ring][browse-kill-ring]]
 - [[http://bbdb.sourceforge.net][BBDB]]

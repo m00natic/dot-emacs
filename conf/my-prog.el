@@ -157,7 +157,7 @@ return current directory."
 
 ;;; commit logs
 (hook-modes (auto-fill-mode flyspell-mode)
-	    log-edit-mode-hook)
+	    log-edit-mode-hook magit-log-edit-mode-hook)
 
 ;;; ebrowse
 (when (executable-find "ebrowse-c++")
