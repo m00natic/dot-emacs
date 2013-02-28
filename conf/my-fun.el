@@ -1,4 +1,4 @@
-;;; my-fun.el --- Media and games settings  -*- lexical-binding: t -*-
+;;; my-fun.el --- Media and games settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

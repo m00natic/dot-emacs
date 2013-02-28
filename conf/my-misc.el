@@ -62,9 +62,8 @@
       (display-buffer "*Ditaa*"))))
 
 ;;; Dictionary
-(when-library
- nil dictionary
- (global-set-key "\C-cd" 'dictionary-search)
+(when-library nil dictionary
+	      (global-set-key "\C-cd" 'dictionary-search)
 
  ;; workarround view-mode capturing <return>
  (eval-after-load "dictionary"
