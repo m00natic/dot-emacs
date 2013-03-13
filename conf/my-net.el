@@ -59,7 +59,7 @@
  t browse-url
  (defvar my-search
    '("startpage" .
-     "https://startpage.com/do/search?prf=15ae3fd0cde2f59a677bf0d767216b3c&query=")
+     "https://startpage.com/do/search?prf=a692a6ce68c3d4494e0cd310e98d251f&query=")
    "My default search engine.")
 
  (defconst +apropos-url-alist+
