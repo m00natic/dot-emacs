@@ -1,4 +1,4 @@
-;;; my-lisp.el --- Lisp languages settings  -*- lexical-binding: t -*-
+;;; my-lisp.el --- Lisp languages settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

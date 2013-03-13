@@ -1,4 +1,4 @@
-;;; my-display.el --- Display settings  -*- lexical-binding: t -*-
+;;; my-display.el --- Display settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

@@ -1,4 +1,4 @@
-;;; my-custom.el --- My customizations  -*- lexical-binding: t -*-
+;;; my-custom.el --- My customizations
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

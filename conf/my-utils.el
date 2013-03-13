@@ -1,4 +1,4 @@
-;;; my-utils.el --- Help utilities  -*- lexical-binding: t -*-
+;;; my-utils.el --- Help utilities
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

@@ -1,4 +1,4 @@
-;;; my-prog.el --- Additional programming modes settings  -*- lexical-binding: t -*-
+;;; my-prog.el --- Additional programming modes settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

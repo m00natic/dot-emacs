@@ -1,4 +1,4 @@
-;;; my-misc.el --- Miscellaneous settings  -*- lexical-binding: t -*-
+;;; my-misc.el --- Miscellaneous settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

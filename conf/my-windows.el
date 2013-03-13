@@ -1,4 +1,4 @@
-;;; my-windows.el --- MS Windows speciffic settings  -*- lexical-binding: t -*-
+;;; my-windows.el --- MS Windows speciffic settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>

@@ -1,4 +1,4 @@
-;;; my-ergo.el --- ErgoEmacs settings  -*- lexical-binding: t -*-
+;;; my-ergo.el --- ErgoEmacs settings
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
