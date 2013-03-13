@@ -58,11 +58,12 @@
 (when-library
  t browse-url
  (defvar my-search
-   '("google" . "http://www.google.com/search?q=")
+   '("startpage" .
+     "https://startpage.com/do/search?prf=15ae3fd0cde2f59a677bf0d767216b3c&query=")
    "My default search engine.")
 
  (defconst +apropos-url-alist+
-   '(("^s +\\(.*\\)" . "https://startingpage.com/do/search?query=\\1")
+   `(("^s +\\(.*\\)" . ,(concat (cdr my-search) "\\1"))
      ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
@@ -244,9 +245,11 @@ With optional prefix ARG ask for url."
 						   (w3m-quit t))) t)))
 
    (eval-after-load "w3m-search"
-     '(add-to-list 'w3m-search-engine-alist
-		   '((car my-search) (concat (cdr my-search "%s"))
-		     utf-8)))))
+     '(progn
+	(add-to-list 'w3m-search-engine-alist
+		     `(,(car my-search) ,(concat (cdr my-search) "%s")
+		       utf-8))
+	(setq w3m-search-default-engine (car my-search))))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
