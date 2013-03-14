@@ -11,6 +11,9 @@
  '(gnus-buttonized-mime-types '("multipart/.*"))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
+ '(message-citation-line-format "[ %e %B %Y, %R %z, %A ] %N:\n")
+ '(message-citation-line-function
+   'message-insert-formatted-citation-line)
  '(message-send-mail-function 'smtpmail-send-it)
  '(mm-inline-large-images 'resize)
  '(smtpmail-smtp-service 587))
