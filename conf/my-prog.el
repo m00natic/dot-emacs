@@ -178,6 +178,10 @@ or ARG is non nil - locate project file for current directory."
 		(find-file-noselect (concat project-dir
 					    "BROWSE")))))))))
 
+;;; plantuml
+(when-library nil plantuml-mode
+	      (setq plantuml-jar-path "/usr/share/java/plantuml.jar"))
+
 (provide 'my-prog)
 
 ;;; my-prog.el ends here

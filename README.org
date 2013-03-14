@@ -36,6 +36,7 @@ links:
 - [[http://emacswiki.org/emacs/FindFileInProject][Find File in Project]]
 - [[http://www.emacswiki.org/emacs/RainbowDelimiters][RainbowDelimiters]]
 - [[http://magit.github.com/magit/][Magit]]
+- [[https://github.com/zwz/plantuml-mode][plantuml-mode]]
 
 * Lisp goodies
 
