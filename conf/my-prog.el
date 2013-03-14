@@ -13,6 +13,7 @@
 		     (other . "stroustrup")))
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
+ '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
  '(prolog-system 'swi)
  '(which-function-mode t))
