@@ -25,8 +25,11 @@
 				   right-curly-arrow))
  '(winner-mode t))
 
-(add-hook 'text-mode-hook (lambda () "Set proportional font."
-			    (variable-pitch-mode t)))
+(add-hook 'text-mode-hook
+	  (lambda () "Set proportional font, auto-fill and spell-checking."
+	    (variable-pitch-mode t)
+	    (turn-on-auto-fill)
+	    (turn-on-flyspell)))
 
 ;;; sml-modeline
 (if (require 'sml-modeline nil t)

@@ -18,6 +18,9 @@
  '(prolog-system 'swi)
  '(which-function-mode t))
 
+;;; spell-checking
+(add-hook 'prog-mode-hook 'flyspell-prog-mode)
+
 ;;; highlight parens
 (when-library
  nil rainbow-delimiters
