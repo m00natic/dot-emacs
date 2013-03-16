@@ -64,6 +64,7 @@
 
  (defconst +apropos-url-alist+
    `(("^s +\\(.*\\)" . ,(concat (cdr my-search) "\\1"))
+     ("^d +\\(.*\\)" . "https://duckduckgo.com/?q=\\1")
      ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
