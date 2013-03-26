@@ -41,8 +41,6 @@
  '(version-control t)
  '(view-read-only t))
 
-(global-set-key (kbd "M-RET") 'newline-and-indent)
-
 ;;; goto line
 (defun goto-line-with-feedback ()
   "Show line numbers temporarily, while prompting \
@@ -57,8 +55,10 @@ for the line number input."
 
 (global-set-key "\C-cl" 'goto-line-with-feedback)
 
-;;; Use y or n instead of yes or no
+;;; miscellaneous
 (fset 'yes-or-no-p 'y-or-n-p)
+(global-set-key (kbd "M-RET") 'newline-and-indent)
+(put 'dired-find-alternate-file 'disabled nil)
 
 ;;; backup
 (setq backup-directory-alist
