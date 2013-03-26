@@ -13,6 +13,10 @@
  '(scroll-bar-mode nil)
  '(tool-bar-mode nil))
 
+;;; font alternatives
+(add-to-list 'face-font-family-alternatives
+	     '("Inconsolata" "Anonymous Pro" "terminus"))
+
 (when (and (if +old-emacs+
 	       (and (load-theme 'andr)
 		    (load-theme 'andr-dark))
