@@ -87,13 +87,12 @@ Medium - less than 120000 bytes."
 	(let* ((pics (directory-files-and-attributes
 		      dir t "\\.\\(jpe?g\\|png\\|gif\\|bmp\\)$" t))
 	       (pic (car pics))
-	       (pic-size (car (cddr (cddr (cddr (cddr pic)))))))
+	       (pic-size (nth 8 pic)))
 	  (let (temp)
 	    (cond
 	     ((eq type 'small)
 	      (while (setq temp (cadr pics))
-		(let ((temp-size (car (cddr (cddr (cddr
-						   (cddr temp)))))))
+		(let ((temp-size (nth 8 temp)))
 		  (if (< temp-size pic-size)
 		      (setq pic temp
 			    pic-size temp-size)))
@@ -104,9 +103,7 @@ Medium - less than 120000 bytes."
 	      (if (and pic (setq temp (cadr pics)))
 		  (progn
 		    (setq pics (cdr pics))
-		    (let ((temp-size (car (cddr
-					   (cddr
-					    (cddr (cddr temp)))))))
+		    (let ((temp-size (nth 8 temp)))
 		      (let ((small temp)
 			    (small-size temp-size))
 			(if (< pic-size small-size)
@@ -115,9 +112,7 @@ Medium - less than 120000 bytes."
 				  pic temp
 				  pic-size temp-size))
 			(while (setq temp (cadr pics))
-			  (setq temp-size
-				(car (cddr (cddr (cddr
-						  (cddr temp))))))
+			  (setq temp-size (nth 8 temp))
 			  (cond
 			   ((< temp-size small-size)
 			    (setq pic small
@@ -133,8 +128,7 @@ Medium - less than 120000 bytes."
 		(car pic)))
 	     ((eq type 'large)
 	      (while (setq temp (cadr pics))
-		(let ((temp-size (car (cddr (cddr (cddr
-						   (cddr temp)))))))
+		(let ((temp-size (nth 8 temp)))
 		  (if (> temp-size pic-size)
 		      (setq pic temp
 			    pic-size temp-size)))
