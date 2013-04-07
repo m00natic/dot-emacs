@@ -118,7 +118,7 @@ Open in new tab if NEW-WINDOW."
 	   " " "+" (replace-regexp-in-string apropo-reg url text)))
 	(not new-window)))))
 
- (global-set-key [f6] 'browse-apropos-url))
+ (global-set-key "\C-cb" 'browse-apropos-url))
 
 ;;; Default browser
 (if (executable-find "conkeror")
