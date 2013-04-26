@@ -183,8 +183,27 @@ or ARG is non nil - locate project file for current directory."
 					    "BROWSE")))))))))
 
 ;;; plantuml
-(when-library nil plantuml-mode
-	      (setq plantuml-jar-path "/usr/share/java/plantuml.jar"))
+(when-library
+ nil plantuml-mode
+ (setq plantuml-jar-path "/usr/share/java/plantuml.jar")
+ (add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
+
+ (eval-after-load "plantuml-mode"
+   '(progn
+      (defun plantuml-compile ()
+	"Run plantuml over current file and open the result png."
+	(interactive)
+	(let ((file buffer-file-name))
+	  (shell-command (concat "plantuml " file))
+	  (display-buffer (find-file-noselect
+			   (concat (file-name-directory file)
+				   (file-name-sans-extension
+				    (file-name-nondirectory file))
+				   ".png")))))
+
+      (let ((map (make-sparse-keymap)))
+	(define-key map "\C-c\C-c" 'plantuml-compile)
+	(setq plantuml-mode-map map)))))
 
 (provide 'my-prog)
 
