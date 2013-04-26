@@ -194,12 +194,13 @@ or ARG is non nil - locate project file for current directory."
 	"Run plantuml over current file and open the result png."
 	(interactive)
 	(let ((file buffer-file-name))
-	  (shell-command (concat "plantuml " file))
+	  (shell-command (concat "java -jar '" plantuml-jar-path
+				 "' '" file "'"))
 	  (display-buffer (find-file-noselect
-			   (concat (file-name-directory file)
-				   (file-name-sans-extension
-				    (file-name-nondirectory file))
-				   ".png")))))
+	  		   (concat (file-name-directory file)
+	  			   (file-name-sans-extension
+	  			    (file-name-nondirectory file))
+	  			   ".png")))))
 
       (let ((map (make-sparse-keymap)))
 	(define-key map "\C-c\C-c" 'plantuml-compile)
