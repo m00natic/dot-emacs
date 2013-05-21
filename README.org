@@ -59,6 +59,7 @@ links:
 - [[http://ditaa.sourceforge.net][Ditaa]]
 - [[http://www.emacswiki.org/emacs/TabBarMode][TabBar]]
 - [[http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el][sml-modeline]]
+- [[https://github.com/roman/golden-ratio.el][golden-ratio]].el
 - [[https://github.com/bbatsov/zenburn-emacs][Zenburn]]
 - [[https://github.com/m00natic/anti-zenburn-theme][anti-zenburn]]
 - [[http://www.emacswiki.org/emacs/AceJump][Ace Jump]]

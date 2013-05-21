@@ -8,6 +8,10 @@
 (require 'my-utils)
 
 (custom-set-variables
+ '(golden-ratio-exclude-modes
+   '("calendar-mode" "gnus-summary-mode" "gnus-article-mode"
+     "calc-mode" "calc-trail-mode" "wget-mode"))
+ '(golden-ratio-mode t)
  '(google-translate-enable-ido-completion t))
 
 ;;; Imenu
