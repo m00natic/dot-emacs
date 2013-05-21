@@ -10,6 +10,10 @@
 ;;; ErgoEmacs minor mode
 (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
 
+(custom-set-variables
+ '(ergoemacs-mode-used "5.7.5")
+ '(ergoemacs-variant "5.7.5"))
+
 (when (require 'ergoemacs-mode nil t)
   (defun ergoemacs-change-keyboard (layout)
     "Change ErgoEmacs keyboard bindings according to LAYOUT."
@@ -99,7 +103,10 @@
   (ergoemacs-key "C-e" 'search-forward-regexp)
   (ergoemacs-key "C-S-E" 'search-backward-regexp)
   (ergoemacs-key "M-<" 'beginning-of-buffer)
-  (ergoemacs-key "M->" 'end-of-buffer))
+  (ergoemacs-key "M->" 'end-of-buffer)
+
+  (ergoemacs-fixed-key "<M-up>" nil)
+  (ergoemacs-fixed-key "<M-down>" nil))
 
 (provide 'my-ergo)
 
