@@ -52,7 +52,7 @@ links:
 
 * misc
 
-- [[http://xahlee.org/emacs/ergonomic_emacs_keybinding.html][ErgoEmacs-mode]]
+- [[http://mlf176f2.github.io/ErgoEmacs/][ErgoEmacs-mode]]
 - [[https://github.com/browse-kill-ring/browse-kill-ring][browse-kill-ring]]
 - [[http://bbdb.sourceforge.net][BBDB]]
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
