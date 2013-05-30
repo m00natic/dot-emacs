@@ -94,6 +94,13 @@ for the line number input."
   (add-hook 'org-shiftdown-final-hook 'windmove-down)
   (add-hook 'org-shiftright-final-hook 'windmove-right)))
 
+;;; spell-check
+(defadvice toggle-input-method (after switch-dictionary
+				      activate compile)
+  "Change dictionary on input method switch."
+  (ispell-change-dictionary (if current-input-method "bg"
+			      ispell-dictionary)))
+
 (provide 'my-custom)
 
 ;;; my-custom.el ends here
