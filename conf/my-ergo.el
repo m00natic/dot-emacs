@@ -11,8 +11,8 @@
 (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
 
 (custom-set-variables
- '(ergoemacs-mode-used "5.7.5")
- '(ergoemacs-variant "5.7.5"))
+ '(ergoemacs-mode-used "5.8")
+ '(ergoemacs-variant "5.8"))
 
 (when (require 'ergoemacs-mode nil t)
   (defun ergoemacs-change-keyboard (layout)

@@ -8,6 +8,7 @@
 (require 'my-utils)
 
 (custom-set-variables
+ '(cache-long-line-scans t)
  '(cua-enable-cua-keys nil)
  '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
@@ -98,8 +99,9 @@ for the line number input."
 (defadvice toggle-input-method (after switch-dictionary
 				      activate compile)
   "Change dictionary on input method switch."
-  (ispell-change-dictionary (if current-input-method "bg"
-			      ispell-dictionary)))
+  (ignore-errors
+    (ispell-change-dictionary (if current-input-method "bg"
+				ispell-dictionary))))
 
 (provide 'my-custom)
 

@@ -50,8 +50,8 @@
 ;;; browse kill ring
 (when-library
  nil browse-kill-ring
- (unless (featurep 'ergoemacs-mode)
-   (global-set-key "\M-y" 'browse-kill-ring)))
+ (or (featurep 'ergoemacs-mode)
+     (global-set-key "\M-y" 'browse-kill-ring)))
 
 ;;; Ditaa
 (let ((ditaa-path (executable-find "ditaa.jar")))
