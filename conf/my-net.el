@@ -65,20 +65,20 @@
  (defconst +apropos-url-alist+
    `(("^s +\\(.*\\)" . ,(concat (cdr my-search) "\\1"))
      ("^d +\\(.*\\)" . "https://duckduckgo.com/?q=\\1")
-     ("^g +\\(.*\\)" . "http://www.google.com/search?q=\\1")
+     ("^g +\\(.*\\)" . "https://www.google.com/search?q=\\1")
      ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
      ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
-      "http://translate.google.com/m?sl=\\1&tl=\\2&text=\\3")
+      "https://translate.google.com/m?sl=\\1&tl=\\2&text=\\3")
      ("^w +\\(.*\\)" .			; Wikipedia en
-      "http://en.wikipedia.org/wiki/Special:Search?search=\\1")
+      "https://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw +\\(.*\\)" .		; Wikipedia bg
-      "http://bg.wikipedia.org/wiki/Special:Search?search=\\1")
+      "https://bg.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
      ("^imdb +\\(.*\\)" . "http://m.imdb.com/find?q=\\1")
      ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
-      "http://www.google.com/search?q=site:metal-archives.com+\\1")
+      "https://www.google.com/search?q=site:metal-archives.com+\\1")
      ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
-      "http://www.google.com/search?q=site:emacswiki.org+\\1")
+      "https://www.google.com/search?q=site:emacswiki.org+\\1")
      ("^cliki +\\(.*\\)" .		; Common Lisp wiki
       "http://www.cliki.net/site/search?query=\\1")
      ("^hoog +\\(.*\\)" .		; Hoogle
