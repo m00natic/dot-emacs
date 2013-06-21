@@ -110,7 +110,7 @@ return current directory."
  nil haskell-mode
  (hook-modes ((haskell-indentation-mode t)
 	      (haskell-doc-mode t))
-	     haskell-mode-hook)
+   haskell-mode-hook)
 
  (when-library nil ghc
 	       (when (executable-find "ghc-mod")
@@ -160,7 +160,7 @@ return current directory."
 
 ;;; commit logs
 (hook-modes (auto-fill-mode flyspell-mode)
-	    log-edit-mode-hook magit-log-edit-mode-hook)
+  log-edit-mode-hook magit-log-edit-mode-hook)
 
 ;;; ebrowse
 (when (executable-find "ebrowse-c++")

@@ -47,10 +47,9 @@
   (run-hooks 'activate-lisp-minor-modes-hook))
 
 (hook-modes activate-lisp-minor-modes
-	    inferior-lisp-mode-hook lisp-mode-hook
-	    lisp-interaction-mode-hook
-	    emacs-lisp-mode-hook ielm-mode-hook
-	    inferior-scheme-mode-hook scheme-mode-hook)
+  inferior-lisp-mode-hook lisp-mode-hook lisp-interaction-mode-hook
+  emacs-lisp-mode-hook ielm-mode-hook inferior-scheme-mode-hook
+  scheme-mode-hook)
 
 ;;; Paredit
 (when-library
@@ -68,8 +67,8 @@
 ;;; elisp stuff
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
 (hook-modes turn-on-eldoc-mode
-	    emacs-lisp-mode-hook lisp-interaction-mode-hook
-	    ielm-mode-hook)
+  emacs-lisp-mode-hook lisp-interaction-mode-hook ielm-mode-hook)
+
 (or (featurep 'ergoemacs-mode)
     (define-key emacs-lisp-mode-map "\M-g" 'lisp-complete-symbol))
 

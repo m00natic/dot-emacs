@@ -44,6 +44,8 @@ Each function may be an atom or a list with parameters."
 	  (mapcar (lambda (mode) `(add-hook ',mode ',functions))
 		  modes))))
 
+(put 'hook-modes 'lisp-indent-function 1)
+
 (defmacro define-keys (mode &rest keys)
   "Define cascade of keys for a MODE.
 KEYS is alternating key-value list."

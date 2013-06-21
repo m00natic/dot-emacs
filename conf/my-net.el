@@ -45,7 +45,7 @@
 		   mode-line-buffer-identification))))))
 
  (hook-modes tramping-mode-line
-	     find-file-hooks dired-mode-hook)
+   find-file-hooks dired-mode-hook)
 
  (defun browse-ftp-tramp (url &optional new-window)
    "Open ftp URL in NEW-WINDOW with TRAMP."
