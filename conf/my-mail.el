@@ -9,6 +9,14 @@
 
 (custom-set-variables
  '(gnus-buttonized-mime-types '("multipart/.*"))
+ '(gnus-posting-styles '((".*" (address "m00naticus@gmail.com")
+			  ("X-SMTP-Server" "smtp.gmail.com"))
+			 ("vayant" (address "akotlarski@vayant.com")
+			  ("X-SMTP-Server" "mail.vayant.com"))))
+ '(gnus-select-method '(nntp "news.gmane.org"))
+ '(gnus-secondary-select-methods
+   '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
+     (nnimap "vayant" (nnimap-address "mail.vayant.com"))))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
  '(message-citation-line-format "[ %e %B %Y, %R %z, %A ] %N:\n")
@@ -27,17 +35,6 @@
 
  (eval-after-load "gnus"
    `(progn
-      (setq gnus-select-method '(nntp "news.gmane.org")
-	    gnus-secondary-select-methods
-	    '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
-	      (nnimap "vayant" (nnimap-address "mail.vayant.com")
-		      (nnimap-streaming nil)))
-	    gnus-posting-styles
-	    '((".*" (address "m00naticus@gmail.com")
-	       ("X-SMTP-Server" "smtp.gmail.com"))
-	      ("vayant" (address "akotlarski@vayant.com")
-	       ("X-SMTP-Server" "mail.vayant.com"))))
-
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
 Otherwise check for less."
@@ -84,8 +81,6 @@ Otherwise check for less."
 		  (gnus-demon-notify t))
 	      (set-window-configuration win)))))
 
-      (byte-compile 'gnus-demon-notify)
-      (byte-compile 'gnus-demon-scan-important)
       (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
       (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
       ;; run (gnus-demon-init) to track emails
@@ -137,8 +132,8 @@ If missing, try to deduce it from the `From' header."
  nil bbdb
  (eval-after-load "gnus"
    '(progn (setq bbdb-file (concat user-emacs-directory ".bbdb"))
-	   (bbdb-initialize 'gnus 'message)
-	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
+ 	   (bbdb-initialize 'gnus 'message)
+ 	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
 
 (provide 'my-mail)
 

@@ -46,10 +46,8 @@
  (when-library
   nil ecb
   (eval-after-load "ecb"
-    `(progn (defvar stack-trace-on-error nil)
-	    (defconst ecb-cedet-required-version-max '(2 1 4 9))
-	    (let ((prog-path ,(concat +home-path+ "Programs")))
-	      (ecb-add-source-path prog-path prog-path t))))))
+    `(let ((prog-path ,(concat +home-path+ "Programs")))
+       (ecb-add-source-path prog-path prog-path t)))))
 
 ;;; AutoComplete
 (when (and (not +old-emacs+)
