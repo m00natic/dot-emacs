@@ -11,9 +11,7 @@
 (setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
 
 (custom-set-variables
- '(ergoemacs-mode-used "5.8")
- '(ergoemacs-theme "5.8")
- '(ergoemacs-variant "5.8"))
+ '(ergoemacs-theme "lvl3"))
 
 (when (require 'ergoemacs-mode nil t)
   (defun ergoemacs-change-keyboard (layout)
@@ -30,7 +28,7 @@
   (when-library
    t doc-view
    (add-to-list
-    'ergoemacs-minor-mode-layout
+    'ergoemacs-minor-mode-layout-lvl3
     '(doc-view-mode-hook
       ((isearch-forward doc-view-search doc-view-mode-map)
        (isearch-backward doc-view-search-backward doc-view-mode-map)
@@ -52,7 +50,7 @@
   (when-library
    nil paredit
    (add-to-list
-    'ergoemacs-minor-mode-layout
+    'ergoemacs-minor-mode-layout-lvl3
     '(activate-lisp-minor-modes-hook
       (("M-r" nil paredit-mode-map)
        ("M-R" nil paredit-mode-map)
@@ -74,7 +72,7 @@
   (when-library
    nil slime
    (add-to-list
-    'ergoemacs-minor-mode-layout
+    'ergoemacs-minor-mode-layout-lvl3
     '(slime-connected-hook
       (("M-n" nil slime-mode-map)
        ("M-p" nil slime-mode-map)
@@ -82,7 +80,7 @@
        ("<f12>" slime-previous-note slime-mode-map))))
 
    (add-to-list
-    'ergoemacs-minor-mode-layout
+    'ergoemacs-minor-mode-layout-lvl3
     '(slime-repl-mode-hook
       (("M-n" nil slime-repl-mode-map)
        ("M-p" nil slime-repl-mode-map)
