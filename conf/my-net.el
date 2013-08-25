@@ -249,6 +249,26 @@ With optional prefix ARG ask for url."
 		       utf-8))
 	(setq w3m-search-default-engine (car my-search))))))
 
+(when-library
+ nil eww
+ (autoload 'eww "eww")
+ (autoload 'eww-browse-url "eww")
+
+ ;; make eww default for most URLs
+ (if (consp browse-url-browser-function)
+     (setcdr (assoc "." browse-url-browser-function) 'eww-browse-url)
+   (setq browse-url-browser-function
+	 `(("^ftp://.*" . browse-ftp-tramp)
+	   ("video" . ,browse-url-browser-function)
+	   ("\\.tv" . ,browse-url-browser-function)
+	   ("youtube" . ,browse-url-browser-function)
+	   ("." . eww-browse-url))))
+
+ (eval-after-load "eww"
+   '(define-key eww-mode-map "v" (lambda () "Go home."
+				   (interactive)
+				   (eww w3m-home-page)))))
+
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
     (setq browse-url-browser-function
