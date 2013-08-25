@@ -14,7 +14,9 @@
  '(default-input-method "bulgarian-phonetic")
  '(delete-old-versions t)
  '(electric-pair-mode t)
+ '(global-hl-line-mode t)
  '(global-subword-mode t)
+ '(global-visual-line-mode t)
  '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
@@ -33,14 +35,29 @@
 		      ("melpa" . "http://melpa.milkbox.net/packages/")
 		      ("marmalade" .
 		       "http://marmalade-repo.org/packages/")))
+ '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)
  '(recentf-mode t)
  `(recentf-save-file ,(concat user-emacs-directory "recentf"))
  '(save-place t nil (saveplace))
  `(save-place-file ,(concat user-emacs-directory ".emacs-places"))
+ '(show-paren-mode t)
+ '(uniquify-buffer-name-style 'post-forward-angle-brackets
+			      nil (uniquify))
  '(version-control t)
- '(view-read-only t))
+ '(view-read-only t)
+ '(winner-mode t))
+
+;;; open file in view-mode
+;; (add-hook 'find-file-hook 'view-mode)
+
+;;; text mode
+(add-hook 'text-mode-hook
+	  (lambda () "Set proportional font, auto-fill and spell-checking."
+	    (variable-pitch-mode t)
+	    (turn-on-auto-fill)
+	    (turn-on-flyspell)))
 
 ;;; goto line
 (defun goto-line-with-feedback ()

@@ -14,22 +14,9 @@
  '(display-time-day-and-date t)
  '(display-time-mode t)
  '(frame-title-format "emacs %@ %b (%f)")
- '(global-hl-line-mode t)
- '(global-visual-line-mode t)
- '(proced-format 'medium)
- '(show-paren-mode t)
  '(size-indication-mode t)
- '(uniquify-buffer-name-style 'post-forward-angle-brackets
-			      nil (uniquify))
  '(visual-line-fringe-indicators '(left-curly-arrow
-				   right-curly-arrow))
- '(winner-mode t))
-
-(add-hook 'text-mode-hook
-	  (lambda () "Set proportional font, auto-fill and spell-checking."
-	    (variable-pitch-mode t)
-	    (turn-on-auto-fill)
-	    (turn-on-flyspell)))
+				   right-curly-arrow)))
 
 ;;; sml-modeline
 (if (require 'sml-modeline nil t)
