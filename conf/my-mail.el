@@ -13,7 +13,6 @@
 			  ("X-SMTP-Server" "smtp.gmail.com"))
 			 ("vayant" (address "akotlarski@vayant.com")
 			  ("X-SMTP-Server" "mail.vayant.com"))))
- '(gnus-select-method '(nntp "news.gmane.org"))
  '(gnus-secondary-select-methods
    '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
      (nnimap "vayant" (nnimap-address "mail.vayant.com"))))
@@ -22,7 +21,7 @@
  '(message-citation-line-format "[ %e %B %Y, %R %z, %A ] %N:\n")
  '(message-citation-line-function
    'message-insert-formatted-citation-line)
- '(message-send-mail-function 'smtpmail-send-it)
+ '(message-send-mail-function 'message-smtpmail-send-it)
  '(mm-inline-large-images 'resize)
  '(smtpmail-smtp-service 587))
 
@@ -35,6 +34,8 @@
 
  (eval-after-load "gnus"
    `(progn
+      (setq gnus-select-method '(nntp "news.gmane.org"))
+
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
 Otherwise check for less."
@@ -126,7 +127,7 @@ If missing, try to deduce it from the `From' header."
 ;;; The insidious Big Brother Database
 (when-library
  nil bbdb
- (eval-after-load "gnus"
+ (eval-after-load "message"
    '(progn (setq bbdb-file (concat user-emacs-directory ".bbdb"))
  	   (bbdb-initialize 'gnus 'message)
  	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
