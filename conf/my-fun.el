@@ -135,10 +135,6 @@ Medium - less than 120000 bytes."
 		(setq pics (cdr pics)))
 	      (car pic))))))
 
-      (byte-compile 'my-emms-default-info)
-      (byte-compile 'my-emms-track-description-function)
-      (byte-compile 'my-emms-covers)
-
       (setq emms-show-format "EMMS: %s"
 	    emms-mode-line-format "%s"
 	    emms-source-file-default-directory
@@ -184,7 +180,6 @@ Medium - less than 120000 bytes."
 		     (emms-track-description
 		      (emms-playlist-current-selected-track)))))
 
-	      (byte-compile 'emms-player-mpd-notify)
 	      (add-hook 'emms-player-started-hook
 			'emms-player-mpd-notify)))))
 
@@ -195,14 +190,13 @@ Medium - less than 120000 bytes."
 	(when-library
 	 nil notify
 	 '(setq emms-player-next-function
-		(byte-compile
-		 (lambda () "Notify on new track."
-		   (emms-next-noerror)
-		   (if emms-player-playing-p
-		       (notify
-			"EMMS"
-			(emms-track-description
-			 (emms-playlist-current-selected-track)))))))))
+		(lambda () "Notify on new track."
+		  (emms-next-noerror)
+		  (if emms-player-playing-p
+		      (notify
+		       "EMMS"
+		       (emms-track-description
+			(emms-playlist-current-selected-track))))))))
 
       ;; track info ticker
       (defun string-shift-left (str &optional offset)
@@ -218,9 +212,6 @@ Medium - less than 120000 bytes."
 	"Tick emms track description OFFSET characters."
 	(setq emms-mode-line-string
 	      (string-shift-left emms-mode-line-string offset)))
-
-      (byte-compile 'string-shift-left)
-      (byte-compile 'emms-tick-mode-line-description)
 
       (defvar *my-emms-ticker* nil
 	"Timer for current track info ticker.")
@@ -238,17 +229,14 @@ Medium - less than 120000 bytes."
 	  (cancel-timer *my-emms-ticker*)
 	  (setq *my-emms-ticker* nil)))
 
-      (byte-compile 'emms-track-ticker-start)
-      (byte-compile 'emms-track-ticker-stop)
-
       (add-hook 'emms-player-started-hook 'emms-track-ticker-start)
       (add-hook 'emms-player-stopped-hook 'emms-track-ticker-stop)
       (add-hook 'emms-player-finished-hook 'emms-track-ticker-stop)
       (add-hook 'emms-player-paused-hook
-		(byte-compile (lambda () "Start/Stop track ticker."
-				(if *my-emms-ticker*
-				    (emms-track-ticker-stop)
-				  (emms-track-ticker-start))))))))
+		(lambda () "Start/Stop track ticker."
+		  (if *my-emms-ticker*
+		      (emms-track-ticker-stop)
+		    (emms-track-ticker-start)))))))
 
 ;;; chess
 (when-library nil chess

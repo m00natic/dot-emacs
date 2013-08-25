@@ -85,37 +85,33 @@ Otherwise check for less."
       (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
       ;; run (gnus-demon-init) to track emails
       (add-hook 'gnus-group-mode-hook 'gnus-topic-mode)
-      (add-hook 'kill-emacs-hook (byte-compile
-				  (lambda () "Quit Gnus."
-				    (setq gnus-interactive-exit nil)
-				    (gnus-group-exit)))))))
+      (add-hook 'kill-emacs-hook (lambda () "Quit Gnus."
+				   (setq gnus-interactive-exit nil)
+				   (gnus-group-exit))))))
 
 (when-library
  t message
  (add-hook 'message-mode-hook 'flyspell-mode)
 
- (when-library
-  t smtpmail
-  (eval-after-load "smtpmail"
-    '(defadvice smtpmail-via-smtp (around set-smtp-server-from-header
-					  activate compile)
-       "Set smtp server according to the `X-SMTP-Server' header.
+ (defun set-smtp-server-from-header ()
+   "Set smtp server according to the `X-SMTP-Server' header.
 If missing, try to deduce it from the `From' header."
-       (let ((from ""))
-	 (save-restriction
-	   (message-narrow-to-headers)
-	   (setq smtpmail-smtp-server
-		 (message-fetch-field "X-SMTP-Server")
-		 from (message-fetch-field "from")))
-	 (cond (smtpmail-smtp-server
-		(message-remove-header "X-SMTP-Server"))
-	       ((string-match "@\\([^ >]*\\)" from)
-		(let ((domain (match-string-no-properties 1 from)))
-		  (setq smtpmail-smtp-server
-			(if (string-equal domain "vayant.com")
-			    "mail.vayant.com"
-			  (concat "smtp." domain)))))))
-       ad-do-it)))
+   (let ((from ""))
+     (save-restriction
+       (message-narrow-to-headers)
+       (setq smtpmail-smtp-server
+	     (message-fetch-field "X-SMTP-Server")
+	     from (message-fetch-field "from")))
+     (cond (smtpmail-smtp-server
+	    (message-remove-header "X-SMTP-Server"))
+	   ((string-match "@\\([^ >]*\\)" from)
+	    (let ((domain (match-string-no-properties 1 from)))
+	      (setq smtpmail-smtp-server
+		    (if (string-equal domain "vayant.com")
+			"mail.vayant.com"
+		      (concat "smtp." domain))))))))
+
+ (add-hook 'message-send-mail-hook 'set-smtp-server-from-header)
 
  (when-library
   t fortune

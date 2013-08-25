@@ -223,7 +223,6 @@ Make links point to local files."
 		    (cd olddir))
 		(w3m-message "No url specified"))))
 
-	  (byte-compile 'w3m-download-with-curl)
 	  (define-key w3m-mode-map "D" 'w3m-download-with-curl))
 
 	(when browse-url-generic-program
@@ -239,11 +238,9 @@ With optional prefix ARG ask for url."
 			 (concat browse-url-generic-program
 				 " on link: ") 1))))))
 
-	  (byte-compile 'w3m-browse-url-generic)
 	  (define-key w3m-mode-map "m" 'w3m-browse-url-generic))
 
-	(add-hook 'kill-emacs-hook (byte-compile (lambda () "Quit w3m."
-						   (w3m-quit t))) t)))
+	(add-hook 'kill-emacs-hook (lambda () "Quit w3m." (w3m-quit t)))))
 
    (eval-after-load "w3m-search"
      '(progn

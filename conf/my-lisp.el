@@ -159,7 +159,6 @@
 		 (if l (browse-url (concat "file://" path (car l)))
 		   (error (concat "Not found: " ci-name)))))))
 
-	 (byte-compile 'slime-browse-local-javadoc)
 	 (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
 	 (define-key slime-repl-mode-map
 	   "\C-cb" 'slime-browse-local-javadoc))
@@ -201,9 +200,8 @@
 (when-library
  nil inf-clips
  (eval-after-load "clips"
-   '(add-hook 'clips-mode-hook (byte-compile
-				(lambda () (activate-lisp-minor-modes)
-				  (setq indent-region-function nil)))))
+   '(add-hook 'clips-mode-hook (lambda () (activate-lisp-minor-modes)
+				 (setq indent-region-function nil))))
  (eval-after-load "inf-clips"
    `(progn
       (setq inferior-clips-program
@@ -212,9 +210,8 @@
 		      "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 	      "clips"))
       (add-hook 'inferior-clips-mode-hook
-		(byte-compile
-		 (lambda () (activate-lisp-minor-modes)
-		   (setq indent-region-function nil)))))))
+		(lambda () (activate-lisp-minor-modes)
+		  (setq indent-region-function nil))))))
 
 (provide 'my-lisp)
 
