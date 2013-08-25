@@ -55,15 +55,15 @@ NIX forms are executed on all other platforms."
 (require 'my-themes)
 (require 'my-display)
 (require 'my-custom)
-
-(win-or-nix (require 'my-windows))
 (when-library nil ergoemacs-mode (require 'my-ergo))
 
-(require 'my-mail)
-(require 'my-net)
-(require 'my-lisp)
-(require 'my-prog)
-(require 'my-fun)
-(require 'my-misc)
+(with-idle-timers
+ 2 ((win-or-nix (require 'my-windows)))
+ ((require 'my-mail) (message "Loaded mail settings"))
+ ((require 'my-net) (message "Loaded network settings"))
+ ((require 'my-lisp) (message "Loaded lisp settings"))
+ ((require 'my-prog) (message "Loaded programming settings"))
+ ((require 'my-fun) (message "Loaded fun settings"))
+ ((require 'my-misc) (message "All settings loaded")))
 
 ;;; init.el ends here

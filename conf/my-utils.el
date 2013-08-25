@@ -56,6 +56,17 @@ KEYS is alternating key-value list."
 		(setq keys (cddr keys)))
 	      (nreverse res))))
 
+(defmacro with-idle-timers (secs &rest bodies)
+  "Perform cascade of actions on idle SECS seconds by executing BODIES."
+  (cond ((cdr bodies)
+	 `(run-with-idle-timer
+	   ,secs nil
+	   (lambda () ,@(car bodies)
+	     (sit-for ,secs)
+	     (with-idle-timers ,secs ,@(cdr bodies)))))
+	((car bodies)
+	 `(run-with-idle-timer ,secs nil (lambda () ,@(car bodies))))))
+
 (provide 'my-utils)
 
 ;;; my-utils.el ends here
