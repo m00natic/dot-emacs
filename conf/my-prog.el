@@ -11,6 +11,8 @@
  '(c-default-style '((java-mode . "java")
 		     (awk-mode . "awk")
 		     (other . "stroustrup")))
+ '(cppcheck-cmd
+   "cppcheck --template gcc -q -f --enable=all --inline-suppr")
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
  '(magit-diff-refine-hunk t)
@@ -179,6 +181,10 @@ or ARG is non nil - locate project file for current directory."
 		(call-process "ebrowse-c++" nil nil nil project-dir)
 		(find-file-noselect (concat project-dir
 					    "BROWSE")))))))))
+
+;;; cpputils
+(when-library nil cpputils-cmake
+	      (add-hook 'c-mode-common-hook 'cppcm-reload-all))
 
 ;;; plantuml
 (when-library
