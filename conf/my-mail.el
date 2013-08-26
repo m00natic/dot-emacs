@@ -34,7 +34,7 @@
 
  (eval-after-load "gnus"
    `(progn
-      (setq gnus-select-method '(nntp "news.gmane.org"))
+      (setq-default gnus-select-method '(nntp "news.gmane.org"))
 
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
