@@ -12,7 +12,9 @@
    '("calendar-mode" "gnus-summary-mode" "gnus-article-mode"
      "calc-mode" "calc-trail-mode" "wget-mode"))
  '(golden-ratio-mode t)
- '(google-translate-enable-ido-completion t))
+ '(google-translate-enable-ido-completion t)
+ `(org-default-notes-file ,(concat user-emacs-directory
+				   ".notes.org")))
 
 ;;; Imenu
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
@@ -21,27 +23,31 @@
 (when-library t proced (global-set-key "\C-^" 'proced))
 
 ;;; Publishing
-(let ((my-site-dir (concat +home-path+ "Documents/my-site/")))
-  (if (file-exists-p my-site-dir)
-      (setq org-publish-project-alist
-	    `(("my-site-org"
-	       :base-directory ,(concat my-site-dir "org/")
-	       :base-extension "org"
-	       :publishing-directory ,my-site-dir
-	       :recursive t
-	       :publishing-function org-publish-org-to-html
-	       :auto-preamble t
-	       :auto-sitemap t
-	       :sitemap-title "Sitemap")
-	      ("my-site-static"
-	       :base-directory ,(concat my-site-dir "org/")
-	       :base-extension
-	       "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-	       :publishing-directory ,my-site-dir
-	       :recursive t
-	       :publishing-function org-publish-attachment)
-	      ("my-site" :components ("my-site-org"
-				      "my-site-static"))))))
+(when-library
+ t org
+ (define-key global-map "\C-cc" 'org-capture)
+
+ (let ((my-site-dir (concat +home-path+ "Documents/my-site/")))
+   (if (file-exists-p my-site-dir)
+       (setq org-publish-project-alist
+	     `(("my-site-org"
+		:base-directory ,(concat my-site-dir "org/")
+		:base-extension "org"
+		:publishing-directory ,my-site-dir
+		:recursive t
+		:publishing-function org-publish-org-to-html
+		:auto-preamble t
+		:auto-sitemap t
+		:sitemap-title "Sitemap")
+	       ("my-site-static"
+		:base-directory ,(concat my-site-dir "org/")
+		:base-extension
+		"css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
+		:publishing-directory ,my-site-dir
+		:recursive t
+		:publishing-function org-publish-attachment)
+	       ("my-site" :components ("my-site-org"
+				       "my-site-static")))))))
 
 ;;; Ace Jump
 (if (require 'ace-jump-mode nil t)
