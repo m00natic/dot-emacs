@@ -27,13 +27,14 @@
   (or +old-emacs+ (ignore-errors (load-theme 'zenburn t t)
 				 (load-theme 'anti-zenburn t t)))
 
-  (defmacro my-switch-colours (&optional light)
+  (defun my-switch-colours (&optional light)
     "Switch themes.  If LIGHT is not given, let it be dark."
     (if light
-	'(progn (enable-theme 'andr)
+	(progn (enable-theme 'andr)
 		(ignore-errors (enable-theme 'anti-zenburn)))
-      '(progn (enable-theme 'andr-dark)
-	      (ignore-errors (enable-theme 'zenburn)))))
+      '(enable-theme 'andr-dark)
+      (ignore-errors (enable-theme 'zenburn)))
+    (when-library nil powerline (powerline-reset)))
 
   (defun my-switch-themes (sun-event &optional first-run)
     "Switch themes on SUN-EVENT sunrise and sunset even on FIRST-RUN."

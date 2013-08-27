@@ -18,11 +18,9 @@
  '(visual-line-fringe-indicators '(left-curly-arrow
 				   right-curly-arrow)))
 
-;;; sml-modeline
-(if (require 'sml-modeline nil t)
-    (if +old-emacs+
-	(ignore-errors (sml-modeline-mode 1))
-      (sml-modeline-mode 1)))
+;;; powerline
+(if (require 'powerline)
+    (powerline-default-theme))
 
 ;;; TabBar
 (when (require 'tabbar nil t)
