@@ -94,9 +94,7 @@
 	slime-repl-mode-map)))))
 
   ;; activate
-  (if +old-emacs+
-      (ignore-errors (ergoemacs-mode 1))
-    (ergoemacs-mode 1))
+  (ergoemacs-mode 1)
 
   (ergoemacs-key "C-@" 'cua-set-mark)	; set mark in terminal
   (ergoemacs-key "C-e" 'search-forward-regexp)

@@ -8,7 +8,6 @@
 (require 'my-utils)
 
 (custom-set-variables
- '(cache-long-line-scans t)
  '(cua-enable-cua-keys nil)
  '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
