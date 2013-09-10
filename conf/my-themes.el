@@ -32,7 +32,7 @@
     (if light
 	(progn (enable-theme 'andr)
 		(ignore-errors (enable-theme 'anti-zenburn)))
-      '(enable-theme 'andr-dark)
+      (enable-theme 'andr-dark)
       (ignore-errors (enable-theme 'zenburn)))
     (when-library nil powerline (powerline-reset)))
 

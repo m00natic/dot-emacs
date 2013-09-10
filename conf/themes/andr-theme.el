@@ -21,6 +21,10 @@
      ((default :inherit mode-line :weight light
 	:box (:line-width -1 :color "grey60")
 	:foreground "#a080a0" :background "#c7c7c7")))
+   '(org-code ((t :inherit (shadow fixed-pitch))))
+   '(org-block ((t :inherit (shadow fixed-pitch))))
+   '(org-block-background ((t :inherit fixed-pitch)))
+   '(org-table ((t :inherit fixed-pitch)))
    `(tabbar-selected ((t :inherit default :weight bold
 			 (,class :box (:line-width -1
 				       :style pressed-button)))))
