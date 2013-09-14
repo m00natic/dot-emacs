@@ -93,6 +93,9 @@
        ("S-<f12>" slime-repl-next-matching-input
 	slime-repl-mode-map)))))
 
+  (delete "C-d" ergoemacs-redundant-keys)
+  (delete "C-j" ergoemacs-redundant-keys)
+
   ;; activate
   (ergoemacs-mode 1)
 
