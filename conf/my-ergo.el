@@ -8,9 +8,8 @@
 (require 'my-utils)
 
 ;;; ErgoEmacs minor mode
-(setenv "ERGOEMACS_KEYBOARD_LAYOUT" "colemak")
-
 (custom-set-variables
+ '(ergoemacs-keyboard-layout "colemak")
  '(ergoemacs-theme "lvl3"))
 
 (when (require 'ergoemacs-mode nil t)
@@ -99,11 +98,8 @@
   ;; activate
   (ergoemacs-mode 1)
 
-  (ergoemacs-key "C-@" 'cua-set-mark)	; set mark in terminal
   (ergoemacs-key "C-e" 'search-forward-regexp)
   (ergoemacs-key "C-S-E" 'search-backward-regexp)
-  (ergoemacs-key "M-<" 'beginning-of-buffer)
-  (ergoemacs-key "M->" 'end-of-buffer)
 
   (ergoemacs-fixed-key "<M-up>" nil)
   (ergoemacs-fixed-key "<M-down>" nil))
