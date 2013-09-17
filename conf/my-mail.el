@@ -33,7 +33,7 @@
  (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
 
  (eval-after-load "gnus"
-   `(progn
+   '(progn
       (setq-default gnus-select-method '(nntp "news.gmane.org"))
 
       (defun gnus-demon-notify (&optional notify)
@@ -52,19 +52,16 @@ Otherwise check for less."
 						    ", " group)))))
 	       (setq *gnus-new-mail-count*
 		     (if (null unread-groups) ""
-		       (win-or-nix
-			nil
-			(when-library
-			 nil notify
-			 (if (> unread-count (string-to-number
-					      *gnus-new-mail-count*))
-			     (notify
-			      "Gnus"
-			      (format
-			       "%d new mail%s in %s"
-			       unread-count
-			       (if (= unread-count 1) "" "s")
-			       (substring unread-groups 2))))))
+		       (and (require 'notify)
+			    (> unread-count (string-to-number
+					     *gnus-new-mail-count*))
+			    (notify
+			     "Gnus"
+			     (format
+			      "%d new mail%s in %s"
+			      unread-count
+			      (if (= unread-count 1) "" "s")
+			      (substring unread-groups 2))))
 		       (propertize (format "%d" unread-count)
 				   'face 'font-lock-warning-face))))))
 
