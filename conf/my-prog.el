@@ -120,8 +120,7 @@ return current directory."
 ;;; cc-mode settings
 (add-hook 'c-mode-common-hook
 	  (lambda () (hs-minor-mode 1)
-	    (when-library nil hl-sexp (hl-sexp-mode 1))
-	    (local-set-key [backtab] 'hs-toggle-hiding)))
+	    (when-library nil hl-sexp (hl-sexp-mode 1))))
 
 ;;; Emacs Speaks Statistics
 (when-library

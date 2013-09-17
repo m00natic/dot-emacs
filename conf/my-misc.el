@@ -22,6 +22,12 @@
 ;;; Proced
 (when-library t proced (global-set-key "\C-^" 'proced))
 
+;;; hide-show
+(when-library
+ t hideshow
+ (eval-after-load "hideshow"
+   '(define-key hs-minor-mode-map [backtab] 'hs-toggle-hiding)))
+
 ;;; Publishing
 (when-library
  t org
@@ -78,9 +84,7 @@
 
  ;; workarround view-mode capturing <return>
  (eval-after-load "dictionary"
-   '(add-hook 'view-mode-hook
-	      (lambda () (if (dictionary-mode-p)
-			(local-set-key [return] 'link-selected))))))
+   '(define-key dictionary-mode-map [return] 'link-selected)))
 
 ;;; Google Translate
 (when-library
