@@ -94,6 +94,7 @@
 
   (delete "C-d" ergoemacs-redundant-keys)
   (delete "C-j" ergoemacs-redundant-keys)
+  (delete "C-t" ergoemacs-redundant-keys)
 
   ;; activate
   (ergoemacs-mode 1)
