@@ -11,7 +11,6 @@
  '(golden-ratio-exclude-modes
    '("calendar-mode" "gnus-summary-mode" "gnus-article-mode"
      "calc-mode" "calc-trail-mode" "wget-mode"))
- '(golden-ratio-mode t)
  '(google-translate-enable-ido-completion t)
  `(org-default-notes-file ,(concat user-emacs-directory
 				   ".notes.org")))
@@ -58,6 +57,11 @@
 ;;; Ace Jump
 (if (require 'ace-jump-mode nil t)
     (define-key global-map "\C-c " 'ace-jump-mode))
+
+;;; golder ratio
+(when-library
+ nil golden-ratio
+ (or +old-emacs+ (golden-ratio-mode 1)))
 
 ;;; browse kill ring
 (when-library
