@@ -1,5 +1,4 @@
 ;;; init.el --- Andrey Kotlarski's .emacs
-;;; -*- lexical-bind: t -*-
 
 ;;; Commentary:
 ;; Author: Andrey Kotlarski <m00naticus@gmail.com>
@@ -50,7 +49,7 @@ NIX forms are executed on all other platforms."
 
 (if (or (require 'package nil t)
 	(require 'package-23 nil t))
-    (package-initialize))
+    (ignore-errors (package-initialize)))
 
 (require 'my-themes)
 (require 'my-display)
