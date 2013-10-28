@@ -47,12 +47,19 @@ NIX forms are executed on all other platforms."
 
 ;;; load configurations
 
-(if (or (require 'package nil t)
-	(require 'package-23 nil t))
-    (ignore-errors (package-initialize)))
+(when (or (require 'package nil t)
+	  (require 'package-23 nil t))
+  (defadvice package-activate (around package-safe-activate
+				      activate compile)
+    (condition-case ex
+	ad-do-it
+      (error (message "Error on package activation of %s: %s"
+		      package ex))))
 
-(require 'my-themes)
+  (package-initialize))
+
 (require 'my-display)
+(require 'my-themes)
 (require 'my-custom)
 (when-library nil ergoemacs-mode (require 'my-ergo))
 

@@ -19,7 +19,7 @@
 				   right-curly-arrow)))
 
 ;;; powerline
-(if (require 'powerline)
+(if (ignore-errors (require 'powerline nil t))
     (powerline-default-theme))
 
 ;;; TabBar

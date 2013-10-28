@@ -34,7 +34,8 @@
 		(ignore-errors (enable-theme 'anti-zenburn)))
       (enable-theme 'andr-dark)
       (ignore-errors (enable-theme 'zenburn)))
-    (when-library nil powerline (powerline-reset)))
+    (if (ignore-errors (require 'powerline nil t))
+	(powerline-reset)))
 
   (defun my-switch-themes (sun-event &optional first-run)
     "Switch themes on SUN-EVENT sunrise and sunset even on FIRST-RUN."
