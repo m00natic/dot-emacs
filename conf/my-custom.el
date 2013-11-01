@@ -16,7 +16,6 @@
  '(global-hl-line-mode t)
  '(global-subword-mode t)
  '(global-visual-line-mode t)
- '(icomplete-mode t)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
  `(ido-save-directory-list-file ,(concat user-emacs-directory

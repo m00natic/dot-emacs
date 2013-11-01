@@ -63,11 +63,15 @@
  nil golden-ratio
  (or +old-emacs+ (golden-ratio-mode 1)))
 
-;;; browse kill ring
-(when-library
- nil browse-kill-ring
- (or (featurep 'ergoemacs-mode)
-     (global-set-key "\M-y" 'browse-kill-ring)))
+;;; helm
+(if (and (not +old-emacs+)
+	 (require 'helm-config nil t))
+    (progn
+      (unless (featurep 'ergoemacs-mode)
+	(global-set-key "\M-y" 'helm-show-kill-ring)
+	(global-set-key "\C-x\C-f" 'helm-find-files))
+      (helm-mode 1))
+  (icomplete-mode 1))
 
 ;;; Ditaa
 (let ((ditaa-path (executable-find "ditaa.jar")))

@@ -42,9 +42,11 @@
        "o" 'occur-mode-display-occurrence
        "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
 
-  (when-library
-   nil browse-kill-ring
-   (ergoemacs-key "M-V" 'browse-kill-ring))
+  (unless +old-emacs+
+    (when-library
+     nil helm
+     (ergoemacs-key "M-V" 'helm-show-kill-ring)
+     (ergoemacs-fixed-key "C-o" 'helm-find-files)))
 
   (when-library
    nil paredit
@@ -96,14 +98,15 @@
   (delete "C-j" ergoemacs-redundant-keys)
   (delete "C-t" ergoemacs-redundant-keys)
 
-  ;; activate
-  (ergoemacs-mode 1)
+  (ergoemacs-fixed-key "C-f" 'search-forward-regexp)
+  (ergoemacs-fixed-key "C-S-f" 'search-backward-regexp)
 
-  (ergoemacs-key "C-e" 'search-forward-regexp)
-  (ergoemacs-key "C-S-E" 'search-backward-regexp)
-
+  (ergoemacs-fixed-key "C-z" nil)
   (ergoemacs-fixed-key "<M-up>" nil)
-  (ergoemacs-fixed-key "<M-down>" nil))
+  (ergoemacs-fixed-key "<M-down>" nil)
+
+  ;; activate
+  (ergoemacs-mode 1))
 
 (provide 'my-ergo)
 
