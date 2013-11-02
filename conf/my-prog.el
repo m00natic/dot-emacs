@@ -62,33 +62,10 @@
    (eval-after-load "semantic"
      '(add-to-list 'ac-sources 'ac-source-semantic))))
 
-;;; find file in project
-(when-library
- nil find-file-in-project
- (define-key global-map "\C-cf" 'find-file-in-project)
-
- (eval-after-load "find-file-in-project"
-   '(progn
-      (defun my-ffip-project-root-function ()
-	"Check for `ffip-project-file' and if no such, \
-return current directory."
-	(let ((project-directory
-	       (if (listp ffip-project-file)
-		   (some (apply-partially 'locate-dominating-file
-					  default-directory)
-			 ffip-project-file)
-		 (locate-dominating-file default-directory
-					 ffip-project-file))))
-	  (or project-directory default-directory)))
-
-      (setq-default
-       ffip-project-file ".emacs-project"
-       ffip-patterns (nconc '("*.cpp" "*.h" "*.hpp" "*.c" "*.sql")
-			    ffip-patterns)
-       ffip-find-options
-       "-not -regex \".*\\(debug\\|release\\|svn\\|git\\).*\""
-       ffip-limit 4096
-       ffip-project-root-function 'my-ffip-project-root-function))))
+;;; projectile
+(when (require 'projectile nil t)
+  (setq projectile-require-project-root nil)
+  (projectile-global-mode 1))
 
 ;;; Oz
 (when-library
