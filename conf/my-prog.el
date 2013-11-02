@@ -65,6 +65,7 @@
 ;;; projectile
 (when (require 'projectile nil t)
   (setq projectile-require-project-root nil)
+  (add-to-list 'projectile-project-root-files ".emacs-project")
   (projectile-global-mode 1))
 
 ;;; Oz
