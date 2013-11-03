@@ -103,6 +103,13 @@
  (global-set-key "\C-ct" 'google-translate-query-translate)
  (global-set-key "\C-cT" 'google-translate-at-point))
 
+;;; remove clutter from modeline
+(when (require 'diminish nil t)
+  (diminish 'helm-mode "H")
+  (diminish 'projectile-mode "P")
+  (diminish 'golden-ratio-mode "G")
+  (diminish 'visual-line-mode "W"))
+
 (provide 'my-misc)
 
 ;;; my-misc.el ends here
