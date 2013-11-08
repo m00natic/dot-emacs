@@ -105,10 +105,10 @@
 
 ;;; remove clutter from modeline
 (when (require 'diminish nil t)
-  (diminish 'helm-mode "H")
+  (diminish 'visual-line-mode "W")
   (diminish 'projectile-mode "P")
   (diminish 'golden-ratio-mode "G")
-  (diminish 'visual-line-mode "W"))
+  (diminish 'helm-mode "H"))
 
 (provide 'my-misc)
 

@@ -23,18 +23,6 @@
       (setq ergoemacs-keyboard-layout layout)
       (ergoemacs-setup-keys)))
 
-;;; fixes for some modes
-  (when-library
-   t doc-view
-   (add-to-list
-    'ergoemacs-minor-mode-layout-lvl3
-    '(doc-view-mode-hook
-      ((isearch-forward doc-view-search doc-view-mode-map)
-       (isearch-backward doc-view-search-backward doc-view-mode-map)
-       (next-line doc-view-next-line-or-next-page doc-view-mode-map)
-       (previous-line doc-view-previous-line-or-previous-page
-		      doc-view-mode-map)))))
-
   ;; occur fixes
   (eval-after-load "replace"
     '(define-keys occur-mode-map
@@ -42,57 +30,45 @@
        "o" 'occur-mode-display-occurrence
        "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
 
-  (unless +old-emacs+
-    (when-library
-     nil helm
-     (ergoemacs-key "M-V" 'helm-show-kill-ring)
-     (ergoemacs-fixed-key "C-o" 'helm-find-files)))
+  (or +old-emacs+
+      (when-library
+       nil helm
+       (ergoemacs-key "M-V" 'helm-show-kill-ring)
+       (ergoemacs-fixed-key "C-o" 'find-file)))
 
   (when-library
    nil paredit
    (add-to-list
     'ergoemacs-minor-mode-layout-lvl3
     '(activate-lisp-minor-modes-hook
-      (("M-r" nil paredit-mode-map)
-       ("M-R" nil paredit-mode-map)
-       ("M-S" nil paredit-mode-map)
-       ("M-J" nil paredit-mode-map)
-       ("M-;" nil paredit-mode-map)
-       ("<f9>" paredit-split-sexp paredit-mode-map)
-       ("<f10>" paredit-raise-sexp paredit-mode-map)
-       ("S-<f9>" paredit-join-sexps paredit-mode-map)
-       ("S-<f10>" paredit-splice-sexp paredit-mode-map)
-       (comment-dwim paredit-comment-dwim paredit-mode-map)
-       (backward-kill-word paredit-backward-kill-word
-			   paredit-mode-map)
-       (forward-kill-word paredit-forward-kill-word paredit-mode-map)
-       (delete-backward-char paredit-backward-delete paredit-mode-map)
-       (delete-char paredit-forward-delete paredit-mode-map)
-       (kill-line paredit-kill paredit-mode-map)))))
+      (("M-r")
+       ("M-s")
+       ("M-S")
+       ("M-J")
+       ("M-;")
+       ("<f9>" paredit-split-sexp)
+       ("<f10>" paredit-raise-sexp)
+       ("S-<f9>" paredit-join-sexps)
+       ("S-<f10>" paredit-splice-sexp)
+       (kill-visual-line paredit-kill)))))
 
   (when-library
    nil slime
    (add-to-list
     'ergoemacs-minor-mode-layout-lvl3
     '(slime-connected-hook
-      (("M-n" nil slime-mode-map)
-       ("M-p" nil slime-mode-map)
-       ("<f11>" slime-next-note slime-mode-map)
-       ("<f12>" slime-previous-note slime-mode-map))))
+      (("<f11>" slime-next-note)
+       ("<f12>" slime-previous-note))))
 
    (add-to-list
     'ergoemacs-minor-mode-layout-lvl3
     '(slime-repl-mode-hook
-      (("M-n" nil slime-repl-mode-map)
-       ("M-p" nil slime-repl-mode-map)
-       ("M-r" nil slime-repl-mode-map)
-       ("M-s" nil slime-repl-mode-map)
-       ("<f11>" slime-repl-previous-input slime-repl-mode-map)
-       ("<f12>" slime-repl-next-input slime-repl-mode-map)
-       ("S-<f11>" slime-repl-previous-matching-input
-	slime-repl-mode-map)
-       ("S-<f12>" slime-repl-next-matching-input
-	slime-repl-mode-map)))))
+      (("M-r")
+       ("M-s")
+       ("<f11>" slime-repl-previous-input)
+       ("<f12>" slime-repl-next-input)
+       ("S-<f11>" slime-repl-previous-matching-input)
+       ("S-<f12>" slime-repl-next-matching-input)))))
 
   (delete "C-d" ergoemacs-redundant-keys)
   (delete "C-j" ergoemacs-redundant-keys)
@@ -100,8 +76,8 @@
 
   (ergoemacs-fixed-key "C-f" 'search-forward-regexp)
   (ergoemacs-fixed-key "C-S-f" 'search-backward-regexp)
+  (ergoemacs-replace-key 'backward-paragraph "C-M-u")
 
-  (ergoemacs-fixed-key "C-z" nil)
   (ergoemacs-fixed-key "<M-up>" nil)
   (ergoemacs-fixed-key "<M-down>" nil)
 
