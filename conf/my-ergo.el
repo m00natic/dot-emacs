@@ -23,6 +23,7 @@
       (setq ergoemacs-keyboard-layout layout)
       (ergoemacs-setup-keys)))
 
+  ;;; fixes for some modes
   ;; occur fixes
   (eval-after-load "replace"
     '(define-keys occur-mode-map
@@ -34,7 +35,7 @@
       (when-library
        nil helm
        (ergoemacs-key "M-V" 'helm-show-kill-ring)
-       (ergoemacs-fixed-key "C-o" 'find-file)))
+       (ergoemacs-fixed-key "C-o" 'helm-find-files)))
 
   (when-library
    nil paredit
