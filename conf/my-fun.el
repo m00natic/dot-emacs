@@ -10,6 +10,13 @@
 ;;; EMMS
 (when-library
  nil emms
+ (custom-set-variables
+  '(emms-browser-covers 'my-emms-covers)
+  '(emms-lastfm-client-username "m00natic")
+  '(emms-mode-line-format "%s")
+  '(emms-show-format "EMMS: %s")
+  `(emms-source-file-default-directory ,(concat +home-path+ "Music/")))
+
  (autoload 'emms-browser "emms-browser"
    "Launch or switch to the EMMS Browser." t)
  (autoload 'emms "emms-playlist-mode"
@@ -135,13 +142,8 @@ Medium - less than 120000 bytes."
 		(setq pics (cdr pics)))
 	      (car pic))))))
 
-      (setq emms-show-format "EMMS: %s"
-	    emms-mode-line-format "%s"
-	    emms-source-file-default-directory
-	    ,(concat +home-path+ "Music/")
-	    emms-track-description-function
-	    'my-emms-track-description-function
-	    emms-browser-covers 'my-emms-covers)
+      (setq emms-track-description-function
+	    'my-emms-track-description-function)
 
       ;; lastfm
       (when (and (require 'my-secret "my-secret.el.gpg" t)
@@ -150,8 +152,7 @@ Medium - less than 120000 bytes."
 		   (ignore-errors      ; check for internet connection
 		     (url-retrieve-synchronously
 		      "http://post.audioscrobbler.com"))))
-	(setq emms-lastfm-client-username "m00natic"
-	      emms-lastfm-client-api-key
+	(setq emms-lastfm-client-api-key
 	      my-emms-lastfm-client-api-key
 	      emms-lastfm-client-api-secret-key
 	      my-emms-lastfm-client-api-secret-key)

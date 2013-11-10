@@ -17,6 +17,7 @@
  '(gdb-many-windows t)
  '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
+ '(projectile-require-project-root nil)
  '(prolog-system 'swi)
  '(which-function-mode t))
 
@@ -64,7 +65,6 @@
 
 ;;; projectile
 (when (require 'projectile nil t)
-  (setq projectile-require-project-root nil)
   (add-to-list 'projectile-project-root-files ".emacs-project")
   (projectile-global-mode 1))
 

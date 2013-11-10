@@ -12,6 +12,7 @@
    '("calendar-mode" "gnus-summary-mode" "gnus-article-mode"
      "calc-mode" "calc-trail-mode" "wget-mode"))
  '(google-translate-enable-ido-completion t)
+ '(helm-ff-auto-update-initial-value nil)
  `(org-default-notes-file ,(concat user-emacs-directory
 				   ".notes.org")))
 
