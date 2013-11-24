@@ -5,7 +5,9 @@
 
 ;;; Code:
 
-(require 'org-publish)
+(or (require 'org-publish nil t)
+    (and (require 'ox-publish)
+	 (require 'ox-html)))
 
 (package-initialize)			; for htmlize
 
@@ -19,7 +21,10 @@
 	       :base-extension "org"
 	       :publishing-directory ,my-site-dir
 	       :recursive t
-	       :publishing-function org-publish-org-to-html
+	       :publishing-function
+	       ,(if (ignore-errors (find-library-name "org-publish"))
+		    'org-publish-org-to-html
+		  'org-html-publish-to-html)
 	       :auto-preamble t
 	       :auto-sitemap t
 	       :sitemap-title "Sitemap")
