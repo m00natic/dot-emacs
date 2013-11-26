@@ -56,7 +56,8 @@ NIX forms are executed on all other platforms."
       (error (message "Error on package activation of %s: %s"
 		      package ex))))
 
-  (package-initialize))
+  (package-initialize)
+  (setq package-enable-at-startup nil))
 
 (require 'my-display)
 (require 'my-themes)
