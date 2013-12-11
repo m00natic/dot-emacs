@@ -61,7 +61,8 @@
   (when-library
    t semantic
    (eval-after-load "semantic"
-     '(add-to-list 'ac-sources 'ac-source-semantic))))
+     '(setq-default ac-sources (add-to-list 'ac-sources
+					    'ac-source-semantic)))))
 
 ;;; projectile
 (when (require 'projectile nil t)
@@ -177,10 +178,10 @@ or ARG is non nil - locate project file for current directory."
 	  (shell-command (concat "java -jar '" plantuml-jar-path
 				 "' '" file "'"))
 	  (display-buffer (find-file-noselect
-	  		   (concat (file-name-directory file)
-	  			   (file-name-sans-extension
-	  			    (file-name-nondirectory file))
-	  			   ".png")))))
+			   (concat (file-name-directory file)
+				   (file-name-sans-extension
+				    (file-name-nondirectory file))
+				   ".png")))))
 
       (let ((map (make-sparse-keymap)))
 	(define-key map "\C-c\C-c" 'plantuml-compile)

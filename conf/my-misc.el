@@ -14,7 +14,8 @@
  '(google-translate-enable-ido-completion t)
  '(helm-ff-auto-update-initial-value nil)
  `(org-default-notes-file ,(concat user-emacs-directory
-				   ".notes.org")))
+				   ".notes.org"))
+ '(vlf-application 'dont-ask))
 
 ;;; Imenu
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))

@@ -60,6 +60,7 @@ If not a file, attach current directory."
       (setq ad-return-value (list "Common")))
      (t ad-do-it)))	      ; if none of above applies, run original
 
+  (setq tabbar-use-images nil)
   (tabbar-mode 1)
   (setq-default mode-line-buffer-identification "")
 
