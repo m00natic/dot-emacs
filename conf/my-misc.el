@@ -14,8 +14,7 @@
  '(google-translate-enable-ido-completion t)
  '(helm-ff-auto-update-initial-value nil)
  `(org-default-notes-file ,(concat user-emacs-directory
-				   ".notes.org"))
- '(vlf-application 'dont-ask))
+				   ".notes.org")))
 
 ;;; Imenu
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
@@ -72,6 +71,7 @@
       (unless (featurep 'ergoemacs-mode)
 	(global-set-key "\M-y" 'helm-show-kill-ring)
 	(global-set-key "\C-x\C-f" 'helm-find-files))
+      (global-set-key "\M-." 'helm-etags-select)
       (helm-mode 1))
   (icomplete-mode 1))
 
@@ -111,6 +111,10 @@
   (diminish 'projectile-mode "P")
   (diminish 'golden-ratio-mode "G")
   (diminish 'helm-mode "H"))
+
+;;; large files
+(if (require 'vlf-integrate nil t)
+    (setq vlf-application 'dont-ask))
 
 (provide 'my-misc)
 
