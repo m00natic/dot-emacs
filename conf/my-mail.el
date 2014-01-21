@@ -40,7 +40,6 @@
 	"When NOTIFY check for more unread mails.
 Otherwise check for less."
 	(and (or notify (not (string-equal *gnus-new-mail-count* "")))
-	     (gnus-alive-p)
 	     (let ((unread-count 0)
 		   unread-groups)
 	       (dolist (group '("nnimap+gmail:INBOX"
@@ -67,17 +66,10 @@ Otherwise check for less."
 
       (defun gnus-demon-scan-important ()
 	"Check for new messages in level 1 and notify in modeline."
-	(when (gnus-alive-p)
-	  (let ((method (gnus-server-to-method "nnimap:vayant")))
-	    (gnus-close-server method)	; reopen vayant
-	    (gnus-open-server method))
-	  (let ((win (current-window-configuration)))
-	    (unwind-protect
-		(save-window-excursion
-		  (with-current-buffer gnus-group-buffer
-		    (gnus-group-get-new-news 1))
-		  (gnus-demon-notify t))
-	      (set-window-configuration win)))))
+	(save-window-excursion
+	  (set-buffer gnus-group-buffer)
+	  (gnus-group-get-new-news 1))
+	(gnus-demon-notify t))
 
       (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
       (gnus-demon-add-handler 'gnus-demon-notify 1 nil)
@@ -126,8 +118,8 @@ If missing, try to deduce it from the `From' header."
  nil bbdb
  (eval-after-load "message"
    '(progn (setq bbdb-file (concat user-emacs-directory ".bbdb"))
- 	   (bbdb-initialize 'gnus 'message)
- 	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
+	   (bbdb-initialize 'gnus 'message)
+	   (define-key message-mode-map "\C-b" 'bbdb-complete-mail))))
 
 (provide 'my-mail)
 
