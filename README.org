@@ -33,7 +33,7 @@ links:
 - [[http://ess.r-project.org][Emacs Speaks Statistics]]
 - [[http://ecb.sourceforge.net][Emacs Code Browser]]
 - [[http://cx4a.org/software/auto-complete][AutoComplete]]
-- [[http://emacswiki.org/emacs/FindFileInProject][Find File in Project]]
+- [[https://github.com/bbatsov/projectile][Projectile]]
 - [[http://www.emacswiki.org/emacs/RainbowDelimiters][RainbowDelimiters]]
 - [[http://magit.github.com/magit/][Magit]]
 - [[https://github.com/zwz/plantuml-mode][plantuml-mode]]
@@ -53,7 +53,7 @@ links:
 * misc
 
 - [[http://mlf176f2.github.io/ErgoEmacs/][ErgoEmacs-mode]]
-- [[https://github.com/browse-kill-ring/browse-kill-ring][browse-kill-ring]]
+- [[https://github.com/emacs-helm/helm][Helm]]
 - [[http://bbdb.sourceforge.net][BBDB]]
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
 - [[http://ditaa.sourceforge.net][Ditaa]]
@@ -64,6 +64,7 @@ links:
 - [[https://github.com/m00natic/anti-zenburn-theme][anti-zenburn]]
 - [[http://www.emacswiki.org/emacs/AceJump][Ace Jump]]
 - [[http://www.emacswiki.org/emacs/notify.el][notify]]
+- [[https://github.com/m00natic/vlfi][View Large Files]]
 - [[http://www.emacswiki.org/emacs/cygwin-mount.el][cygwin-mount]]
 - [[http://www.myrkr.in-berlin.de/dictionary/index.html][Dictionary]]
 - [[https://github.com/manzyuk/google-translate][Google Translate]]
