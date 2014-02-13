@@ -107,13 +107,27 @@
 ;;; remove clutter from modeline
 (when (require 'diminish nil t)
   (diminish 'visual-line-mode "W")
-  (diminish 'projectile-mode "P")
-  (diminish 'golden-ratio-mode "G")
-  (diminish 'helm-mode "H"))
+  (when-library nil projectile
+		(diminish 'projectile-mode "P"))
+  (when-library nil golden-ratio
+		(diminish 'golden-ratio-mode "G"))
+  (when-library nil helm
+		(diminish 'helm-mode "H"))
+  (when-library nil company
+		(diminish 'company-mode "C")))
 
 ;;; large files
 (if (require 'vlf-integrate nil t)
     (setq vlf-application 'dont-ask))
+
+;;; end of working day
+;; (run-with-timer 28800 1200 'animate-birthday-present "Go Home")
+
+;;; zone matrix
+;; (and (require 'zone-matrix nil t)
+;;      (require 'zone-matrix-settings nil t)
+;;      (require 'zone-settings nil t)
+;;      (setq zone-programs [zone-matrix]))
 
 (provide 'my-misc)
 
