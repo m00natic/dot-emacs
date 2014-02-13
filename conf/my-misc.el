@@ -68,9 +68,8 @@
 (if (and (not +old-emacs+)
 	 (require 'helm-config nil t))
     (progn
-      (unless (featurep 'ergoemacs-mode)
-	(global-set-key "\M-y" 'helm-show-kill-ring)
-	(global-set-key "\C-x\C-f" 'helm-find-files))
+      (or (featurep 'ergoemacs-mode)
+	  (global-set-key "\M-y" 'helm-show-kill-ring))
       (global-set-key "\M-." 'helm-etags-select)
       (helm-mode 1))
   (icomplete-mode 1))

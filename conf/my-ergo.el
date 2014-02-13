@@ -34,8 +34,7 @@
   (or +old-emacs+
       (when-library
        nil helm
-       (ergoemacs-key "M-V" 'helm-show-kill-ring)
-       (ergoemacs-fixed-key "C-o" 'helm-find-files)))
+       (ergoemacs-key "M-V" 'helm-show-kill-ring)))
 
   (when-library
    nil paredit
@@ -70,6 +69,8 @@
        ("<f12>" slime-repl-next-input)
        ("S-<f11>" slime-repl-previous-matching-input)
        ("S-<f12>" slime-repl-next-matching-input)))))
+
+  (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x)
 
   (delete "C-d" ergoemacs-redundant-keys)
   (delete "C-j" ergoemacs-redundant-keys)
