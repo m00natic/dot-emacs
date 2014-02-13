@@ -32,7 +32,7 @@ links:
 - [[https://github.com/eschulte/shen-mode][shen-mode]]
 - [[http://ess.r-project.org][Emacs Speaks Statistics]]
 - [[http://ecb.sourceforge.net][Emacs Code Browser]]
-- [[http://cx4a.org/software/auto-complete][AutoComplete]]
+- [[http://company-mode.github.io][Company]]
 - [[https://github.com/bbatsov/projectile][Projectile]]
 - [[http://www.emacswiki.org/emacs/RainbowDelimiters][RainbowDelimiters]]
 - [[http://magit.github.com/magit/][Magit]]

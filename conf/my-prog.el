@@ -52,17 +52,9 @@
     `(let ((prog-path ,(concat +home-path+ "Programs")))
        (ecb-add-source-path prog-path prog-path t)))))
 
-;;; AutoComplete
-(when (require 'auto-complete-config nil t)
-  (ac-config-default)
-  (ac-flyspell-workaround)
-  (add-to-list 'ac-modes 'org-mode)
-
-  (when-library
-   t semantic
-   (eval-after-load "semantic"
-     '(setq-default ac-sources (add-to-list 'ac-sources
-					    'ac-source-semantic)))))
+;; Company
+(if (require 'company nil t)
+    (global-company-mode))
 
 ;;; projectile
 (when (require 'projectile nil t)
