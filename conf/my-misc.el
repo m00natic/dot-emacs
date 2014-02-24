@@ -67,11 +67,10 @@
 ;;; helm
 (if (and (not +old-emacs+)
 	 (require 'helm-config nil t))
-    (progn
-      (or (featurep 'ergoemacs-mode)
-	  (global-set-key "\M-y" 'helm-show-kill-ring))
-      (global-set-key "\M-." 'helm-etags-select)
-      (helm-mode 1))
+    (progn (or (featurep 'ergoemacs-mode)
+	       (global-set-key "\M-y" 'helm-show-kill-ring))
+	   (global-set-key "\M-." 'helm-etags-select)
+	   (helm-mode 1))
   (icomplete-mode 1))
 
 ;;; Ditaa
@@ -107,14 +106,10 @@
 ;;; remove clutter from modeline
 (when (require 'diminish nil t)
   (diminish 'visual-line-mode "W")
-  (when-library nil projectile
-		(diminish 'projectile-mode "P"))
-  (when-library nil golden-ratio
-		(diminish 'golden-ratio-mode "G"))
-  (when-library nil helm
-		(diminish 'helm-mode "H"))
-  (when-library nil company
-		(diminish 'company-mode "C")))
+  (when-library nil projectile (diminish 'projectile-mode "P"))
+  (when-library nil golden-ratio (diminish 'golden-ratio-mode "G"))
+  (when-library nil helm (diminish 'helm-mode "H"))
+  (when-library nil company (diminish 'company-mode "C")))
 
 ;;; large files
 (if (require 'vlf-integrate nil t)

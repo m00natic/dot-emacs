@@ -11,10 +11,10 @@ email addresses...) may have to be tuned.
 [[https://docs.google.com/file/d/0ByTYEU5KUEBVNkNMWG51cHNmbHM/edit][Here's]] a relevant set of extensions which is kept up to date at time
 of upload.  It's expected to be untared in ~/.emacs.d/ to run out of
 the box.  There are just elisp sources which should be byte compiled.
-You can just load extra/compile-extras.el to do so.  At present all
+You can just load *extra/compile-extras.el* to do so.  At present all
 external extensions are avavailable through some ELPA repository so it
-would be even more convenient to get them from there with M-x
-package-list-packages.
+would be even more convenient to get them from there with
+*M-x package-list-packages*.
 
 Here's a list of external packages (mentioning the built-in ones would
 be too much) that this .emacs is somewhat aware of in some order and
