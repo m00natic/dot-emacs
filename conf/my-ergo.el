@@ -70,7 +70,9 @@
        ("S-<f11>" slime-repl-previous-matching-input)
        ("S-<f12>" slime-repl-next-matching-input)))))
 
-  (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x)
+  (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x
+	ergoemacs-use-ergoemacs-metaleft nil
+	ergoemacs-use-ergoemacs-metaright nil)
 
   (delete "C-d" ergoemacs-redundant-keys)
   (delete "C-j" ergoemacs-redundant-keys)
