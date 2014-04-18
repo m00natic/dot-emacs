@@ -185,7 +185,6 @@ Medium - less than 120000 bytes."
 			'emms-player-mpd-notify)))))
 
       (global-set-key [XF86AudioPlay] 'emms-pause)
-      (global-set-key "\C-cp" 'emms-pause)
       ,(win-or-nix
 	nil
 	(when-library

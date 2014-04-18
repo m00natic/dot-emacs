@@ -28,6 +28,7 @@
  '(jit-lock-defer-time 0.2)
  '(nxml-sexp-element-flag t)
  '(org-src-fontify-natively t)
+ '(org-use-speed-commands t)
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
 		      ("melpa" . "http://melpa.milkbox.net/packages/")
