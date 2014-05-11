@@ -267,7 +267,13 @@ With optional prefix ARG ask for url."
  (eval-after-load "eww"
    '(define-key eww-mode-map "v" (lambda () "Go home."
 				   (interactive)
-				   (eww w3m-home-page)))))
+				   (eww w3m-home-page))))
+
+ (when-library
+  nil eww-lnum
+  (eval-after-load "eww"
+    '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
+	    (define-key eww-mode-map "F" 'eww-lnum-universal)))))
 
 ;;; handle ftp with emacs, if not set above
 (or (consp browse-url-browser-function)
