@@ -32,6 +32,8 @@
  '(package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
 		      ("elpa" . "http://tromey.com/elpa/")
 		      ("melpa" . "http://melpa.milkbox.net/packages/")
+		      ("melpa-stable" .
+		       "http://melpa-stable.milkbox.net/packages/")
 		      ("marmalade" .
 		       "http://marmalade-repo.org/packages/")))
  '(proced-format 'medium)
