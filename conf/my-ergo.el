@@ -34,7 +34,7 @@
   (or +old-emacs+
       (when-library
        nil helm
-       (ergoemacs-key "M-V" 'helm-show-kill-ring)))
+       (global-set-key "\M-V" 'helm-show-kill-ring)))
 
   (when-library
    nil paredit
@@ -74,8 +74,8 @@
 	ergoemacs-use-ergoemacs-metaleft nil
 	ergoemacs-use-ergoemacs-metaright nil)
 
-  (ergoemacs-key "\C-f" 'search-forward-regexp)
-  (ergoemacs-key (kbd "C-S-f") 'search-backward-regexp)
+  (global-set-key "\C-f" 'search-forward-regexp)
+  (global-set-key (kbd "C-S-f") 'search-backward-regexp)
 
   ;; activate
   (ergoemacs-mode 1))

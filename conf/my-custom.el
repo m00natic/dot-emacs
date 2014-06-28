@@ -76,7 +76,6 @@ for the line number input."
 
 ;;; miscellaneous
 (fset 'yes-or-no-p 'y-or-n-p)
-(global-set-key (kbd "M-RET") 'newline-and-indent)
 (put 'dired-find-alternate-file 'disabled nil)
 
 ;;; backup
