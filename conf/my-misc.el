@@ -62,7 +62,11 @@
 ;;; golder ratio
 (when-library
  nil golden-ratio
- (or +old-emacs+ (golden-ratio-mode 1)))
+ (unless +old-emacs+
+   (golden-ratio-mode 1)
+   (when-library nil ecb
+		 (add-hook 'ecb-before-activate-hook
+			   (lambda () (golden-ratio-mode -1))))))
 
 ;;; helm
 (if (and (not +old-emacs+)
@@ -70,6 +74,7 @@
     (progn (or (featurep 'ergoemacs-mode)
 	       (global-set-key "\M-y" 'helm-show-kill-ring))
 	   (global-set-key "\M-." 'helm-etags-select)
+	   (global-set-key "\C-co" 'helm-occur)
 	   (helm-mode 1))
   (icomplete-mode 1))
 
