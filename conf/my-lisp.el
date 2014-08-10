@@ -10,7 +10,8 @@
 
 ;;; set inferior lisp and scheme
 (custom-set-variables
- '(scheme-program-name "gsi"))
+ '(scheme-program-name "gsi")
+ '(sp-base-key-bindings 'sp))
 
 (setq inferior-lisp-program
       (win-or-nix
@@ -23,46 +24,24 @@
 	     (t "clisp"))
        "sbcl"))
 
-;;; Hook convenient s-exp minor modes to some major modes.
-(defmacro active-lisp-modes ()
-  "Activate convenient s-expression modes which are present."
-  `(progn
-     (font-lock-add-keywords		; pretty lambdas
-      nil `(("(\\(lambda\\>\\)"
-	     (0 (progn
-		  (compose-region (match-beginning 1) (match-end 1)
-				  ,(make-char 'greek-iso8859-7 107))
-		  nil)))))
-     ,(when-library nil hl-sexp '(ignore-errors (hl-sexp-mode 1)))
-     ,(when-library nil highlight-parentheses
-		    '(ignore-errors (highlight-parentheses-mode 1)))
-     ,(when-library nil paredit '(ignore-errors (paredit-mode 1)))))
-
-(defvar activate-lisp-minor-modes-hook nil
-  "Hooks to run after additional lisp minor modes are activated.")
-
-(defun activate-lisp-minor-modes ()
-  "Activate some convenient minor modes for editing s-exp."
-  (active-lisp-modes)
-  (run-hooks 'activate-lisp-minor-modes-hook))
-
-(hook-modes activate-lisp-minor-modes
-  inferior-lisp-mode-hook lisp-mode-hook lisp-interaction-mode-hook
-  emacs-lisp-mode-hook ielm-mode-hook inferior-scheme-mode-hook
-  scheme-mode-hook)
-
-;;; Paredit
-(when-library
- nil paredit
- (eval-after-load "eldoc"
-   '(eldoc-add-command 'paredit-backward-delete 'paredit-close-round))
+;;; Smartparens
+(when (require 'smartparens-config nil t)
+  (define-keys sp-keymap
+    (kbd "C-)") 'sp-forward-slurp-sexp
+    (kbd "C-}") 'sp-forward-barf-sexp
+    (kbd "C-(") 'sp-backward-slurp-sexp
+    (kbd "C-{") 'sp-backward-barf-sexp
+    (kbd "C-M-s") 'sp-split-sexp
+    (kbd "C-M-r") 'sp-splice-sexp)
+  (smartparens-global-strict-mode 1)
+  (show-smartparens-global-mode t))
 
 ;;; Redshank
- (when-library
-  nil redshank
-  (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
-				   inferior-lisp-mode-hook)
-		  t)))
+(when-library
+ nil redshank
+ (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+				  inferior-lisp-mode-hook)
+		 t))
 
 ;;; elisp stuff
 (autoload 'turn-on-eldoc-mode "eldoc" nil t)
@@ -109,76 +88,70 @@
 		     '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
 				  binary)))
 
-      (add-hook 'slime-repl-mode-hook 'activate-lisp-minor-modes)
       (or (featurep 'ergoemacs-mode)
 	  (define-key slime-mode-map "\M-g"
 	    'slime-complete-symbol)))))
 
 ;;; Clojure
 (when-library
- nil clojure-mode
- (eval-after-load "clojure-mode"
-   '(add-hook 'clojure-mode-hook 'activate-lisp-minor-modes))
+ nil (clojure-mode slime)
+ (eval-after-load "slime"
+   `(progn
+      (when (file-exists-p
+	     ,(win-or-nix #1=(concat +home-path+ "Documents/javadoc")
+			  #2="/usr/share/doc/java-sdk-docs-1.6.0.23"))
+	(defun slime-browse-local-javadoc (ci-name)
+	  "Browse local JavaDoc documentation on class/interface CI-NAME."
+	  (interactive
+	   (list (slime-read-symbol-name "Class/Interface name: ")))
+	  (or ci-name (error "No name given"))
+	  (let ((name (replace-regexp-in-string "\\$" "." ci-name))
+		(path (concat
+		       ,(win-or-nix #1# #2#)
+		       "/api/")))
+	    (with-temp-buffer
+	      (insert-file-contents
+	       (concat path "allclasses-noframe.html"))
+	      (let ((l (delq
+			nil
+			(mapcar (lambda (rgx)
+				  (let* ((r (concat
+					     "\\.?\\(" rgx
+					     "[^./]+\\)[^.]*\\.?$"))
+					 (n (if (string-match r name)
+						(match-string 1 name)
+					      name)))
+				    (if (re-search-forward
+					 (concat
+					  "<A HREF=\"\\(.+\\)\" +.*>"
+					  n "<.*/A>")
+					 nil t)
+					(match-string 1)
+				      nil)))
+				'("[^.]+\\." "")))))
+		(if l (browse-url (concat "file://" path (car l)))
+		  (error (concat "Not found: " ci-name)))))))
 
- (when-library
-  nil slime
-  (eval-after-load "slime"
-    `(progn
-       (when (file-exists-p
-	      ,(win-or-nix #1=(concat +home-path+ "Documents/javadoc")
-			   #2="/usr/share/doc/java-sdk-docs-1.6.0.23"))
-	 (defun slime-browse-local-javadoc (ci-name)
-	   "Browse local JavaDoc documentation on class/interface CI-NAME."
-	   (interactive
-	    (list (slime-read-symbol-name "Class/Interface name: ")))
-	   (or ci-name (error "No name given"))
-	   (let ((name (replace-regexp-in-string "\\$" "." ci-name))
-		 (path (concat
-			,(win-or-nix #1# #2#)
-			"/api/")))
-	     (with-temp-buffer
-	       (insert-file-contents
-		(concat path "allclasses-noframe.html"))
-	       (let ((l (delq
-			 nil
-			 (mapcar (lambda (rgx)
-				   (let* ((r (concat
-					      "\\.?\\(" rgx
-					      "[^./]+\\)[^.]*\\.?$"))
-					  (n (if (string-match r name)
-						 (match-string 1 name)
-					       name)))
-				     (if (re-search-forward
-					  (concat
-					   "<A HREF=\"\\(.+\\)\" +.*>"
-					   n "<.*/A>")
-					  nil t)
-					 (match-string 1)
-				       nil)))
-				 '("[^.]+\\." "")))))
-		 (if l (browse-url (concat "file://" path (car l)))
-		   (error (concat "Not found: " ci-name)))))))
+	(define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
+	(define-key slime-repl-mode-map
+	  "\C-cb" 'slime-browse-local-javadoc))
 
-	 (define-key slime-mode-map "\C-cb" 'slime-browse-local-javadoc)
-	 (define-key slime-repl-mode-map
-	   "\C-cb" 'slime-browse-local-javadoc))
-
-       (add-hook 'slime-repl-mode-hook
-		 (lambda () "Clojure REPL hook."
-		   (if (and (string-equal "clojure"
-					  (slime-connection-name))
-			    (require 'clojure-mode))
-		       (progn
-			 (if (slime-inferior-process)
-			     (slime-redirect-inferior-output))
-			 (custom-set-variables
-			  '(slime-use-autodoc-mode nil))
-			 (set-syntax-table clojure-mode-syntax-table)
-			 (clojure-mode-font-lock-setup)
-			 (setq lisp-indent-function
-			       'clojure-indent-function))
-		     (custom-set-variables
-		      '(slime-use-autodoc-mode t)))))))))
+      (add-hook 'slime-repl-mode-hook
+		(lambda () "Clojure REPL hook."
+		  (if (and (string-equal "clojure"
+					 (slime-connection-name))
+			   (require 'clojure-mode))
+		      (progn
+			(if (slime-inferior-process)
+			    (slime-redirect-inferior-output))
+			(custom-set-variables
+			 '(slime-use-autodoc-mode nil))
+			(set-syntax-table clojure-mode-syntax-table)
+			(clojure-mode-font-lock-setup)
+			(setq lisp-indent-function
+			      'clojure-indent-function))
+		    (custom-set-variables
+		     '(slime-use-autodoc-mode t))))))))
 
 ;;; Quack
 (when-library
@@ -200,8 +173,8 @@
 (when-library
  nil inf-clips
  (eval-after-load "clips"
-   '(add-hook 'clips-mode-hook (lambda () (activate-lisp-minor-modes)
-				 (setq indent-region-function nil))))
+   '(add-hook 'clips-mode-hook
+	      (lambda () (setq indent-region-function nil))))
  (eval-after-load "inf-clips"
    `(progn
       (setq inferior-clips-program
@@ -210,8 +183,7 @@
 		      "Program Files/CLIPS/Bin/CLIPSDOS.exe")
 	      "clips"))
       (add-hook 'inferior-clips-mode-hook
-		(lambda () (activate-lisp-minor-modes)
-		  (setq indent-region-function nil))))))
+		(lambda () (setq indent-region-function nil))))))
 
 (provide 'my-lisp)
 

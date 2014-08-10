@@ -42,7 +42,7 @@ links:
 
 - [[http://nschum.de/src/emacs/highlight-parentheses][highlight-parentheses]]
 - [[http://edward.oconnor.cx/elisp/hl-sexp.el][hl-sexp]]
-- [[http://www.emacswiki.org/emacs/ParEdit][ParEdit]]
+- [[https://github.com/Fuco1/smartparens][Smartparens]]
 - [[http://www.foldr.org/~michaelw/emacs/redshank][Redshank]]
 
 * networking

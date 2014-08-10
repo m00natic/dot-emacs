@@ -15,6 +15,7 @@
    "cppcheck --template gcc -q -f --enable=all --inline-suppr")
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
+ '(global-hl-sexp-mode t)
  '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
  '(projectile-require-project-root nil)
@@ -24,10 +25,12 @@
 ;;; spell-checking
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 
-;;; highlight parens
-(when-library
- nil rainbow-delimiters
- (add-hook 'prog-mode-hook 'rainbow-delimiters-mode-enable))
+;;; parenthesis
+(when-library nil rainbow-delimiters
+	      (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
+
+(when-library nil highlight-parentheses
+	      (add-hook 'prog-mode-hook 'highlight-parentheses-mode))
 
 ;;; Semantic
 (when-library
@@ -87,11 +90,6 @@
 		 (autoload 'ghc-init "ghc" nil t)
 		 (add-hook 'haskell-mode-hook (lambda () (ghc-init)
 						(flymake-mode))))))
-
-;;; cc-mode settings
-(add-hook 'c-mode-common-hook
-	  (lambda () (hs-minor-mode 1)
-	    (when-library nil hl-sexp (hl-sexp-mode 1))))
 
 ;;; Emacs Speaks Statistics
 (when-library

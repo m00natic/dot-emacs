@@ -37,20 +37,6 @@
        (global-set-key "\M-V" 'helm-show-kill-ring)))
 
   (when-library
-   nil paredit
-   (add-hook 'activate-lisp-minor-modes-hook
-	     (lambda () (ergoemacs-define-overrides
-		    (define-keys paredit-mode-map
-		      "\M-d" nil "\M-r" nil
-		      "\M-s" nil "\M-S" nil
-		      "\M-J" nil "\M-;" nil
-		      (kbd "<f9>") 'paredit-split-sexp
-		      (kbd "<f10>") 'paredit-raise-sexp
-		      (kbd "S-<f9>") 'paredit-join-sexps
-		      (kbd "S-<f10>") 'paredit-splice-sexp
-		      [remap kill-visual-line] 'paredit-kill)))))
-
-  (when-library
    nil slime
    (add-hook 'slime-connected-hook
 	     (lambda () (ergoemacs-define-overrides
