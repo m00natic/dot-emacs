@@ -114,7 +114,8 @@
   (when-library nil projectile (diminish 'projectile-mode "P"))
   (when-library nil golden-ratio (diminish 'golden-ratio-mode "G"))
   (when-library nil helm (diminish 'helm-mode "H"))
-  (when-library nil company (diminish 'company-mode "C")))
+  (when-library nil company (diminish 'company-mode "C"))
+  (when-library nil undo-tree (diminish 'undo-tree-mode "UT")))
 
 ;;; large files
 (if (require 'vlf-integrate nil t)

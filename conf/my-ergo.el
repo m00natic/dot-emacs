@@ -10,7 +10,7 @@
 ;;; ErgoEmacs minor mode
 (custom-set-variables
  '(ergoemacs-keyboard-layout "colemak")
- '(ergoemacs-theme "standard"))
+ '(ergoemacs-mode-line 'no-layout))
 
 (when (require 'ergoemacs-mode nil t)
   (defun ergoemacs-change-keyboard (layout)
@@ -62,6 +62,9 @@
 
   (global-set-key "\C-f" 'search-forward-regexp)
   (global-set-key (kbd "C-S-f") 'search-backward-regexp)
+
+  (ergoemacs-theme-option-off '(apps apps-apps apps-punctuation
+				     apps-swap save-options-on-exit))
 
   ;; activate
   (ergoemacs-mode 1))
