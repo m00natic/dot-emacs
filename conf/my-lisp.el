@@ -31,8 +31,8 @@
     (kbd "C-}") 'sp-forward-barf-sexp
     (kbd "C-(") 'sp-backward-slurp-sexp
     (kbd "C-{") 'sp-backward-barf-sexp
-    (kbd "C-M-s") 'sp-split-sexp
-    (kbd "C-M-r") 'sp-splice-sexp)
+    (kbd "C-M-s") 'sp-split-sexp (kbd "C-M-r") 'sp-splice-sexp
+    (kbd "C-M-a") nil (kbd "C-M-e") nil)
   (smartparens-global-strict-mode 1)
   (show-smartparens-global-mode t))
 
