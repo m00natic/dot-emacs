@@ -5,8 +5,6 @@
 
 ;;; Code:
 
-(require 'my-utils)
-
 (custom-set-variables
  '(column-number-mode t)
  '(display-battery-mode t)
@@ -81,11 +79,9 @@ If not a file, attach current directory."
 			      (kbd "<C-S-iso-lefttab>"))
 		  'prev-tab)
 
-  (when-library
-   t org
-   (add-hook 'org-load-hook
-	     (lambda () "Allow tabbar keys in Org."
-	       (define-key org-mode-map (kbd "C-<tab>") nil)))))
+  (add-hook 'org-load-hook
+	    (lambda () "Allow tabbar keys in Org."
+	      (define-key org-mode-map (kbd "C-<tab>") nil))))
 
 (provide 'my-display)
 

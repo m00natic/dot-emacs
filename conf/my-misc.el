@@ -16,6 +16,27 @@
  `(org-default-notes-file ,(concat user-emacs-directory
 				   ".notes.org")))
 
+;;; goto line
+(defun goto-line-with-feedback ()
+  "Show line numbers temporarily, while prompting \
+for the line number input."
+  (interactive)
+  (unwind-protect
+      (progn (linum-mode 1)
+	     (let ((line (read-number "Goto line: ")))
+	       (goto-char (point-min))
+	       (forward-line (1- line))))
+    (linum-mode -1)))
+
+(global-set-key "\C-cl" 'goto-line-with-feedback)
+
+;;; occur
+(eval-after-load "replace"
+  '(define-keys occur-mode-map
+     "n" 'occur-next "p" 'occur-prev
+     "o" 'occur-mode-display-occurrence
+     "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
+
 ;;; Imenu
 (when-library t imenu (global-set-key (kbd "C-`") 'imenu))
 

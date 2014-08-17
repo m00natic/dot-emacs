@@ -23,18 +23,9 @@
       (setq ergoemacs-keyboard-layout layout)
       (ergoemacs-setup-keys)))
 
-  ;;; fixes for some modes
-  ;; occur fixes
-  (eval-after-load "replace"
-    '(define-keys occur-mode-map
-       "n" 'occur-next "p" 'occur-prev
-       "o" 'occur-mode-display-occurrence
-       "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
-
   (or +old-emacs+
-      (when-library
-       nil helm
-       (global-set-key "\M-V" 'helm-show-kill-ring)))
+      (when-library nil helm
+		    (global-set-key "\M-V" 'helm-show-kill-ring)))
 
   (when-library
    nil slime
@@ -42,26 +33,19 @@
 	     (lambda () (ergoemacs-define-overrides
 		    (define-keys slime-mode-map
 		      (kbd "<f11>") 'slime-next-note
-		      (kbd "<f12>") 'slime-previous-note))))
-
-   (add-hook 'slime-connected-hook
-	     (lambda ()
-	       (ergoemacs-define-overrides
-		(define-keys slime-repl-mode-map
-		  "\M-r" nil "\M-s" nil
-		  (kbd "<f11>") 'slime-repl-previous-input
-		  (kbd "<f12>") 'slime-repl-next-input
-		  (kbd "S-<f11>")
-		  'slime-repl-previous-matching-input
-		  (kbd "S-<f12>")
-		  'slime-repl-next-matching-input)))))
+		      (kbd "<f12>") 'slime-previous-note)
+		    (define-keys slime-repl-mode-map
+		      "\M-r" nil "\M-s" nil
+		      (kbd "<f11>") 'slime-repl-previous-input
+		      (kbd "<f12>") 'slime-repl-next-input
+		      (kbd "S-<f11>")
+		      'slime-repl-previous-matching-input
+		      (kbd "S-<f12>")
+		      'slime-repl-next-matching-input)))))
 
   (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x
 	ergoemacs-use-ergoemacs-metaleft nil
 	ergoemacs-use-ergoemacs-metaright nil)
-
-  (global-set-key "\C-f" 'search-forward-regexp)
-  (global-set-key (kbd "C-S-f") 'search-backward-regexp)
 
   (ergoemacs-theme-option-off '(apps apps-apps apps-punctuation
 				     apps-swap save-options-on-exit))

@@ -5,8 +5,6 @@
 
 ;;; Code:
 
-(require 'my-utils)
-
 (custom-set-variables
  '(cua-enable-cua-keys nil)
  '(cua-mode t)
@@ -50,7 +48,7 @@
  '(view-read-only t)
  '(winner-mode t))
 
-;;; open file in view-mode
+;;; open files in view-mode
 ;; (add-hook 'find-file-hook 'view-mode)
 
 ;;; text mode
@@ -59,20 +57,6 @@
 	    (variable-pitch-mode t)
 	    (turn-on-auto-fill)
 	    (turn-on-flyspell)))
-
-;;; goto line
-(defun goto-line-with-feedback ()
-  "Show line numbers temporarily, while prompting \
-for the line number input."
-  (interactive)
-  (unwind-protect
-      (progn (linum-mode 1)
-	     (let ((line (read-number "Goto line: ")))
-	       (goto-char (point-min))
-	       (forward-line (1- line))))
-    (linum-mode -1)))
-
-(global-set-key "\C-cl" 'goto-line-with-feedback)
 
 ;;; miscellaneous
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -84,10 +68,7 @@ for the line number input."
       tramp-backup-directory-alist backup-directory-alist)
 
 ;;; ido and subword
-(when-library t ido
-	      (when-library nil subword
-			    (add-hook 'ido-minibuffer-setup-hook
-				      (lambda () (subword-mode -1)))))
+(add-hook 'ido-minibuffer-setup-hook (lambda () (subword-mode -1)))
 
 ;;; add custom bin to path
 (let ((bin-path (concat +conf-path+ "bin")))
@@ -100,17 +81,12 @@ for the line number input."
 				     "eshell/"))))
 
 ;;; windmove
-(when-library
- t windmove
- (windmove-default-keybindings)
-
- ;; Make windmove work in org-mode
- (when-library
-  t org-mode
-  (add-hook 'org-shiftup-final-hook 'windmove-up)
-  (add-hook 'org-shiftleft-final-hook 'windmove-left)
-  (add-hook 'org-shiftdown-final-hook 'windmove-down)
-  (add-hook 'org-shiftright-final-hook 'windmove-right)))
+(windmove-default-keybindings)
+;; Make windmove work in org-mode
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
 
 ;;; spell-check
 (defadvice toggle-input-method (after switch-dictionary
