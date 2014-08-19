@@ -15,7 +15,6 @@
    "cppcheck --template gcc -q -f --enable=all --inline-suppr")
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
- '(global-hl-sexp-mode t)
  '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
  '(projectile-require-project-root nil)
@@ -26,6 +25,9 @@
 (add-hook 'prog-mode-hook 'flyspell-prog-mode)
 
 ;;; parenthesis
+(when-library nil hl-sexp
+	      (add-hook 'prog-mode-hook 'hl-sexp-mode))
+
 (when-library nil rainbow-delimiters
 	      (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
