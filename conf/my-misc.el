@@ -37,9 +37,6 @@ for the line number input."
      "o" 'occur-mode-display-occurrence
      "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
 
-;;; Imenu
-(when-library t imenu (global-set-key (kbd "C-`") 'imenu))
-
 ;;; Proced
 (when-library t proced (global-set-key "\C-^" 'proced))
 

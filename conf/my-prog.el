@@ -66,6 +66,9 @@
   (add-to-list 'projectile-project-root-files ".emacs-project")
   (projectile-global-mode 1))
 
+;;; Imenu
+(when-library t imenu (global-set-key "\C-ci" 'imenu))
+
 ;;; Oz
 (when-library
  nil oz
