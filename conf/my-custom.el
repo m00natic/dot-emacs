@@ -22,6 +22,7 @@
  '(inhibit-startup-screen t)
  '(initial-major-mode 'org-mode)
  '(initial-scratch-message nil)
+ '(ispell-program-name "aspell")
  '(ispell-dictionary "en")
  '(jit-lock-defer-time 0.2)
  '(nxml-sexp-element-flag t)

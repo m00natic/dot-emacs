@@ -50,6 +50,8 @@
   (ergoemacs-theme-option-off '(apps apps-apps apps-punctuation
 				     apps-swap save-options-on-exit))
 
+  (or +old-emacs+ (require 'helm-config nil t))
+
   ;; activate
   (ergoemacs-mode 1))
 

@@ -38,7 +38,7 @@ for the line number input."
      "\C-c\C-c" 'occur-mode-goto-occurrence-other-window))
 
 ;;; Proced
-(when-library t proced (global-set-key "\C-^" 'proced))
+(when-library t proced (global-set-key "\C-c^" 'proced))
 
 ;;; hide-show
 (when-library
