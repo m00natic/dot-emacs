@@ -12,7 +12,7 @@
 		     (awk-mode . "awk")
 		     (other . "stroustrup")))
  '(cppcheck-cmd
-   "cppcheck --template gcc -q -f --enable=all --inline-suppr")
+   "cppcheck --template gcc -q -f --enable=all --inline-suppr .")
  '(ecb-options-version "2.40")
  '(gdb-many-windows t)
  '(magit-diff-refine-hunk t)

@@ -34,10 +34,10 @@
 
       ;; swap time and other track info
       (let ((new-global-mode-string nil))
-	(while (and (not (memq (car global-mode-string)
+	(while (and global-mode-string
+		    (not (memq (car global-mode-string)
 			       '(emms-mode-line-string
-				 emms-playing-time-string)))
-		    global-mode-string)
+				 emms-playing-time-string))))
 	  (push (car global-mode-string) new-global-mode-string)
 	  (setq global-mode-string (cdr global-mode-string)))
 	(setq global-mode-string
