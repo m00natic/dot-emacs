@@ -11,14 +11,15 @@
  '(display-time-24hr-format t)
  '(display-time-day-and-date t)
  '(display-time-mode t)
- '(frame-title-format "emacs %@ %b (%f)")
+ '(frame-title-format "%f (%b)")
  '(size-indication-mode t)
+ '(sml/no-confirm-load-theme t)
  '(visual-line-fringe-indicators '(left-curly-arrow
 				   right-curly-arrow)))
 
-;;; powerline
-(if (ignore-errors (require 'powerline nil t))
-    (powerline-default-theme))
+;;; smart/powerline
+(if (require 'smart-mode-line nil t)
+    (sml/setup))
 
 ;;; TabBar
 (when (require 'tabbar nil t)

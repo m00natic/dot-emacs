@@ -267,7 +267,7 @@ With optional prefix ARG ask for url."
  (eval-after-load "eww"
    '(define-key eww-mode-map "V" (lambda () "Go home."
 				   (interactive)
-				   (eww w3m-home-page))))
+				   (eww-browse-url w3m-home-page))))
 
  (when-library
   nil eww-lnum

@@ -50,6 +50,12 @@ links:
 - [[http://emacs-w3m.namazu.org][emacs-w3m]]
 - [[http://pop-club.hp.infoseek.co.jp/emacs/emacs-wget][emacs-wget]]
 
+* themes
+
+- [[https://github.com/bbatsov/zenburn-emacs][Zenburn]]
+- [[https://github.com/m00natic/anti-zenburn-theme][anti-zenburn]]
+- [[https://github.com/Bruce-Connor/smart-mode-line][smart-mode-line]]
+
 * misc
 
 - [[http://mlf176f2.github.io/ErgoEmacs/][ErgoEmacs-mode]]
@@ -58,10 +64,7 @@ links:
 - [[http://www.gnu.org/software/auctex][AUCTeX]]
 - [[http://ditaa.sourceforge.net][Ditaa]]
 - [[http://www.emacswiki.org/emacs/TabBarMode][TabBar]]
-- [[http://bazaar.launchpad.net/~nxhtml/nxhtml/main/annotate/head:/util/sml-modeline.el][sml-modeline]]
 - [[https://github.com/roman/golden-ratio.el][golden-ratio]].el
-- [[https://github.com/bbatsov/zenburn-emacs][Zenburn]]
-- [[https://github.com/m00natic/anti-zenburn-theme][anti-zenburn]]
 - [[http://www.emacswiki.org/emacs/AceJump][Ace Jump]]
 - [[http://www.emacswiki.org/emacs/notify.el][notify]]
 - [[https://github.com/m00natic/vlfi][View Large Files]]
