@@ -134,7 +134,7 @@ for the line number input."
   (when-library nil undo-tree (diminish 'undo-tree-mode "⎌")))
 
 ;;; large files
-(if (require 'vlf-integrate nil t)
+(if (require 'vlf-setup nil t)
     (setq vlf-application 'dont-ask))
 
 ;;; end of working day
