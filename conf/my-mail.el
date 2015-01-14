@@ -28,9 +28,9 @@
 ;;; Gnus
 (when-library
  t gnus
- (defvar *gnus-new-mail-count* "" "Unread messages count.")
- (put '*gnus-new-mail-count* 'risky-local-variable t)
- (add-to-list 'global-mode-string '*gnus-new-mail-count* t 'eq)
+ (defvar my-gnus-new-mail-count "" "Unread messages count.")
+ (put 'my-gnus-new-mail-count 'risky-local-variable t)
+ (add-to-list 'global-mode-string 'my-gnus-new-mail-count t 'eq)
 
  (eval-after-load "gnus"
    '(progn
@@ -39,30 +39,31 @@
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
 Otherwise check for less."
-	(and (or notify (not (string-equal *gnus-new-mail-count* "")))
-	     (let ((unread-count 0)
-		   unread-groups)
-	       (dolist (group '("nnimap+gmail:INBOX"
-				"nnimap+vayant:INBOX"))
-		 (let ((unread (gnus-group-unread group)))
-		   (and (numberp unread) (> unread 0)
-			(setq unread-count (+ unread-count unread)
-			      unread-groups (concat unread-groups
-						    ", " group)))))
-	       (setq *gnus-new-mail-count*
-		     (if (null unread-groups) ""
-		       (and (require 'notify)
-			    (> unread-count (string-to-number
-					     *gnus-new-mail-count*))
-			    (notify
-			     "Gnus"
-			     (format
-			      "%d new mail%s in %s"
-			      unread-count
-			      (if (= unread-count 1) "" "s")
-			      (substring unread-groups 2))))
-		       (propertize (format "%d" unread-count)
-				   'face 'font-lock-warning-face))))))
+	(if (or notify (not (string-equal my-gnus-new-mail-count "")))
+	    (let ((unread-count 0)
+		  unread-groups)
+	      (dolist (group '("nnimap+gmail:INBOX"
+			       "nnimap+vayant:INBOX"
+			       "nnimap+vayant:trac"))
+		(let ((unread (gnus-group-unread group)))
+		  (and (numberp unread) (> unread 0)
+		       (setq unread-count (+ unread-count unread)
+			     unread-groups (concat unread-groups
+						   ", " group)))))
+	      (setq my-gnus-new-mail-count
+		    (if (null unread-groups) ""
+		      (and (require 'notify)
+			   (> unread-count (string-to-number
+					    my-gnus-new-mail-count))
+			   (notify
+			    "Gnus"
+			    (format
+			     "%d new mail%s in %s"
+			     unread-count
+			     (if (= unread-count 1) "" "s")
+			     (substring unread-groups 2))))
+		      (propertize (format "%d" unread-count)
+				  'face 'error))))))
 
       (defun gnus-demon-scan-important ()
 	"Check for new messages in level 1 and notify in modeline."

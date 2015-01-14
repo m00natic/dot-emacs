@@ -32,7 +32,7 @@
 		      ("elpa" . "http://tromey.com/elpa/")
 		      ("melpa" . "http://melpa.org/packages/")
 		      ("melpa-stable" .
-		       "http://melpa-stable.milkbox.net/packages/")
+		       "http://stable.melpa.org/packages/")
 		      ("marmalade" .
 		       "https://marmalade-repo.org/packages/")))
  '(proced-format 'medium)

@@ -31,12 +31,12 @@
     "Switch themes.  If LIGHT is not given, let it be dark."
     (if light
 	(progn (enable-theme 'andr)
-		(ignore-errors (enable-theme 'anti-zenburn)))
+	       (ignore-errors (enable-theme 'anti-zenburn)))
       (enable-theme 'andr-dark)
       (ignore-errors (enable-theme 'zenburn)))
-    (ignore-errors (when (require 'smart-mode-line nil t)
-		     (sml/apply-theme 'powerline)
-		     (powerline-reset))))
+    (when (require 'smart-mode-line nil t)
+      (ignore-errors (powerline-reset))
+      (ignore-errors (sml/apply-theme 'powerline))))
 
   (defun my-switch-themes (sun-event &optional first-run)
     "Switch themes on SUN-EVENT sunrise and sunset even on FIRST-RUN."
