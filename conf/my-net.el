@@ -7,11 +7,14 @@
 
 (require 'my-utils)
 
+(defconst +home-page+ (concat "file://" +home-path+
+			      ".w3m/bookmark.html"))
+
 (custom-set-variables
  '(browse-url-new-window-flag t)
  '(tramp-shell-prompt-pattern
    "\\(?:^\\|\\)[^]#$%>\n]*#?[]#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
- `(w3m-home-page ,(concat "file://" +home-path+ ".w3m/bookmark.html"))
+ '(w3m-home-page +home-page+)
  '(w3m-key-binding 'info)
  '(w3m-use-cookies t))
 
@@ -101,22 +104,24 @@ Open in new tab if NEW-WINDOW."
 		 (concat "Location" (if current-prefix-arg
 					" (new tab)")
 			 ": ")))
-   (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
-			  (split-string text) " "))
-	 (apropo-reg "^$"))
-     (let ((url (assoc-default text +apropos-url-alist+
-			       (lambda (a b) (if (string-match-p a b)
-					    (setq apropo-reg a)))
-			       text)))
-       (browse-url
-	(if (and (string-equal apropo-reg "^$")	; no match
-		 (or (string-match-p ".+ .+" text) ; multiple words
-		     (not (string-match-p ".+\\..+" text))))
-	    (concat (cdr my-search)
-		    (replace-regexp-in-string " " "+" text))
-	  (replace-regexp-in-string
-	   " " "+" (replace-regexp-in-string apropo-reg url text)))
-	(not new-window)))))
+   (if (string-equal text "")
+       (browse-url +home-page+)
+     (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
+			    (split-string text) " "))
+	   (apropo-reg "^$"))
+       (let ((url (assoc-default text +apropos-url-alist+
+				 (lambda (a b) (if (string-match-p a b)
+					      (setq apropo-reg a)))
+				 text)))
+	 (browse-url
+	  (if (and (string-equal apropo-reg "^$")    ; no match
+		   (or (string-match-p ".+ .+" text) ; multiple words
+		       (not (string-match-p ".+\\..+" text))))
+	      (concat (cdr my-search)
+		      (replace-regexp-in-string " " "+" text))
+	    (replace-regexp-in-string
+	     " " "+" (replace-regexp-in-string apropo-reg url text)))
+	  (not new-window))))))
 
  (global-set-key "\C-cb" 'browse-apropos-url))
 
@@ -267,7 +272,7 @@ With optional prefix ARG ask for url."
  (eval-after-load "eww"
    '(define-key eww-mode-map "V" (lambda () "Go home."
 				   (interactive)
-				   (eww-browse-url w3m-home-page))))
+				   (eww-browse-url +home-page+))))
 
  (when-library
   nil eww-lnum
