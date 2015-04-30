@@ -52,7 +52,7 @@ Otherwise check for less."
 						   ", " group)))))
 	      (setq my-gnus-new-mail-count
 		    (if (null unread-groups) ""
-		      (and (require 'notify)
+		      (and (require 'notify nil t)
 			   (> unread-count (string-to-number
 					    my-gnus-new-mail-count))
 			   (notify

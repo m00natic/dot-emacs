@@ -26,7 +26,7 @@
 
 ;;; Smartparens
 (when (require 'smartparens-config nil t)
-  (define-keys sp-keymap
+  (define-keys smartparens-mode-map
     (kbd "C-)") 'sp-forward-slurp-sexp
     (kbd "C-}") 'sp-forward-barf-sexp
     (kbd "C-(") 'sp-backward-slurp-sexp
@@ -139,7 +139,7 @@
 		(lambda () "Clojure REPL hook."
 		  (if (and (string-equal "clojure"
 					 (slime-connection-name))
-			   (require 'clojure-mode))
+			   (require 'clojure-mode nil t))
 		      (progn
 			(if (slime-inferior-process)
 			    (slime-redirect-inferior-output))

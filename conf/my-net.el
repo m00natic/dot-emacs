@@ -76,7 +76,7 @@
       "https://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw +\\(.*\\)" .		; Wikipedia bg
       "https://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^rd +\\(.*\\)" . "http://m.reddit.com/r/\\1") ; sub Reddits
+     ("^rd +\\(.*\\)" . "https://m.reddit.com/r/\\1") ; sub Reddits
      ("^imdb +\\(.*\\)" . "http://m.imdb.com/find?q=\\1")
      ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
       "https://www.google.com/search?q=site:metal-archives.com+\\1")
@@ -92,7 +92,9 @@
       "http://en.cppreference.com/w/?search=\\1")
      ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
       "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
+     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1")
+     ("^arch +\\(.*\\)" .
+      "https://wiki.archlinux.org/index.php?fulltext=Search&search=\\1"))
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")

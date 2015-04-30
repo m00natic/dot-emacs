@@ -47,6 +47,7 @@
 			      nil (uniquify))
  '(version-control t)
  '(view-read-only t)
+ '(visible-bell t)
  '(winner-mode t))
 
 ;;; open files in view-mode
