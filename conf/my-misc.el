@@ -77,8 +77,8 @@ for the line number input."
 				       "my-site-static")))))))
 
 ;;; Ace Jump
-(if (require 'ace-jump-mode nil t)
-    (define-key global-map "\C-c " 'ace-jump-mode))
+(if (require 'avy nil t)
+    (define-key global-map "\M-b" 'avy-goto-word-or-subword-1))
 
 ;;; golder ratio
 (when-library
@@ -131,6 +131,7 @@ for the line number input."
 
 ;;; remove clutter from modeline
 (when (require 'diminish nil t)
+  (when-library nil projectile (diminish 'projectile-mode "Π"))
   (when-library nil golden-ratio (diminish 'golden-ratio-mode "φ"))
   (when-library nil helm (diminish 'helm-mode ""))
   (when-library nil company (diminish 'company-mode "⚯"))

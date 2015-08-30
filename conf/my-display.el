@@ -7,6 +7,7 @@
 
 (custom-set-variables
  '(column-number-mode t)
+ '(display-time-mode t)
  '(frame-title-format "%f (%b)")
  '(size-indication-mode t)
  '(sml/no-confirm-load-theme t)
