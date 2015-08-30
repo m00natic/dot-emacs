@@ -16,32 +16,16 @@
   (defun ergoemacs-change-keyboard (layout)
     "Change ErgoEmacs keyboard bindings according to LAYOUT."
     (interactive (list (completing-read "Enter layout (default us): "
-					(ergoemacs-get-layouts)
+					(ergoemacs-layouts--list)
 					nil t nil nil "us")))
 
     (unless (string-equal layout ergoemacs-keyboard-layout)
       (setq ergoemacs-keyboard-layout layout)
-      (ergoemacs-setup-keys)))
+      (ergoemacs-mode-reset)))
 
   (or +old-emacs+
       (when-library nil helm
 		    (global-set-key "\M-V" 'helm-show-kill-ring)))
-
-  (when-library
-   nil slime
-   (add-hook 'slime-connected-hook
-	     (lambda () (ergoemacs-define-overrides
-		    (define-keys slime-mode-map
-		      (kbd "<f11>") 'slime-next-note
-		      (kbd "<f12>") 'slime-previous-note)
-		    (define-keys slime-repl-mode-map
-		      "\M-r" nil "\M-s" nil
-		      (kbd "<f11>") 'slime-repl-previous-input
-		      (kbd "<f12>") 'slime-repl-next-input
-		      (kbd "S-<f11>")
-		      'slime-repl-previous-matching-input
-		      (kbd "S-<f12>")
-		      'slime-repl-next-matching-input)))))
 
   (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x
 	ergoemacs-use-ergoemacs-metaleft nil
