@@ -1,14 +1,19 @@
-#+AUTHOR:    Andrey Kotlarski
-#+EMAIL:     m00naticus@gmail.com
-#+DESCRIPTION:
-#+KEYWORDS:
-#+LANGUAGE:  en
-#+OPTIONS:   H:3 num:t toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
-#+OPTIONS:   TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
-#+INFOJS_OPT: view:nil toc:nil ltoc:t mouse:underline buttons:0 path:http://orgmode.org/org-info.js
-#+EXPORT_SELECT_TAGS: export
-#+EXPORT_EXCLUDE_TAGS: noexport
-#+LINK_UP: sitemap.html
-#+LINK_HOME: index.html
-#+XSLT:
-#+STYLE: <link rel="stylesheet" type="text/css" href="css/worg-classic.css" />
+#+AUTHOR: Andrey Kotlarski
+#+EMAIL: m00naticus@gmail.com
+#+OPTIONS: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline
+#+OPTIONS: author:t c:nil creator:comment d:(not "LOGBOOK") date:t
+#+OPTIONS: e:t email:nil f:t inline:t num:t p:nil pri:nil stat:t
+#+OPTIONS: tags:t tasks:t tex:t timestamp:t toc:t todo:t |:t
+#+EXCLUDE_TAGS: noexport
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:auto
+#+OPTIONS: html-preamble:t html-scripts:t html-style:t
+#+OPTIONS: html5-fancy:t tex:t
+#+HTML_CONTAINER: div
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/worg-classic.css" />
+#+HTML_HEAD_EXTRA:
+#+HTML_LINK_HOME: index.html
+#+HTML_LINK_UP: sitemap.html

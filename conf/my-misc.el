@@ -59,7 +59,10 @@ for the line number input."
 		:base-extension "org"
 		:publishing-directory ,my-site-dir
 		:recursive t
-		:publishing-function org-publish-org-to-html
+		:publishing-function
+		,(if (ignore-errors (find-library-name "org-publish"))
+		     'org-publish-org-to-html
+		   'org-html-publish-to-html)
 		:auto-preamble t
 		:auto-sitemap t
 		:sitemap-title "Sitemap")
