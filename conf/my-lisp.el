@@ -56,40 +56,69 @@
 			  :ignore-case t
 			  :doc-spec '(("(ansicl)Symbol Index"
 				       nil nil nil))))
-
-;;; SLIME
+;;; Sly
 (when-library
- nil slime
- (eval-after-load "slime"
+ nil sly
+ (eval-after-load "sly"
    `(progn
-      (slime-setup ,(win-or-nix
-		     ''(slime-fancy slime-banner slime-indentation)
-		     ''(slime-fancy slime-banner slime-indentation
-				    slime-asdf)))
-      (add-to-list 'slime-lisp-implementations
+      (sly-setup)
+      (add-to-list 'sly-lisp-implementations
 		   (list ',(win-or-nix 'clisp 'sbcl)
 			 ',(split-string inferior-lisp-program " +")))
 
       (win-or-nix
-       nil (add-to-list 'slime-lisp-implementations '(clozure ("ccl"))))
+       nil (add-to-list 'sly-lisp-implementations '(clozure ("ccl"))))
 
       (if (file-exists-p ,(concat +home-path+
 				  "Documents/HyperSpec/"))
 	  (setq common-lisp-hyperspec-root
 		,(concat "file://" +home-path+
 			 "Documents/HyperSpec/")))
-      (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
-	    slime-complete-symbol*-fancy t
-	    slime-complete-symbol-function
-	    'slime-fuzzy-complete-symbol
-	    slime-net-coding-system
-	    (find-if 'slime-find-coding-system
+      (setq sly-default-lisp ',(win-or-nix 'clisp 'sbcl)
+	    sly-complete-symbol-function
+	    'sly-fuzzy-complete-symbol
+	    sly-net-coding-system
+	    (find-if 'sly-find-coding-system
 		     '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
 				  binary)))
 
       (or (featurep 'ergoemacs-mode)
-	  (define-key slime-mode-map "\M-g"
-	    'slime-complete-symbol)))))
+	  (define-key sly-mode-map "\M-g"
+	    'sly-complete-symbol)))))
+
+;;; SLIME
+;; (when-library
+;;  nil slime
+;;  (eval-after-load "slime"
+;;    `(progn
+;;       (slime-setup ,(win-or-nix
+;; 		     ''(slime-fancy slime-banner slime-indentation)
+;; 		     ''(slime-fancy slime-banner slime-indentation
+;; 				    slime-asdf)))
+;;       (add-to-list 'slime-lisp-implementations
+;; 		   (list ',(win-or-nix 'clisp 'sbcl)
+;; 			 ',(split-string inferior-lisp-program " +")))
+
+;;       (win-or-nix
+;;        nil (add-to-list 'slime-lisp-implementations '(clozure ("ccl"))))
+
+;;       (if (file-exists-p ,(concat +home-path+
+;; 				  "Documents/HyperSpec/"))
+;; 	  (setq common-lisp-hyperspec-root
+;; 		,(concat "file://" +home-path+
+;; 			 "Documents/HyperSpec/")))
+;;       (setq slime-default-lisp ',(win-or-nix 'clisp 'sbcl)
+;; 	    slime-complete-symbol*-fancy t
+;; 	    slime-complete-symbol-function
+;; 	    'slime-fuzzy-complete-symbol
+;; 	    slime-net-coding-system
+;; 	    (find-if 'slime-find-coding-system
+;; 		     '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+;; 				  binary)))
+
+;;       (or (featurep 'ergoemacs-mode)
+;; 	  (define-key slime-mode-map "\M-g"
+;; 	    'slime-complete-symbol)))))
 
 ;;; Clojure
 (when-library

@@ -29,7 +29,6 @@
  '(org-src-fontify-natively t)
  '(org-use-speed-commands t)
  '(package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-		      ("elpa" . "http://tromey.com/elpa/")
 		      ("melpa" . "http://melpa.org/packages/")
 		      ("melpa-stable" .
 		       "http://stable.melpa.org/packages/")

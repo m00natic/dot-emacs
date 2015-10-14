@@ -62,7 +62,7 @@ NIX forms are executed on all other platforms."
 (require 'my-display)
 (require 'my-themes)
 (require 'my-custom)
-(when-library nil ergoemacs-mode (require 'my-ergo))
+(require 'my-ergo)
 
 (with-idle-timers
  2 ((win-or-nix (require 'my-windows)))

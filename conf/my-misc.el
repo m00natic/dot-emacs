@@ -76,11 +76,11 @@ for the line number input."
 	       ("my-site" :components ("my-site-org"
 				       "my-site-static")))))))
 
-;;; Ace Jump
+;;; Avy
 (if (require 'avy nil t)
     (define-key global-map "\M-b" 'avy-goto-word-or-subword-1))
 
-;;; golder ratio
+;;; golden ratio
 (when-library
  nil golden-ratio
  (unless +old-emacs+
@@ -135,7 +135,8 @@ for the line number input."
   (when-library nil golden-ratio (diminish 'golden-ratio-mode "φ"))
   (when-library nil helm (diminish 'helm-mode ""))
   (when-library nil company (diminish 'company-mode "⚯"))
-  (when-library nil undo-tree (diminish 'undo-tree-mode "⎌")))
+  (when-library nil undo-tree (ignore-errors
+				(diminish 'undo-tree-mode "⎌"))))
 
 ;;; large files
 (if (require 'vlf-setup nil t)
