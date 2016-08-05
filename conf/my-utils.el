@@ -61,11 +61,17 @@ KEYS is alternating key-value list."
   (cond ((cdr bodies)
 	 `(run-with-idle-timer
 	   ,secs nil
-	   (lambda () ,@(car bodies)
+	   (lambda ()
+	     (condition-case err
+		 (progn ,@(car bodies))
+	       (error (message "with-idle-timers error: %s" err)))
 	     (sit-for ,secs)
 	     (with-idle-timers ,secs ,@(cdr bodies)))))
 	((car bodies)
-	 `(run-with-idle-timer ,secs nil (lambda () ,@(car bodies))))))
+	 `(run-with-idle-timer ,secs nil
+			       (lambda () (condition-case err
+					 (progn ,@(car bodies))
+				       (error (message "with-idle-timers error: %s" err))))))))
 
 (provide 'my-utils)
 
