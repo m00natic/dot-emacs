@@ -10,6 +10,7 @@
  '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
  '(delete-old-versions t)
+ '(erc-hide-list '("JOIN" "PART" "QUIT"))
  '(global-hl-line-mode t)
  '(global-prettify-symbols-mode t)
  '(global-subword-mode t)

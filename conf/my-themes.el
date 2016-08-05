@@ -24,8 +24,8 @@
 		  (load-theme 'andr-dark t t)))
 	   (require 'rase nil t))
 
-  (or +old-emacs+ (ignore-errors (load-theme 'zenburn t t)
-				 (load-theme 'anti-zenburn t t)))
+  (or +old-emacs+ (ignore-errors (load-theme 'anti-zenburn t t)
+				 (load-theme 'zenburn t t)))
 
   (defun my-switch-colours (&optional light)
     "Switch themes.  If LIGHT is not given, let it be dark."
