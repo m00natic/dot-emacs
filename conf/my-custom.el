@@ -15,6 +15,7 @@
  '(global-prettify-symbols-mode t)
  '(global-subword-mode t)
  '(global-visual-line-mode t)
+ '(icomplete-mode 1)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
  `(ido-save-directory-list-file ,(concat user-emacs-directory

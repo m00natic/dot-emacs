@@ -123,8 +123,7 @@ for the line number input."
 ;;; Google Translate
 (when-library
  nil google-translate
- (autoload 'google-translate-at-point "google-translate" nil t)
- (autoload 'google-translate-query-translate "google-translate" nil t)
+ (autoload 'google-translate-translate "google-translate-core-ui" nil t)
 
  (global-set-key "\C-ct" 'google-translate-query-translate)
  (global-set-key "\C-cT" 'google-translate-at-point))

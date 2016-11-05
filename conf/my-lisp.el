@@ -38,7 +38,7 @@
 ;;; Redshank
 (when-library
  nil redshank
- (redshank-setup '(lisp-mode-hook slime-repl-mode-hook
+ (redshank-setup '(lisp-mode-hook sly-mrepl-mode-hook
 				  inferior-lisp-mode-hook)
 		 t))
 
@@ -56,6 +56,7 @@
 			  :ignore-case t
 			  :doc-spec '(("(ansicl)Symbol Index"
 				       nil nil nil))))
+
 ;;; Sly
 (when-library
  nil sly
