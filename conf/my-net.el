@@ -12,6 +12,10 @@
 
 (custom-set-variables
  '(browse-url-new-window-flag t)
+ '(erc-autojoin-channels-alist
+   '(("freenode.net" "#lisp" "#clasp" "#clim" "#lispcafe" "#sbcl")))
+ '(erc-hide-list '("JOIN" "PART" "QUIT"))
+ '(erc-prompt-for-password nil)
  '(tramp-shell-prompt-pattern
    "\\(?:^\\|\\)[^]#$%>\n]*#?[]#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
  '(w3m-home-page +home-page+)
