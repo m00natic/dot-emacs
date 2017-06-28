@@ -26,6 +26,8 @@
 
 ;;; Smartparens
 (when (require 'smartparens-config nil t)
+  (global-set-key (kbd "C-)") nil)
+
   (define-keys smartparens-mode-map
     (kbd "C-)") 'sp-forward-slurp-sexp
     (kbd "C-}") 'sp-forward-barf-sexp

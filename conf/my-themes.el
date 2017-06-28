@@ -8,14 +8,24 @@
 (custom-set-variables
  '(calendar-latitude 42.7)
  '(calendar-longitude 23.3)
+ '(column-number-mode t)
  `(custom-theme-directory ,(concat +conf-path+ "themes"))
+ '(display-time-mode t)
+ '(frame-title-format "%f (%b)")
  '(menu-bar-mode nil)
  '(scroll-bar-mode nil)
- '(tool-bar-mode nil))
+ '(size-indication-mode t)
+ '(sml/no-confirm-load-theme t)
+ '(tool-bar-mode nil)
+ '(visual-line-fringe-indicators '(left-curly-arrow
+				   right-curly-arrow)))
 
 ;;; font alternatives
 (add-to-list 'face-font-family-alternatives
 	     '("Inconsolata" "Anonymous Pro" "terminus"))
+
+(if (require 'smart-mode-line nil t)
+    (sml/setup))
 
 (when (and (if +old-emacs+
 	       (and (load-theme 'andr)
@@ -30,9 +40,9 @@
   (defun my-switch-colours (&optional light)
     "Switch themes.  If LIGHT is not given, let it be dark."
     (if light
-	(progn (enable-theme 'andr)
+	(progn (ignore-errors (enable-theme 'andr))
 	       (ignore-errors (enable-theme 'anti-zenburn)))
-      (enable-theme 'andr-dark)
+      (ignore-errors (enable-theme 'andr-dark))
       (ignore-errors (enable-theme 'zenburn)))
     (when (require 'smart-mode-line nil t)
       (ignore-errors (powerline-reset))

@@ -14,7 +14,9 @@
  '(google-translate-enable-ido-completion t)
  '(helm-ff-auto-update-initial-value nil)
  `(org-default-notes-file ,(concat user-emacs-directory
-				   ".notes.org")))
+				   ".notes.org"))
+ '(org-latex-listings t)
+ '(org-latex-packages-alist '(("" "listings") ("" "color"))))
 
 ;;; goto line
 (defun goto-line-with-feedback ()

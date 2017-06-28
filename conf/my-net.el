@@ -80,7 +80,7 @@
       "https://en.wikipedia.org/wiki/Special:Search?search=\\1")
      ("^bgw +\\(.*\\)" .		; Wikipedia bg
       "https://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^rd +\\(.*\\)" . "https://m.reddit.com/r/\\1") ; sub Reddits
+     ("^rd +\\(.*\\)" . "https://i.reddit.com/r/\\1") ; sub Reddits
      ("^imdb +\\(.*\\)" . "http://m.imdb.com/find?q=\\1")
      ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
       "https://www.google.com/search?q=site:metal-archives.com+\\1")
@@ -132,9 +132,9 @@ Open in new tab if NEW-WINDOW."
  (global-set-key "\C-cb" 'browse-apropos-url))
 
 ;;; Default browser
-(if (executable-find "conkeror")
+(if (executable-find "firefox")
     (setq browse-url-browser-function 'browse-url-generic
-	  browse-url-generic-program "conkeror"))
+	  browse-url-generic-program "firefox"))
 
 ;;; Wget
 (when-library
@@ -200,7 +200,8 @@ Make links point to local files."
 	(define-keys w3m-mode-map
 	  (if w3m-key-binding "t" "i") 'w3m-lnum-save-image
 	  "z" 'w3m-horizontal-recenter
-	  "\C-cs" 'w3m-session-select)
+	  "\C-cs" 'w3m-session-select
+	  "f" 'w3m-lnum-follow)
 
 	,(when-library
 	  nil ergoemacs-mode

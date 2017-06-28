@@ -59,7 +59,6 @@ NIX forms are executed on all other platforms."
   (package-initialize)
   (setq package-enable-at-startup nil))
 
-(require 'my-display)
 (require 'my-themes)
 (require 'my-custom)
 (require 'my-ergo)
