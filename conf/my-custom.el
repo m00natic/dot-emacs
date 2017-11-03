@@ -32,9 +32,7 @@
  '(package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 		      ("melpa" . "http://melpa.org/packages/")
 		      ("melpa-stable" .
-		       "http://stable.melpa.org/packages/")
-		      ("marmalade" .
-		       "https://marmalade-repo.org/packages/")))
+		       "http://stable.melpa.org/packages/")))
  '(proced-format 'medium)
  '(read-file-name-completion-ignore-case t)
  '(recentf-max-saved-items 100)

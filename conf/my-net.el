@@ -64,41 +64,15 @@
 ;;; browse apropos
 (when-library
  t browse-url
- (defvar my-search
-   '("startpage" .
-     "https://startpage.com/do/search?prf=a692a6ce68c3d4494e0cd310e98d251f&query=")
+ (defvar my-search '("duckduckgo" . "https://duckduckgo.com/html?q=")
    "My default search engine.")
 
  (defconst +apropos-url-alist+
    `(("^s +\\(.*\\)" . ,(concat (cdr my-search) "\\1"))
-     ("^d +\\(.*\\)" . "https://duckduckgo.com/?q=\\1")
-     ("^g +\\(.*\\)" . "https://www.google.com/search?q=\\1")
-     ("^gs +\\(.*\\)" . "http://scholar.google.com/scholar?q=\\1")
-     ("^gt +\\(\\w+\\)|? *\\(\\w+\\) +\\(.*\\)" . ; Translate Text
-      "https://translate.google.com/m?sl=\\1&tl=\\2&text=\\3")
-     ("^w +\\(.*\\)" .			; Wikipedia en
-      "https://en.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^bgw +\\(.*\\)" .		; Wikipedia bg
-      "https://bg.wikipedia.org/wiki/Special:Search?search=\\1")
-     ("^rd +\\(.*\\)" . "https://i.reddit.com/r/\\1") ; sub Reddits
-     ("^imdb +\\(.*\\)" . "http://m.imdb.com/find?q=\\1")
-     ("^ma +\\(.*\\)" .			; Encyclopaedia Metallum
+     ("^r +\\(.*\\)" . "https://i.reddit.com/r/\\1") ; sub Reddits
+     ("^m +\\(.*\\)" .			; Encyclopaedia Metallum
       "https://www.google.com/search?q=site:metal-archives.com+\\1")
-     ("^ewiki +\\(.*\\)" .		; Google Emacs Wiki
-      "https://www.google.com/search?q=site:emacswiki.org+\\1")
-     ("^cliki +\\(.*\\)" .		; Common Lisp wiki
-      "http://www.cliki.net/site/search?query=\\1")
-     ("^hoog +\\(.*\\)" .		; Hoogle
-      "http://haskell.org/hoogle/?hoogle=\\1")
-     ("^clj +\\(.*\\)" .		; ClojureDocs
-      "http://clojuredocs.org/search?q=\\1")
-     ("^c\\+\\+ +\\(.*\\)" .		; C++
-      "http://en.cppreference.com/w/?search=\\1")
-     ("^fp +\\(.*\\)" .			; FreeBSD's FreshPorts
-      "http://www.FreshPorts.org/search.php?query=\\1&num=20")
-     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1")
-     ("^arch +\\(.*\\)" .
-      "https://wiki.archlinux.org/index.php?fulltext=Search&search=\\1"))
+     ("^nnm +\\(.*\\)" . "http://nnm.ru/search?in=news&q=\\1"))
    "Search engines and sites.")
 
  (autoload 'browse-url-interactive-arg "browse-url")
