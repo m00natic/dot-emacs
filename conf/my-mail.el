@@ -11,13 +11,10 @@
  '(gnus-buttonized-mime-types '("multipart/.*"))
  '(gnus-posting-styles '((".*" (address "m00naticus@gmail.com")
 			  ("X-SMTP-Server" "smtp.gmail.com"))
-			 ("vayant" (address "akotlarski@vayant.com")
-			  ("X-SMTP-Server" "mail.vayant.com"))
 			 ("pros" (address "akotlarski@pros.com")
 			  ("X-SMTP-Server" "smtp.office365.com"))))
  '(gnus-secondary-select-methods
    '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
-     (nnimap "vayant" (nnimap-address "mail.vayant.com"))
      (nnimap "pros" (nnimap-address "outlook.office365.com"))))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
@@ -47,8 +44,7 @@ Otherwise check for less."
 		  unread-groups)
 	      (dolist (group '("nnimap+gmail:INBOX"
 			       "nnimap+pros:INBOX"
-			       "nnimap+vayant:INBOX"
-			       "nnimap+vayant:trac"))
+			       "nnimap+pros:trac"))
 		(let ((unread (gnus-group-unread group)))
 		  (and (numberp unread) (> unread 0)
 		       (setq unread-count (+ unread-count unread)
@@ -102,10 +98,8 @@ If missing, try to deduce it from the `From' header."
 	   ((string-match "@\\([^ >]*\\)" from)
 	    (let ((domain (match-string-no-properties 1 from)))
 	      (setq smtpmail-smtp-server
-		    (cond ((string-equal domain "vayant.com")
-			   "mail.vayant.com")
-			  ((string-equal domain "pros.com")
-			   "outlook.office365.com")
+		    (cond ((string-equal domain "pros.com")
+			   "smtp.office365.com")
 			  (t (concat "smtp." domain)))))))))
 
  (add-hook 'message-send-mail-hook 'set-smtp-server-from-header)
