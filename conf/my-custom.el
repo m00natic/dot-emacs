@@ -6,6 +6,7 @@
 ;;; Code:
 
 (custom-set-variables
+ '(calendar-week-start-day 1)
  '(cua-enable-cua-keys nil)
  '(cua-mode t)
  '(default-input-method "bulgarian-phonetic")
@@ -14,7 +15,6 @@
  '(global-prettify-symbols-mode t)
  '(global-subword-mode t)
  '(global-visual-line-mode t)
- '(icomplete-mode 1)
  '(ido-enable-flex-matching t)
  '(ido-mode 'both)
  `(ido-save-directory-list-file ,(concat user-emacs-directory

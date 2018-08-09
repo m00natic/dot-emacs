@@ -143,6 +143,9 @@ for the line number input."
 (if (require 'vlf-setup nil t)
     (setq vlf-application 'dont-ask))
 
+(when-library nil edit-server
+	      (edit-server-start))
+
 ;;; end of working day
 ;; (run-with-timer 28800 1200 'animate-birthday-present "Go Home")
 

@@ -282,3 +282,10 @@ Design patterns are bug reports against your programming language.
 Even its (Common Lisp) warts are better thought out than some other
 languages features.
 		-- Christian Schafmeister
+%
+He who does not study Lisp is doomed to re-invent it badly.  He who
+does study it is doomed to watch other people re-invent it badly.
+		-- schweers @ #lisp
+%
+If it runs Emacs, it's a computer.  Otherwise, it's a peripheral.
+		-- Jamie Zawinski

@@ -64,7 +64,8 @@
 ;;; projectile
 (when (require 'projectile nil t)
   (add-to-list 'projectile-project-root-files ".emacs-project")
-  (projectile-global-mode 1))
+  (projectile-mode 1)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
 
 ;;; Imenu
 (when-library t imenu (global-set-key "\C-ci" 'imenu))
