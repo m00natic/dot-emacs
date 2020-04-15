@@ -11,7 +11,7 @@
   (custom-theme-set-faces
    'andr
    `(default ((default :foreground "#232333")
-	      (,class :background "#c0c0c0" :family "Inconsolata")
+	      (,class :background "#c0c0c0" :family "Anonymous Pro")
 	      (t :background "white" :family "terminus")))
    `(mode-line
      ((default :inherit variable-pitch :width condensed)

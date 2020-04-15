@@ -22,7 +22,7 @@
 
 ;;; font alternatives
 (add-to-list 'face-font-family-alternatives
-	     '("Inconsolata" "Anonymous Pro" "terminus"))
+	     '("Anonymous Pro" "terminus"))
 
 (if (require 'smart-mode-line nil t)
     (sml/setup))

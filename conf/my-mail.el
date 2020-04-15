@@ -11,11 +11,11 @@
  '(gnus-buttonized-mime-types '("multipart/.*"))
  '(gnus-posting-styles '((".*" (address "m00naticus@gmail.com")
 			  ("X-SMTP-Server" "smtp.gmail.com"))
-			 ("pros" (address "akotlarski@pros.com")
-			  ("X-SMTP-Server" "smtp.office365.com"))))
+			 ("smule" (address "andrey.kotlarski@smule.com")
+			  ("X-SMTP-Server" "smtp.gmail.com"))))
  '(gnus-secondary-select-methods
    '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
-     (nnimap "pros" (nnimap-address "outlook.office365.com"))))
+     (nnimap "smule" (nnimap-address "imap.gmail.com"))))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
  '(message-citation-line-format "[ %e %B %Y, %R %z, %A ] %N:\n")
@@ -34,7 +34,7 @@
 
  (eval-after-load "gnus"
    '(progn
-      (setq-default gnus-select-method '(nntp "news.gmane.org"))
+      (setq-default gnus-select-method '(nntp "news.gmane.io"))
 
       (defun gnus-demon-notify (&optional notify)
 	"When NOTIFY check for more unread mails.
@@ -43,8 +43,7 @@ Otherwise check for less."
 	    (let ((unread-count 0)
 		  unread-groups)
 	      (dolist (group '("nnimap+gmail:INBOX"
-			       "nnimap+pros:INBOX"
-			       "nnimap+pros:trac"))
+			       "nnimap+smule:INBOX"))
 		(let ((unread (gnus-group-unread group)))
 		  (and (numberp unread) (> unread 0)
 		       (setq unread-count (+ unread-count unread)

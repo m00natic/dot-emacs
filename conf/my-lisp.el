@@ -22,7 +22,9 @@
 	      (concat +win-path+
 		      "Program Files/clisp/clisp.exe -K full"))
 	     (t "clisp"))
-       "ros -L sbcl dynamic-space-size=8000 run"))
+       (if (executable-find "ros")
+	   "ros -L sbcl-bin dynamic-space-size=8000 run"
+	 "sbcl")))
 
 ;;; Smartparens
 (when (require 'smartparens-config nil t)

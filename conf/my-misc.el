@@ -98,7 +98,7 @@ for the line number input."
 	       (global-set-key "\M-y" 'helm-show-kill-ring))
 	   (global-set-key "\M-." 'helm-etags-select)
 	   (global-set-key "\C-co" 'helm-occur)
-	   (helm-mode 1))
+	   (ignore-errors (helm-mode 1)))
   (icomplete-mode 1))
 
 ;;; Ditaa

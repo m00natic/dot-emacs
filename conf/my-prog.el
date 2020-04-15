@@ -13,7 +13,7 @@
 		     (other . "stroustrup")))
  '(cppcheck-cmd
    "cppcheck --template gcc -q -f --enable=all --inline-suppr .")
- '(ecb-options-version "2.40")
+ '(ecb-options-version "2.50")
  '(gdb-many-windows t)
  '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
@@ -162,26 +162,8 @@ or ARG is non nil - locate project file for current directory."
 ;;; plantuml
 (when-library
  nil plantuml-mode
- (setq plantuml-jar-path "/usr/share/java/plantuml.jar")
- (add-to-list 'auto-mode-alist '("\\.puml\\'" . plantuml-mode))
-
  (eval-after-load "plantuml-mode"
-   '(progn
-      (defun plantuml-compile ()
-	"Run plantuml over current file and open the result png."
-	(interactive)
-	(let ((file buffer-file-name))
-	  (shell-command (concat "java -jar '" plantuml-jar-path
-				 "' -tsvg '" file "'"))
-	  (display-buffer (find-file-noselect
-			   (concat (file-name-directory file)
-				   (file-name-sans-extension
-				    (file-name-nondirectory file))
-				   ".svg")))))
-
-      (let ((map (make-sparse-keymap)))
-	(define-key map "\C-c\C-c" 'plantuml-compile)
-	(setq plantuml-mode-map map)))))
+   '(define-key plantuml-mode-map "\M-g" 'plantuml-complete-symbol)))
 
 (provide 'my-prog)
 

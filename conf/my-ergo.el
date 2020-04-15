@@ -27,6 +27,11 @@
       (when-library nil helm
 		    (global-set-key "\M-V" 'helm-show-kill-ring)))
 
+  (eval-after-load "comint"
+    '(define-keys comint-mode-map
+       "\C-cr" 'comint-history-isearch-backward
+       "\C-cR" 'comint-history-isearch-backward-regexp))
+
   (setq ergoemacs-handle-ctl-c-or-ctl-x 'only-C-c-and-C-x
 	ergoemacs-use-ergoemacs-metaleft nil
 	ergoemacs-use-ergoemacs-metaright nil)

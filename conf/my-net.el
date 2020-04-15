@@ -20,6 +20,8 @@
    "\\(?:^\\|\\)[^]#$%>\n]*#?[]#$%>] *\\(;?\\[[0-9;]*[a-zA-Z] *\\)*")
  '(w3m-home-page +home-page+)
  '(w3m-key-binding 'info)
+ '(w3m-lnum-context-alist
+   '(("news.ycombinator.com" . 3) ("reddit.com" . 1)))
  '(w3m-use-cookies t))
 
 ;;; ERC
@@ -64,7 +66,7 @@
 ;;; browse apropos
 (when-library
  t browse-url
- (defvar my-search '("duckduckgo" . "https://duckduckgo.com/html?q=")
+ (defvar my-search '("duckduckgo" . "https://duckduckgo.com/lite?q=")
    "My default search engine.")
 
  (defconst +apropos-url-alist+
