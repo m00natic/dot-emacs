@@ -17,6 +17,7 @@
  '(gdb-many-windows t)
  '(magit-diff-refine-hunk t)
  '(indent-tabs-mode nil)
+ '(plantuml-default-exec-mode 'executable)
  '(projectile-require-project-root nil)
  '(prolog-system 'swi)
  '(which-function-mode t))
@@ -164,6 +165,38 @@ or ARG is non nil - locate project file for current directory."
  nil plantuml-mode
  (eval-after-load "plantuml-mode"
    '(define-key plantuml-mode-map "\M-g" 'plantuml-complete-symbol)))
+
+;;; rust
+(when-library
+ nil (rustic-mode lsp-mode)
+ (eval-after-load "rustic-mode"
+   '(define-keys rustic-mode
+		 "M-j"  lsp-ui-imenu
+		 "M-?" lsp-find-references
+		 "C-c C-c l" flycheck-list-errors
+		 "C-c C-c a" lsp-execute-code-action
+		 "C-c C-c r" lsp-rename
+		 "C-c C-c q" lsp-workspace-restart
+		 "C-c C-c Q" lsp-workspace-shutdown
+		 "C-c C-c s" lsp-rust-analyzer-status)))
+
+;;; LLMs
+(use-package gptel
+  :ensure nil
+  :custom ((gptel-default-mode 'org-mode))
+  :bind (:map gptel-mode-map ("C-c C-c t" . gptel-org-set-topic))
+  :config
+  (global-set-key "\C-cs" 'gptel-send)
+  (when (require 'my-secret "my-secret.el.gpg" t)
+    (setq gptel-backend (gptel-make-openai "Mistral" :protocol "https"
+					   :host "api.mistral.ai"
+					   :endpoint "/v1/chat/completions"
+					   :models '(mistral-medium)
+					   :key my-mistral-key :stream t)))
+  (setq gptel-backend (gptel-make-openai "Ministral" :stream t
+					 :protocol "http" :host "localhost:8080"
+					 :models '(ministral-14b-reasoning))
+	gptel-model 'ministral-14b-reasoning))
 
 (provide 'my-prog)
 
