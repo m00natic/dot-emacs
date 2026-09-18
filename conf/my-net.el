@@ -9,11 +9,13 @@
 
 (defconst +home-page+ (concat "file://" +home-path+
 			      ".w3m/bookmark.html"))
+(defconst +home-page2+ (concat "file://" +home-path+
+			      ".emacs.d/extra/bookmarks.html"))
 
 (custom-set-variables
  '(browse-url-new-window-flag t)
  '(erc-autojoin-channels-alist
-   '(("freenode.net" "#lisp" "#clasp" "#clim" "#lispcafe" "#sbcl")))
+   '(("libera.chat" "#lisp" "#clasp" "#clim" "#lispcafe" "#sbcl")))
  '(erc-hide-list '("JOIN" "PART" "QUIT"))
  '(erc-prompt-for-password nil)
  '(tramp-shell-prompt-pattern
@@ -87,7 +89,7 @@ Open in new tab if NEW-WINDOW."
 					" (new tab)")
 			 ": ")))
    (if (string-equal text "")
-       (browse-url +home-page+)
+       (browse-url +home-page2+)
      (let ((text (mapconcat (lambda (s) (encode-coding-string s 'utf-8))
 			    (split-string text) " "))
 	   (apropo-reg "^$"))
@@ -141,13 +143,12 @@ Make links point to local files."
 (when-library
  nil w3m
  (when (executable-find "w3m")
-   (setq ;; make w3m default for most URLs
-    browse-url-browser-function
-    `(("^ftp://.*" . browse-ftp-tramp)
-      ("video" . ,browse-url-browser-function)
-      ("\\.tv" . ,browse-url-browser-function)
-      ("youtube" . ,browse-url-browser-function)
-      ("." . w3m-browse-url)))
+   (setq browse-url-handlers ;; make w3m default for most URLs
+	 `(("^ftp://.*" . browse-ftp-tramp)
+	   ("video" . ,browse-url-browser-function)
+	   ("\\.tv" . ,browse-url-browser-function)
+	   ("youtube" . ,browse-url-browser-function)
+	   ("." . w3m-browse-url)))
 
    (win-or-nix (setq w3m-imagick-convert-program nil))
 
@@ -243,9 +244,9 @@ With optional prefix ARG ask for url."
  (autoload 'eww-browse-url "eww")
 
  ;; make eww default for most URLs
- (if (consp browse-url-browser-function)
-     (setcdr (assoc "." browse-url-browser-function) 'eww-browse-url)
-   (setq browse-url-browser-function
+ (if (consp browse-url-handlers)
+     (setcdr (assoc "." browse-url-handlers) 'eww-browse-url)
+   (setq browse-url-handlers
 	 `(("^ftp://.*" . browse-ftp-tramp)
 	   ("video" . ,browse-url-browser-function)
 	   ("\\.tv" . ,browse-url-browser-function)
@@ -255,19 +256,23 @@ With optional prefix ARG ask for url."
  (eval-after-load "eww"
    '(define-key eww-mode-map "V" (lambda () "Go home."
 				   (interactive)
-				   (eww-browse-url +home-page+))))
+				   (eww-browse-url +home-page2+))))
 
  (when-library
   nil eww-lnum
   (eval-after-load "eww"
     '(progn (define-key eww-mode-map "f" 'eww-lnum-follow)
-	    (define-key eww-mode-map "F" 'eww-lnum-universal)))))
+	    (define-key eww-mode-map "F" 'eww-lnum-universal)
+	    (define-key eww-mode-map "i" 'eww-toggle-images)))))
 
 ;;; handle ftp with emacs, if not set above
-(or (consp browse-url-browser-function)
-    (setq browse-url-browser-function
+(or (consp browse-url-handlers)
+    (setq browse-url-handlers
 	  `(("^ftp://.*" . browse-ftp-tramp)
 	    ("." . ,browse-url-browser-function))))
+
+(if (< (string-to-number emacs-version) 28)
+    (setq browse-url-browser-function browse-url-handlers))
 
 (provide 'my-net)
 

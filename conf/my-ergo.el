@@ -36,10 +36,10 @@
 	ergoemacs-use-ergoemacs-metaleft nil
 	ergoemacs-use-ergoemacs-metaright nil)
 
-  (ergoemacs-theme-option-off '(apps apps-apps apps-punctuation
-				     apps-toggle apps-swap
-				     save-options-on-exit ido-remaps
-				     menu-bar-view))
+  ;; (ergoemacs-theme-option-off '(apps apps-apps apps-punctuation
+  ;; 				     apps-toggle apps-swap
+  ;; 				     save-options-on-exit ido-remaps
+  ;; 				     menu-bar-view))
 
   (or +old-emacs+ (require 'helm-config nil t))
   (defvar tabbar-mode nil)

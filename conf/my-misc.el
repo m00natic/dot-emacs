@@ -18,20 +18,6 @@
  '(org-latex-listings t)
  '(org-latex-packages-alist '(("" "listings") ("" "color"))))
 
-;;; goto line
-(defun goto-line-with-feedback ()
-  "Show line numbers temporarily, while prompting \
-for the line number input."
-  (interactive)
-  (unwind-protect
-      (progn (linum-mode 1)
-	     (let ((line (read-number "Goto line: ")))
-	       (goto-char (point-min))
-	       (forward-line (1- line))))
-    (linum-mode -1)))
-
-(global-set-key "\C-cl" 'goto-line-with-feedback)
-
 ;;; occur
 (eval-after-load "replace"
   '(define-keys occur-mode-map
@@ -93,12 +79,13 @@ for the line number input."
 
 ;;; helm
 (if (and (not +old-emacs+)
-	 (require 'helm-config nil t))
-    (progn (or (featurep 'ergoemacs-mode)
-	       (global-set-key "\M-y" 'helm-show-kill-ring))
-	   (global-set-key "\M-." 'helm-etags-select)
-	   (global-set-key "\C-co" 'helm-occur)
-	   (ignore-errors (helm-mode 1)))
+	 (when-library nil helm
+		       (if (featurep 'ergoemacs-mode)
+			   (global-set-key "\M-V" 'helm-show-kill-ring)
+			 (global-set-key "\M-y" 'helm-show-kill-ring))
+		       (global-set-key "\M-." 'helm-etags-select)
+		       (global-set-key "\C-co" 'helm-occur)
+	   (ignore-errors (helm-mode 1))))
   (icomplete-mode 1))
 
 ;;; Ditaa
@@ -138,6 +125,12 @@ for the line number input."
   (when-library nil company (diminish 'company-mode "⚯"))
   (when-library nil undo-tree (ignore-errors
 				(diminish 'undo-tree-mode "⎌"))))
+
+(use-package ace-jump-mode
+  :ensure nil
+  :config
+  (global-set-key "\C-c " 'ace-jump-char-mode)
+  (global-set-key "\C-cl" 'ace-jump-line-mode))
 
 ;;; large files
 (if (require 'vlf-setup nil t)

@@ -68,7 +68,7 @@
    `(progn
       (sly-setup)
       (add-to-list 'sly-lisp-implementations
-		   (list ',(win-or-nix 'clisp 'sbcl)
+		   (list (win-or-nix 'clisp 'sbcl)
 			 ',(split-string inferior-lisp-program " +")))
 
       (win-or-nix
@@ -80,11 +80,11 @@
 	  (setq common-lisp-hyperspec-root
 		,(concat "file://" +home-path+
 			 "Documents/HyperSpec/")))
-      (setq sly-default-lisp ',(win-or-nix 'clisp 'sbcl)
+      (setq sly-default-lisp (win-or-nix 'clisp 'sbcl)
 	    sly-net-coding-system
-	    (find-if 'sly-find-coding-system
-		     '(utf-8-unix iso-latin-1-unix iso-8859-1-unix
-				  binary)))
+	    (cl-find-if 'sly-find-coding-system
+			'(utf-8-unix iso-latin-1-unix iso-8859-1-unix
+				     binary)))
 
       (or (featurep 'ergoemacs-mode)
 	  (define-key sly-mode-map "\M-g"
@@ -96,8 +96,8 @@
  (eval-after-load "slime"
    `(progn
       (when (file-exists-p
-	     ,(win-or-nix #1=(concat +home-path+ "Documents/javadoc")
-			  #2="/usr/share/doc/java-sdk-docs-1.6.0.23"))
+	     (win-or-nix #1=(concat +home-path+ "Documents/javadoc")
+			 #2="/usr/share/doc/java-sdk-docs-1.6.0.23"))
 	(defun slime-browse-local-javadoc (ci-name)
 	  "Browse local JavaDoc documentation on class/interface CI-NAME."
 	  (interactive
@@ -105,7 +105,7 @@
 	  (or ci-name (error "No name given"))
 	  (let ((name (replace-regexp-in-string "\\$" "." ci-name))
 		(path (concat
-		       ,(win-or-nix #1# #2#)
+		       (win-or-nix #1# #2#)
 		       "/api/")))
 	    (with-temp-buffer
 	      (insert-file-contents
@@ -162,10 +162,10 @@
  (setq quack-global-menu-p nil)
  (eval-after-load "quack"
    `(setq quack-default-program "gsi"
-	  quack-pltcollect-dirs (list ,(win-or-nix
-					(concat +home-path+
-						"Documents/plt")
-					"/usr/share/plt/doc")))))
+	  quack-pltcollect-dirs (list (win-or-nix
+				       (concat +home-path+
+					       "Documents/plt")
+				       "/usr/share/plt/doc")))))
 
 ;;; CLIPS
 (when-library
@@ -176,10 +176,10 @@
  (eval-after-load "inf-clips"
    `(progn
       (setq inferior-clips-program
-	    ,(win-or-nix
-	      (concat +win-path+
-		      "Program Files/CLIPS/Bin/CLIPSDOS.exe")
-	      "clips"))
+	    (win-or-nix
+	     (concat +win-path+
+		     "Program Files/CLIPS/Bin/CLIPSDOS.exe")
+	     "clips"))
       (add-hook 'inferior-clips-mode-hook
 		(lambda () (setq indent-region-function nil))))))
 

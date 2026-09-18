@@ -168,35 +168,35 @@ Medium - less than 120000 bytes."
 	(setq emms-player-mpd-music-directory
 	      emms-source-file-default-directory)
 
-	,(win-or-nix
-	  nil
-	  (when-library
-	   nil notify
-	   '(progn
-	      (defun emms-player-mpd-notify ()
-		"Notify new track for MPD."
-		(if (eq emms-player-playing-p 'emms-player-mpd)
-		    (notify
-		     "EMMS"
-		     (emms-track-description
-		      (emms-playlist-current-selected-track)))))
+	(win-or-nix
+	 nil
+	 (when-library
+	  nil notify
+	  '(progn
+	     (defun emms-player-mpd-notify ()
+	       "Notify new track for MPD."
+	       (if (eq emms-player-playing-p 'emms-player-mpd)
+		   (notify
+		    "EMMS"
+		    (emms-track-description
+		     (emms-playlist-current-selected-track)))))
 
-	      (add-hook 'emms-player-started-hook
-			'emms-player-mpd-notify)))))
+	     (add-hook 'emms-player-started-hook
+		       'emms-player-mpd-notify)))))
 
       (global-set-key [XF86AudioPlay] 'emms-pause)
-      ,(win-or-nix
-	nil
-	(when-library
-	 nil notify
-	 '(setq emms-player-next-function
-		(lambda () "Notify on new track."
-		  (emms-next-noerror)
-		  (if emms-player-playing-p
-		      (notify
-		       "EMMS"
-		       (emms-track-description
-			(emms-playlist-current-selected-track))))))))
+      (win-or-nix
+       nil
+       (when-library
+	nil notify
+	'(setq emms-player-next-function
+	       (lambda () "Notify on new track."
+		 (emms-next-noerror)
+		 (if emms-player-playing-p
+		     (notify
+		      "EMMS"
+		      (emms-track-description
+		       (emms-playlist-current-selected-track))))))))
 
       ;; track info ticker
       (defun string-shift-left (str &optional offset)
