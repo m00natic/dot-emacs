@@ -10,12 +10,9 @@
 (custom-set-variables
  '(gnus-buttonized-mime-types '("multipart/.*"))
  '(gnus-posting-styles '((".*" (address "m00naticus@gmail.com")
-			  ("X-SMTP-Server" "smtp.gmail.com"))
-			 ("smule" (address "andrey.kotlarski@smule.com")
 			  ("X-SMTP-Server" "smtp.gmail.com"))))
  '(gnus-secondary-select-methods
-   '((nnimap "gmail" (nnimap-address "imap.gmail.com"))
-     (nnimap "smule" (nnimap-address "imap.gmail.com"))))
+   '((nnimap "gmail" (nnimap-address "imap.gmail.com"))))
  '(mail-envelope-from 'header)
  '(mail-specify-envelope-from t)
  '(message-citation-line-format "[ %e %B %Y, %R %z, %A ] %N:\n")
@@ -42,8 +39,7 @@ Otherwise check for less."
 	(if (or notify (not (string-equal my-gnus-new-mail-count "")))
 	    (let ((unread-count 0)
 		  unread-groups)
-	      (dolist (group '("nnimap+gmail:INBOX"
-			       "nnimap+smule:INBOX"))
+	      (dolist (group '("nnimap+gmail:INBOX"))
 		(let ((unread (gnus-group-unread group)))
 		  (and (numberp unread) (> unread 0)
 		       (setq unread-count (+ unread-count unread)
@@ -62,13 +58,14 @@ Otherwise check for less."
 			     (if (= unread-count 1) "" "s")
 			     (substring unread-groups 2))))
 		      (propertize (format "%d" unread-count)
-				  'face 'error))))))
+				  'face 'error)))))
+	(message "Mail check at %s" (current-time-string)))
 
       (defun gnus-demon-scan-important ()
 	"Check for new messages in level 1 and notify in modeline."
 	(save-window-excursion
 	  (set-buffer gnus-group-buffer)
-	  (gnus-group-get-new-news 1))
+	  (gnus-group-get-new-news))
 	(gnus-demon-notify t))
 
       (gnus-demon-add-handler 'gnus-demon-scan-important 10 nil)
